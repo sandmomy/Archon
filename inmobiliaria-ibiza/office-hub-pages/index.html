@@ -2,743 +2,580 @@
 <html lang="es">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Inmobiliaria Ibiza · Office Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<title>Inmobiliaria Ibiza · Office Hub 3D</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Figtree:wght@500;600;700&display=swap" rel="stylesheet" />
 <style>
-  /* Visual target = user's concept image: viewpoint, materials, neon pads, pizza hub, bots, Ibiza sunset.
-     Rendered live — image is NOT used as a background and there is no chrome stacked on a photo. */
-  :root {
-    --ink: #f3f6fb;
-    --muted: #b6c3d6;
-    --purple: #9b5cff;
-    --yellow: #f5c518;
-    --green: #2ee56a;
-    --blue: #3d8bff;
-    --red: #ff4d5e;
-    --orange: #ff8a1f;
+  html, body { margin:0; height:100%; overflow:hidden; background:#060910; color:#eef3fb; font-family:"Figtree",system-ui,sans-serif; }
+  #canvas { position:fixed; inset:0; width:100%; height:100%; display:block; touch-action:none; }
+  #labels { position:fixed; inset:0; pointer-events:none; overflow:hidden; }
+  .tag {
+    position:absolute; transform:translate(-50%,-100%);
+    text-align:center; white-space:nowrap; pointer-events:none;
+    text-shadow:0 2px 8px rgba(0,0,0,.75);
   }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #05070d; color: var(--ink); font-family: "Figtree", system-ui, sans-serif; }
-
-  .world {
-    position: relative;
-    width: 100vw;
-    height: 100dvh;
-    overflow: hidden;
-    background: #060910;
-  }
-
-  /* —— Mediterranean sunset wall (same mood as the reference) —— */
-  .vista {
-    position: absolute;
-    inset: 0 0 32% 0;
-    background:
-      radial-gradient(ellipse 50% 35% at 68% 58%, rgba(255,210,140,0.95) 0%, transparent 55%),
-      linear-gradient(180deg,
-        #152038 0%,
-        #2a2448 22%,
-        #7a3a4a 48%,
-        #e07040 68%,
-        #f6b56a 84%,
-        #ffe0b0 100%);
-    animation: dusk 18s ease-in-out infinite alternate;
-  }
-  @keyframes dusk {
-    from { filter: saturate(1) brightness(1); }
-    to { filter: saturate(1.08) brightness(1.06); }
-  }
-  .vista .sea {
-    position: absolute;
-    left: 0; right: 0; bottom: 0;
-    height: 28%;
-    background:
-      linear-gradient(180deg, rgba(40,70,120,0.15), rgba(20,40,80,0.55)),
-      repeating-linear-gradient(90deg, transparent 0 40px, rgba(255,255,255,0.04) 40px 42px);
-  }
-  .vista .hills {
-    position: absolute;
-    left: 0; right: 0; bottom: 18%;
-    height: 22%;
-    background:
-      radial-gradient(ellipse 18% 100% at 22% 100%, #1a2438 0 60%, transparent 61%),
-      radial-gradient(ellipse 22% 100% at 48% 100%, #222c42 0 60%, transparent 61%),
-      radial-gradient(ellipse 20% 100% at 74% 100%, #1c2740 0 60%, transparent 61%);
-    opacity: 0.85;
-  }
-  .vista .sun {
-    position: absolute;
-    width: 56px; height: 56px;
-    border-radius: 50%;
-    right: 26%;
-    bottom: 34%;
-    background: radial-gradient(circle, #fff2c8 0 35%, #ffb060 55%, transparent 70%);
-    filter: blur(1px);
-    box-shadow: 0 0 60px 20px rgba(255,170,90,0.45);
-  }
-
-  .room {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    perspective: 1500px;
-    perspective-origin: 52% 40%;
-  }
-
-  .iso {
-    position: relative;
-    width: min(1240px, 170vw);
-    height: min(900px, 125vw);
-    --rx: 57deg;
-    --rz: -27deg;
-    --sc: 0.84;
-    transform: rotateX(var(--rx)) rotateZ(var(--rz)) scale(var(--sc));
-    transform-style: preserve-3d;
-    animation: settle 1.1s cubic-bezier(.2,.85,.2,1) both, sway 12s ease-in-out 1.1s infinite;
-  }
-  @keyframes settle {
-    from { opacity: 0; --sc: 0.76; transform: rotateX(var(--rx)) rotateZ(var(--rz)) scale(0.76) translateY(36px); }
-    to   { opacity: 1; --sc: 0.84; transform: rotateX(var(--rx)) rotateZ(var(--rz)) scale(0.84) translateY(0); }
-  }
-  @keyframes sway {
-    0%,100% { transform: rotateX(57deg) rotateZ(-27deg) scale(0.84) translate3d(0,0,0); }
-    50% { transform: rotateX(56.2deg) rotateZ(-26.2deg) scale(0.845) translate3d(4px,-3px,0); }
-  }
-
-  /* Polished dark tile floor — large grid like the reference */
-  .floor {
-    position: absolute;
-    inset: 6% 5% 3% 5%;
-    border-radius: 22px;
-    background:
-      linear-gradient(115deg, rgba(255,150,80,0.10), transparent 35%, transparent 65%, rgba(60,120,255,0.06)),
-      repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 72px),
-      repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 72px),
-      linear-gradient(165deg, #1a2436 0%, #0d1422 48%, #111a2b 100%);
-    box-shadow:
-      0 50px 90px rgba(0,0,0,0.65),
-      inset 0 0 80px rgba(0,0,0,0.35),
-      inset 0 1px 0 rgba(255,255,255,0.06);
-    overflow: hidden;
-  }
-  .floor::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(circle at 50% 48%, rgba(70,140,255,0.22), transparent 36%),
-      linear-gradient(180deg, rgba(255,140,70,0.08), transparent 28%);
-    pointer-events: none;
-    animation: breathe 5s ease-in-out infinite;
-  }
-  @keyframes breathe { 0%,100%{opacity:.75} 50%{opacity:1} }
-
-  /* Glass curtain wall catching sunset */
-  .glass {
-    position: absolute;
-    left: 8%; right: 7%; top: -1%;
-    height: 36%;
-    border-radius: 16px 16px 2px 2px;
-    background:
-      linear-gradient(180deg, rgba(255,200,140,0.14), rgba(120,170,255,0.05) 55%, rgba(255,255,255,0.03)),
-      linear-gradient(90deg, rgba(255,255,255,0.06), transparent 25%, transparent 75%, rgba(255,255,255,0.05));
-    border: 1px solid rgba(255,210,170,0.18);
-    box-shadow: inset 0 -20px 40px rgba(255,120,60,0.08);
-    pointer-events: none;
-  }
-  .mullion {
-    position: absolute; top: 0; bottom: 0; width: 2px;
-    background: rgba(180,200,230,0.18);
-  }
-  .mullion.a { left: 33%; } .mullion.b { left: 66%; }
-
-  /* Soft furniture — room presence, not interactive */
-  .furn { position: absolute; pointer-events: none; }
-  .sofa {
-    width: 130px; height: 58px; border-radius: 16px;
-    background: linear-gradient(180deg, #314057, #1c2535);
-    box-shadow: 0 12px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
-  }
-  .sofa::before {
-    content: ""; position: absolute; left: 8px; right: 8px; top: -10px; height: 16px;
-    border-radius: 10px; background: #2a364a;
-  }
-  .palm {
-    width: 34px; height: 70px;
-    background:
-      radial-gradient(circle at 50% 12%, #3aa86a 0 28%, transparent 29%),
-      radial-gradient(circle at 22% 28%, #2f8f5b 0 22%, transparent 23%),
-      radial-gradient(circle at 78% 28%, #2f8f5b 0 22%, transparent 23%),
-      linear-gradient(180deg, transparent 42%, #7a5530 42% 100%);
-    filter: drop-shadow(0 10px 12px rgba(0,0,0,0.4));
-  }
-  .partition {
-    width: 16px; height: 90px; border-radius: 6px;
-    background: linear-gradient(180deg, #3a4860, #1a2333);
-    box-shadow: 0 10px 16px rgba(0,0,0,0.35);
-  }
-  .f-sofa-1 { left: 40%; top: 7%; }
-  .f-sofa-2 { left: 6%; top: 58%; width: 100px; }
-  .f-palm-1 { left: 56%; top: 5%; }
-  .f-palm-2 { left: 86%; top: 52%; }
-  .f-part-1 { left: 78%; top: 18%; }
-  .f-part-2 { left: 18%; top: 78%; height: 70px; }
-
-  /* In-world brand plate (diegetic, not browser chrome) */
-  .brand {
-    position: absolute;
-    left: 7%; top: 7%;
-    transform: rotateZ(27deg) rotateX(-57deg);
-    transform-origin: 0 0;
-    z-index: 8;
-    pointer-events: none;
-  }
-  .brand .plate {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 12px; border-radius: 14px;
-    background: rgba(8,12,22,0.58);
-    border: 1px solid rgba(255,255,255,0.12);
-    backdrop-filter: blur(8px);
-  }
-  .logo {
-    width: 30px; height: 30px; border-radius: 50%;
-    background:
-      radial-gradient(circle at 50% 65%, #1f6b4a 0 28%, transparent 29%),
-      linear-gradient(145deg, #ffd27a, #e07040 55%, #1d4d3a);
-    box-shadow: 0 0 12px rgba(255,140,70,0.35);
-  }
-  .brand strong { display:block; font-family:"Outfit",sans-serif; font-size:13px; }
-  .brand span { display:block; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#ffb070; }
-
-  .live {
-    position: absolute; right: 9%; top: 8%;
-    transform: rotateZ(27deg) rotateX(-57deg);
-    transform-origin: 100% 0; z-index: 8; pointer-events: none;
-  }
-  .live b {
-    display:inline-flex; align-items:center; gap:8px;
-    padding:7px 12px; border-radius:999px;
-    background: rgba(46,229,106,0.14);
-    border: 1px solid rgba(46,229,106,0.35);
-    color:#9dffc0; font-size:11px;
-  }
-  .live i {
-    width:7px; height:7px; border-radius:50%; background:#2ee56a;
-    box-shadow:0 0 0 4px rgba(46,229,106,.2);
-    animation: blink 1.8s ease-in-out infinite;
-  }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
-
-  /* —— Pizza hub —— */
-  .hub {
-    position: absolute;
-    left: 50%; top: 49%;
-    width: 300px; height: 300px;
-    margin: -150px 0 0 -150px;
-    z-index: 6;
-  }
-  .hub-glow {
-    position: absolute; inset: -28px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(70,140,255,0.55), transparent 65%);
-    filter: blur(4px);
-    animation: breathe 4.5s ease-in-out infinite;
-  }
-  .hub-crust {
-    position: absolute; inset: 0; border-radius: 50%;
-    background:
-      repeating-conic-gradient(from 10deg, #b89562 0 8deg, #d9c09a 8deg 14deg, #8e6c40 14deg 20deg);
-    box-shadow:
-      0 22px 0 #5a4326,
-      0 30px 40px rgba(0,0,0,0.5),
-      inset 0 0 0 4px rgba(255,255,255,0.1);
-  }
-  .hub-disk {
-    position: absolute; inset: 16px; border-radius: 50%;
-    overflow: hidden; background: #0a1020;
-    box-shadow: inset 0 0 0 2px rgba(255,255,255,0.1);
-  }
-  .hub-disk svg { width:100%; height:100%; display:block; }
-  .sector { cursor:pointer; }
-  .sector .face {
-    stroke: rgba(255,255,255,0.4); stroke-width:1.6;
-    transition: filter .2s, stroke .2s;
-  }
-  .sector:hover .face, .sector.is-hover .face, .sector.is-active .face {
-    filter: brightness(1.2); stroke:#fff; stroke-width:2.6;
-  }
-  .sector.is-active { filter: drop-shadow(0 0 12px rgba(255,255,255,.5)); }
-  .sector .glyph {
-    fill:none; stroke:#fff; stroke-width:2.5;
-    stroke-linecap:round; stroke-linejoin:round; pointer-events:none;
-  }
-  .hub-core {
-    position: absolute; left:50%; top:50%;
-    width:84px; height:84px; margin:-42px 0 0 -42px;
-    border-radius:50%;
-    background: radial-gradient(circle at 38% 32%, #fff8ec, #e8d2b0 58%, #c6a57a);
-    box-shadow: 0 10px 0 #8a6a42, 0 14px 24px rgba(0,0,0,.4), inset 0 0 0 2px rgba(255,255,255,.35);
-    display:grid; place-items:center; text-align:center; pointer-events:none; z-index:2;
-  }
-  .hub-core b { font-family:"Outfit",sans-serif; font-size:12px; color:#16324f; line-height:1.05; }
-  .hub-core span { display:block; font-size:7px; letter-spacing:.16em; color:#c45c3a; font-weight:700; margin-top:2px; }
-
-  /* —— Stations —— */
-  .station {
-    position: absolute; width: 176px; height: 136px;
-    cursor: pointer; z-index: 5;
-  }
-  .pad {
-    position: absolute; inset: 22px 6px 6px;
-    border-radius: 20px;
-    border: 2.5px solid color-mix(in srgb, var(--c) 88%, white);
-    background:
-      radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--c) 18%, transparent), transparent 70%),
-      linear-gradient(160deg, rgba(255,255,255,0.05), transparent 55%);
-    box-shadow:
-      0 0 22px color-mix(in srgb, var(--c) 50%, transparent),
-      inset 0 0 24px color-mix(in srgb, var(--c) 16%, transparent),
-      0 18px 24px rgba(0,0,0,0.35);
-    animation: padPulse 3.4s ease-in-out infinite;
-  }
-  @keyframes padPulse {
-    0%,100% { box-shadow: 0 0 16px color-mix(in srgb, var(--c) 40%, transparent), inset 0 0 18px color-mix(in srgb, var(--c) 12%, transparent), 0 18px 24px rgba(0,0,0,.35); }
-    50% { box-shadow: 0 0 30px color-mix(in srgb, var(--c) 62%, transparent), inset 0 0 28px color-mix(in srgb, var(--c) 22%, transparent), 0 18px 24px rgba(0,0,0,.35); }
-  }
-  .station.is-hover .pad, .station.is-active .pad { filter: brightness(1.22); transform: scale(1.035); }
-
-  .desk {
-    position: absolute; left: 30px; top: 52px;
-    width: 92px; height: 44px; border-radius: 9px;
-    background: linear-gradient(180deg, #556274, #2b3446);
-    box-shadow: 0 12px 16px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.08);
-  }
-  .monitor {
-    position: absolute; left: 50px; top: 30px;
-    width: 48px; height: 32px; border-radius: 5px 5px 3px 3px;
-    background: #070d18; border: 2px solid #445064; overflow: hidden;
-  }
-  .monitor::after {
-    content:""; position:absolute; inset:3px;
-    background:
-      linear-gradient(90deg, transparent 0 12%, var(--c) 12% 14%, transparent 14% 34%, var(--c) 34% 36%, transparent 36%),
-      linear-gradient(180deg, rgba(120,190,255,.3), transparent);
-    animation: scan 2.6s linear infinite;
-  }
-  @keyframes scan { from{transform:translateY(5px);opacity:.5} to{transform:translateY(-7px);opacity:1} }
-
-  .bot {
-    position: absolute; left: 74px; top: 42px; width: 36px; height: 44px;
-    transform-origin: 50% 100%;
-    animation: idle 2.7s ease-in-out infinite;
-    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--c) 55%, transparent));
-  }
-  @keyframes idle {
-    0%,100%{ transform: translateY(0) rotate(0) }
-    50%{ transform: translateY(-2px) rotate(-2.5deg) }
-  }
-  .bot.busy { animation: busy 0.55s ease-in-out infinite; }
-  @keyframes busy {
-    0%,100% { transform: translateY(0) rotate(-1deg); }
-    50% { transform: translateY(-3px) rotate(2deg); }
-  }
-  .hub-disk { animation: hubTick 16s linear infinite; }
-  @keyframes hubTick {
-    0%, 92%, 100% { filter: brightness(1); }
-    94% { filter: brightness(1.08); }
-    96% { filter: brightness(1); }
-  }
-  .bot .head {
-    width: 30px; height: 26px; margin: 0 auto;
-    border-radius: 11px 11px 9px 9px;
-    background: linear-gradient(180deg, #f4f7fc, #c5d0e0);
-    position: relative;
-  }
-  .bot .head::before, .bot .head::after {
-    content:""; position:absolute; top:10px; width:5px; height:5px; border-radius:50%; background:#0b1220;
-  }
-  .bot .head::before { left:7px; } .bot .head::after { right:7px; }
-  .bot .cans {
-    position:absolute; top:5px; left:-5px; right:-5px; height:13px;
-    border-radius:9px; border:3.5px solid color-mix(in srgb, var(--c) 90%, white);
-    border-bottom:none; opacity:.95;
-  }
-  .bot .body {
-    width: 24px; height: 15px; margin: 2px auto 0; border-radius: 7px;
-    background: linear-gradient(180deg, #dbe3ef, #8f9bb0);
-  }
-
-  .label {
-    position: absolute; left: 50%; top: -10px;
-    transform: translateX(-50%) rotateZ(27deg) rotateX(-57deg);
-    transform-origin: 50% 100%;
-    width: 190px; text-align: center; pointer-events: none;
-    filter: drop-shadow(0 8px 12px rgba(0,0,0,.55));
-  }
-  .label strong {
-    display:block; font-family:"Outfit",sans-serif; font-size:13px;
-    color:#fff; text-shadow: 0 1px 3px rgba(0,0,0,.7);
-  }
-  .label em {
-    display:block; font-style:normal; font-size:9px; color:#d2dceb; margin-top:2px; opacity:.92;
-  }
-
+  .tag strong { display:block; font-family:"Outfit",sans-serif; font-size:12px; }
+  .tag em { display:block; font-style:normal; font-size:9px; color:#c9d6ea; margin-top:2px; }
   .bubble {
-    position: absolute; left: 78%; top: 6px;
-    transform: rotateZ(27deg) rotateX(-57deg);
-    transform-origin: 0 100%;
-    background: rgba(255,255,255,.97); color:#0f172a;
-    padding: 7px 10px; border-radius: 12px;
-    font-size: 10px; font-weight: 650; line-height: 1.25;
-    width: max-content; max-width: 148px;
-    box-shadow: 0 12px 24px rgba(0,0,0,.38);
-    pointer-events: none;
-    animation: bubblePop 4.8s ease-in-out infinite;
-  }
-  @keyframes bubblePop {
-    0%, 100% { opacity: 0.92; transform: rotateZ(27deg) rotateX(-57deg) scale(1); }
-    8% { opacity: 1; transform: rotateZ(27deg) rotateX(-57deg) scale(1.04); }
-    16% { opacity: 0.95; transform: rotateZ(27deg) rotateX(-57deg) scale(1); }
-  }
-  .bubble.flash {
-    animation: flashIn .45s ease;
-  }
-  @keyframes flashIn {
-    from { opacity: 0; transform: rotateZ(27deg) rotateX(-57deg) scale(0.86) translateY(8px); }
-    to { opacity: 1; transform: rotateZ(27deg) rotateX(-57deg) scale(1) translateY(0); }
+    position:absolute; transform:translate(-20%,-120%);
+    background:rgba(255,255,255,.96); color:#0f172a;
+    padding:7px 10px; border-radius:12px; font-size:10px; font-weight:650;
+    max-width:140px; line-height:1.25; white-space:normal;
+    box-shadow:0 10px 24px rgba(0,0,0,.4);
+    pointer-events:none;
   }
   .bubble::after {
     content:""; position:absolute; left:14px; bottom:-5px;
     width:10px; height:10px; background:inherit; transform:rotate(45deg);
   }
-  .station.is-hover .bubble, .station.is-active .bubble {
-    outline: 2px solid color-mix(in srgb, var(--c) 75%, white);
+  .hud-brand, .hud-live {
+    position:fixed; z-index:5; pointer-events:none;
+    display:flex; align-items:center; gap:8px;
+    padding:8px 12px; border-radius:14px;
+    background:rgba(8,12,22,.55); border:1px solid rgba(255,255,255,.12);
+    backdrop-filter:blur(8px);
   }
-
-  .dot {
-    position:absolute; right:16px; top:34px; width:11px; height:11px;
-    border-radius:50%; border:2px solid #fff; z-index:2;
-    box-shadow: 0 0 12px currentColor;
+  .hud-brand { top:max(12px, env(safe-area-inset-top)); left:12px; }
+  .hud-live { top:max(12px, env(safe-area-inset-top)); right:12px; font-size:12px; color:#9dffc0; }
+  .hud-live i { width:7px; height:7px; border-radius:50%; background:#2ee56a; display:inline-block; box-shadow:0 0 0 4px rgba(46,229,106,.2); }
+  .logo {
+    width:28px; height:28px; border-radius:50%;
+    background:linear-gradient(145deg,#ffd27a,#e07040 55%,#1d4d3a);
   }
-  .dot.working { background:#2ee56a; color:#2ee56a; }
-  .dot.needs { background:#ff4d5e; color:#ff4d5e; animation: blink 1.1s ease-in-out infinite; }
-  .dot.idle { background:#94a3b8; color:#94a3b8; }
-
-  /* Composition matching the reference framing */
-  .s-scraping { left: 15%; top: 16%; --c: var(--purple); }
-  .s-props    { left: 66%; top: 12%; --c: var(--yellow); }
-  .s-leads    { left: 74%; top: 45%; --c: var(--green); }
-  .s-finance  { left: 57%; top: 68%; --c: var(--blue); }
-  .s-agenda   { left: 27%; top: 70%; --c: var(--red); }
-  .s-ai       { left: 11%; top: 43%; --c: var(--orange); }
-
-  /* Holographic detail — rises beside the room, not a photo overlay */
+  .hud-brand strong { display:block; font-family:"Outfit",sans-serif; font-size:13px; }
+  .hud-brand span { display:block; font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#ffb070; }
+  .hint {
+    position:fixed; left:50%; bottom:max(12px, env(safe-area-inset-bottom));
+    transform:translateX(-50%); z-index:5;
+    padding:8px 14px; border-radius:999px; font-size:12px; color:#cbd5e1;
+    background:rgba(6,9,16,.6); border:1px solid rgba(255,255,255,.1);
+    pointer-events:none; max-width:92vw; text-align:center;
+  }
   .veil {
-    position: fixed; inset: 0; z-index: 20;
-    background: radial-gradient(circle at 72% 48%, rgba(0,0,0,.2), rgba(0,0,0,.55));
-    opacity: 0; pointer-events: none; transition: opacity .3s;
+    position:fixed; inset:0; background:rgba(0,0,0,.45); opacity:0; pointer-events:none;
+    transition:opacity .25s; z-index:20;
   }
-  .veil.show { opacity: 1; pointer-events: auto; }
-  .holo {
-    position: fixed; right: max(14px, 2.5vw); top: 50%;
-    transform: translate(120%, -50%);
-    width: min(360px, 92vw); z-index: 30;
-    padding: 20px; border-radius: 22px;
-    background: linear-gradient(160deg, rgba(22,32,50,.94), rgba(8,12,22,.96));
-    border: 1px solid rgba(255,255,255,.12);
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--accent,#3d8bff) 40%, transparent),
-      0 28px 60px rgba(0,0,0,.55),
-      0 0 40px color-mix(in srgb, var(--accent,#3d8bff) 18%, transparent);
-    backdrop-filter: blur(14px);
-    transition: transform .45s cubic-bezier(.2,.85,.2,1);
+  .veil.show { opacity:1; pointer-events:auto; }
+  .panel {
+    position:fixed; right:0; top:0; height:100%; width:min(360px,100vw);
+    background:linear-gradient(160deg, rgba(18,28,44,.96), rgba(8,12,22,.98));
+    border-left:1px solid rgba(255,255,255,.1);
+    transform:translateX(105%); transition:transform .4s cubic-bezier(.2,.85,.2,1);
+    z-index:30; padding:20px; display:flex; flex-direction:column; gap:12px;
   }
-  .holo.open { transform: translate(0, -50%); }
-  .holo .row { display:flex; justify-content:space-between; align-items:center; }
-  .kicker { font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:700; }
-  .kicker i { display:inline-block; width:10px; height:10px; border-radius:3px; background:var(--accent); margin-right:8px; vertical-align:middle; }
-  .x {
-    width:36px; height:36px; border-radius:10px; border:1px solid rgba(255,255,255,.12);
-    background:transparent; color:#fff; cursor:pointer; font-size:1.2rem;
-  }
-  .holo h2 { margin:10px 0 6px; font-family:"Outfit",sans-serif; font-size:1.5rem; letter-spacing:-.02em; }
-  .holo .sub { margin:0 0 14px; color:var(--muted); line-height:1.45; font-size:.92rem; }
-  .stat {
-    display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:center;
-    padding:12px; border-radius:14px; margin-bottom:12px;
-    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
-  }
-  .orb { width:44px; height:44px; border-radius:50%; display:grid; place-items:center; }
-  .orb span { width:11px; height:11px; border-radius:50%; background:currentColor; }
+  .panel.open { transform:translateX(0); }
+  .panel h2 { margin:0; font-family:"Outfit",sans-serif; font-size:1.45rem; }
+  .panel .sub { margin:0; color:#9aabbf; font-size:.92rem; line-height:1.4; }
+  .stat { display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:center; padding:12px; border-radius:14px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); }
+  .orb { width:42px; height:42px; border-radius:50%; display:grid; place-items:center; }
+  .orb span { width:10px; height:10px; border-radius:50%; background:currentColor; }
   .orb.working { color:#2ee56a; background:rgba(46,229,106,.12); }
   .orb.needs { color:#ff4d5e; background:rgba(255,77,94,.12); }
   .orb.idle { color:#94a3b8; background:rgba(148,163,184,.12); }
-  .stat strong { display:block; } .stat em { font-style:normal; color:var(--muted); font-size:.85rem; }
-  .metrics { display:grid; gap:7px; margin-bottom:14px; }
-  .metric {
-    display:flex; justify-content:space-between; padding:10px 12px; border-radius:11px;
-    background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); font-size:.9rem;
-  }
-  .metric span { color:var(--muted); }
-  .actions { display:grid; gap:8px; }
-  .btn { border:0; border-radius:12px; padding:12px 14px; font:inherit; font-weight:650; cursor:pointer; }
-  .btn.primary { background:linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 45%, #060910)); color:#fff; }
+  .metric { display:flex; justify-content:space-between; padding:10px 12px; border-radius:11px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); font-size:.9rem; }
+  .metric span { color:#9aabbf; }
+  .btn { border:0; border-radius:12px; padding:12px; font:inherit; font-weight:650; cursor:pointer; }
+  .btn.primary { background:linear-gradient(135deg, var(--accent,#8b5cf6), #1e3a5f); color:#fff; }
   .btn.ghost { background:transparent; color:#fff; border:1px solid rgba(255,255,255,.14); }
-
-  .whisper {
-    position:fixed; left:50%; bottom:14px; transform:translateX(-50%); z-index:8;
-    padding:8px 14px; border-radius:999px;
-    background:rgba(6,9,16,.55); border:1px solid rgba(255,255,255,.1);
-    color:#cbd5e1; font-size:.78rem; backdrop-filter:blur(8px); pointer-events:none;
-  }
-
-  @media (max-width:820px) and (orientation:portrait) {
-    .iso { width:155vw; height:122vw; transform:rotateX(57deg) rotateZ(-27deg) scale(.7); animation:none; opacity:1; }
-    .label strong { font-size:11px; }
-    .bubble { font-size:9px; max-width:112px; }
-    .holo { top:auto; bottom:0; right:0; left:0; width:100vw; transform:translateY(110%); border-radius:20px 20px 0 0; }
-    .holo.open { transform:translateY(0); }
-  }
-  @media (orientation:landscape) and (max-height:520px) {
-    .iso { transform:rotateX(55deg) rotateZ(-27deg) scale(.6); animation:none; opacity:1; }
-    .whisper { display:none; }
-    .holo { width:min(320px,46vw); padding:14px; }
-  }
-  @media (prefers-reduced-motion:reduce) {
-    *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; }
+  .x { margin-left:auto; width:36px; height:36px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:transparent; color:#fff; font-size:1.2rem; cursor:pointer; }
+  .row { display:flex; align-items:center; gap:8px; }
+  .swatch { width:10px; height:10px; border-radius:3px; background:var(--accent); }
+  @media (max-width:720px) and (orientation:portrait) {
+    .panel { top:auto; bottom:0; height:auto; max-height:78dvh; width:100vw; border-left:0; border-radius:18px 18px 0 0; transform:translateY(110%); }
+    .panel.open { transform:translateY(0); }
+    .tag strong { font-size:11px; }
+    .bubble { font-size:9px; max-width:120px; }
   }
 </style>
 </head>
 <body>
-  <div class="world">
-    <div class="vista" aria-hidden="true">
-      <div class="sun"></div>
-      <div class="hills"></div>
-      <div class="sea"></div>
-    </div>
-
-    <div class="room">
-      <div class="iso">
-        <div class="floor">
-          <div class="glass" aria-hidden="true">
-            <span class="mullion a"></span><span class="mullion b"></span>
-          </div>
-
-          <div class="furn sofa f-sofa-1" aria-hidden="true"></div>
-          <div class="furn sofa f-sofa-2" aria-hidden="true"></div>
-          <div class="furn palm f-palm-1" aria-hidden="true"></div>
-          <div class="furn palm f-palm-2" aria-hidden="true"></div>
-          <div class="furn partition f-part-1" aria-hidden="true"></div>
-          <div class="furn partition f-part-2" aria-hidden="true"></div>
-
-          <div class="brand" aria-hidden="true">
-            <div class="plate">
-              <div class="logo"></div>
-              <div><strong>Inmobiliaria Ibiza</strong><span>Office Hub</span></div>
-            </div>
-          </div>
-          <div class="live" aria-hidden="true"><b><i></i>5 bots activos</b></div>
-
-          <div class="station s-scraping" data-id="scraping" tabindex="0" role="button" aria-label="Exploración y Scraping">
-            <div class="pad"></div>
-            <div class="label"><strong>Exploración & Scraping</strong><em>Web · Idealista · FB · IG · YouTube</em></div>
-            <div class="bubble">2 nuevas propiedades en Ibiza</div>
-            <div class="desk"></div><div class="monitor"></div>
-            <div class="bot"><div class="cans"></div><div class="head"></div><div class="body"></div></div>
-            <div class="dot working"></div>
-          </div>
-          <div class="station s-props" data-id="props" tabindex="0" role="button" aria-label="Propiedades y Contenido">
-            <div class="pad"></div>
-            <div class="label"><strong>Propiedades & Contenido</strong><em>Fotos · Fichas · Web · RRSS</em></div>
-            <div class="bubble">1 ficha lista para publicar</div>
-            <div class="desk"></div><div class="monitor"></div>
-            <div class="bot"><div class="cans"></div><div class="head"></div><div class="body"></div></div>
-            <div class="dot needs"></div>
-          </div>
-          <div class="station s-leads" data-id="leads" tabindex="0" role="button" aria-label="Clientes y Leads">
-            <div class="pad"></div>
-            <div class="label"><strong>Clientes & Leads</strong><em>Compradores · Vendedores · Matching IA</em></div>
-            <div class="bubble">3 leads cualificados</div>
-            <div class="desk"></div><div class="monitor"></div>
-            <div class="bot"><div class="cans"></div><div class="head"></div><div class="body"></div></div>
-            <div class="dot needs"></div>
-          </div>
-          <div class="station s-finance" data-id="finance" tabindex="0" role="button" aria-label="Finanzas y Administración">
-            <div class="pad"></div>
-            <div class="label"><strong>Finanzas & Administración</strong><em>Facturas · Contratos · Legal</em></div>
-            <div class="bubble">2 facturas generadas</div>
-            <div class="desk"></div><div class="monitor"></div>
-            <div class="bot"><div class="cans"></div><div class="head"></div><div class="body"></div></div>
-            <div class="dot working"></div>
-          </div>
-          <div class="station s-agenda" data-id="agenda" tabindex="0" role="button" aria-label="Agenda y Operaciones">
-            <div class="pad"></div>
-            <div class="label"><strong>Agenda & Operaciones</strong><em>Visitas · Notaría · Contratos</em></div>
-            <div class="bubble">1 visita confirmada mañana</div>
-            <div class="desk"></div><div class="monitor"></div>
-            <div class="bot"><div class="cans"></div><div class="head"></div><div class="body"></div></div>
-            <div class="dot working"></div>
-          </div>
-          <div class="station s-ai" data-id="ai" tabindex="0" role="button" aria-label="IA y Automatización">
-            <div class="pad"></div>
-            <div class="label"><strong>IA & Automatización</strong><em>Bots · Flujos · Integraciones</em></div>
-            <div class="bubble">Workflow actualizado</div>
-            <div class="desk"></div><div class="monitor"></div>
-            <div class="bot"><div class="cans"></div><div class="head"></div><div class="body"></div></div>
-            <div class="dot idle"></div>
-          </div>
-
-          <div class="hub">
-            <div class="hub-glow"></div>
-            <div class="hub-crust"></div>
-            <div class="hub-disk"><svg viewBox="0 0 200 200" id="pizza" aria-label="Hub de módulos"></svg></div>
-            <div class="hub-core"><b>Ibiza<span>INMOBILIARIA</span></b></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="whisper">Toca un puesto o un sector del hub — misma atmósfera que tu imagen, en vivo</div>
-  </div>
+  <canvas id="canvas"></canvas>
+  <div id="labels"></div>
+  <div class="hud-brand"><div class="logo"></div><div><strong>Inmobiliaria Ibiza</strong><span>Office Hub</span></div></div>
+  <div class="hud-live"><i></i><span id="liveCount">5 bots activos</span></div>
+  <div class="hint">Toca un bot o un sector del hub — tu escena, en 3D vivo</div>
 
   <div class="veil" id="veil"></div>
-  <aside class="holo" id="holo" aria-hidden="true" style="--accent:#9b5cff">
-    <div class="row">
-      <div class="kicker"><i></i>Módulo en la oficina</div>
-      <button class="x" id="close" aria-label="Cerrar">×</button>
-    </div>
-    <h2 id="h-title">—</h2>
-    <p class="sub" id="h-sub"></p>
-    <div class="stat">
-      <div class="orb working" id="h-orb"><span></span></div>
-      <div><strong id="h-status">Working</strong><em id="h-note">Operativo</em></div>
-    </div>
-    <div class="metrics" id="h-metrics"></div>
-    <div class="actions">
+  <aside class="panel" id="panel" aria-hidden="true">
+    <div class="row"><span class="swatch"></span><small style="letter-spacing:.12em;text-transform:uppercase;color:#9aabbf;font-weight:700;font-size:.7rem">Módulo vivo</small>
+      <button class="x" id="close" aria-label="Cerrar">×</button></div>
+    <h2 id="p-title">—</h2>
+    <p class="sub" id="p-sub"></p>
+    <div class="stat"><div class="orb working" id="p-orb"><span></span></div><div><strong id="p-status">Working</strong><div id="p-note" style="color:#9aabbf;font-size:.85rem">Operativo</div></div></div>
+    <div id="p-metrics" style="display:grid;gap:7px"></div>
+    <div style="margin-top:auto;display:grid;gap:8px">
       <button class="btn primary" type="button">Entrar al módulo</button>
-      <button class="btn ghost" type="button" id="close2">Volver a la sala</button>
+      <button class="btn ghost" type="button" id="close2">Volver a la oficina</button>
     </div>
   </aside>
 
-<script>
-(function(){
-  const MODULES=[
-    {id:"scraping",name:"Exploración & Scraping",sub:"Web · Idealista · FB · IG · YouTube",color:"#9b5cff",status:"working",bubble:"2 nuevas propiedades en Ibiza",note:"Bot explorando portales ahora mismo",metrics:[["Nuevas hoy","2"],["Fuentes","5"],["Cola","OK"]]},
-    {id:"props",name:"Propiedades & Contenido",sub:"Fotos · Fichas · Web · RRSS",color:"#f5c518",status:"needs",bubble:"1 ficha lista para publicar",note:"Necesita tu revisión para publicar",metrics:[["Por publicar","1"],["Fotos nuevas","12"],["RRSS","Pendiente"]]},
-    {id:"leads",name:"Clientes & Leads",sub:"Compradores · Vendedores · Matching IA",color:"#2ee56a",status:"needs",bubble:"3 leads cualificados",note:"Matching listo · asignar agentes",metrics:[["Cualificados","3"],["Seguimiento","14"],["Match IA","8"]]},
-    {id:"finance",name:"Finanzas & Administración",sub:"Facturas · Contratos · Legal",color:"#3d8bff",status:"working",bubble:"2 facturas generadas",note:"Administración al día",metrics:[["Facturas","2"],["Contratos","1"],["Legal","OK"]]},
-    {id:"agenda",name:"Agenda & Operaciones",sub:"Visitas · Notaría · Contratos",color:"#ff4d5e",status:"working",bubble:"1 visita confirmada mañana",note:"Calendario sincronizado",metrics:[["Mañana","1"],["Semana","4"],["Notaría","0"]]},
-    {id:"ai",name:"IA & Automatización",sub:"Bots · Flujos · Integraciones",color:"#ff8a1f",status:"idle",bubble:"Workflow actualizado",note:"Sin alertas · en reposo",metrics:[["Bots activos","5"],["Flujos","11"],["Errores","0"]]}
-  ];
-  const STATUS={working:"Working",needs:"Needs you",idle:"Idle"};
-  const ORDER=["scraping","props","leads","finance","agenda","ai"];
-  const CX=100,CY=100,R_IN=34,R_OUT=96,START=-120,SWEEP=60,GAP=1.1;
-  const polar=(r,d)=>{const a=(d-90)*Math.PI/180;return[CX+r*Math.cos(a),CY+r*Math.sin(a)];};
-  const wedge=(a0,a1)=>{const L=(a1-a0)>180?1:0;const[x0,y0]=polar(R_OUT,a0),[x1,y1]=polar(R_OUT,a1),[x2,y2]=polar(R_IN,a1),[x3,y3]=polar(R_IN,a0);return`M ${x0} ${y0} A ${R_OUT} ${R_OUT} 0 ${L} 1 ${x1} ${y1} L ${x2} ${y2} A ${R_IN} ${R_IN} 0 ${L} 0 ${x3} ${y3} Z`;};
-  const icon=(id,x,y)=>{const s=8;return({
-    scraping:`M ${x-s} ${y} A ${s} ${s} 0 1 0 ${x+s} ${y} A ${s} ${s} 0 1 0 ${x-s} ${y} M ${x+5} ${y+5} L ${x+s+2} ${y+s+2}`,
-    props:`M ${x-s} ${y+2} L ${x} ${y-s} L ${x+s} ${y+2} V ${y+s} H ${x-s} Z`,
-    leads:`M ${x-4} ${y-4} A 3.2 3.2 0 1 0 ${x-4} ${y-3.99} M ${x+4} ${y-4} A 3.2 3.2 0 1 0 ${x+4} ${y-3.99} M ${x-s} ${y+s} A 6 5 0 0 1 ${x-1} ${y+s} M ${x+1} ${y+s} A 6 5 0 0 1 ${x+s} ${y+s}`,
-    finance:`M ${x-s} ${y+s} V ${y-2} H ${x-3} V ${y+s} Z M ${x-1} ${y+s} V ${y-s} H ${x+3} V ${y+s} Z M ${x+5} ${y+s} V ${y+1} H ${x+s} V ${y+s} Z`,
-    agenda:`M ${x-s} ${y-4} H ${x+s} V ${y+s} H ${x-s} Z M ${x-5} ${y-7} V ${y-1} M ${x+5} ${y-7} V ${y-1}`,
-    ai:`M ${x} ${y-s} V ${y-5} M ${x} ${y+5} V ${y+s} M ${x-s} ${y} H ${x-5} M ${x+5} ${y} H ${x+s} M ${x} ${y} A 4 4 0 1 0 ${x} ${y+0.01}`
-  })[id];};
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from "three";
 
-  const pizza=document.getElementById("pizza");
-  ORDER.forEach((id,i)=>{
-    const m=MODULES.find(x=>x.id===id);
-    const a0=START+i*SWEEP+GAP,a1=START+(i+1)*SWEEP-GAP,mid=(a0+a1)/2;
-    const[lx,ly]=polar((R_IN+R_OUT)/2,mid);
-    const g=document.createElementNS("http://www.w3.org/2000/svg","g");
-    g.setAttribute("class","sector"); g.dataset.id=id; g.setAttribute("tabindex","0"); g.setAttribute("role","button"); g.setAttribute("aria-label",m.name);
-    const face=document.createElementNS("http://www.w3.org/2000/svg","path");
-    face.setAttribute("d",wedge(a0,a1)); face.setAttribute("class","face"); face.setAttribute("fill",m.color); g.appendChild(face);
-    const glyph=document.createElementNS("http://www.w3.org/2000/svg","path");
-    glyph.setAttribute("d",icon(id,lx,ly)); glyph.setAttribute("class","glyph"); g.appendChild(glyph);
-    pizza.appendChild(g);
+/* Blueprint = user's Office Hub concept image.
+   Every visible piece becomes a real 3D object + animation. No Fable, no photo backdrop. */
+
+const MODULES = [
+  { id:"scraping", name:"Exploración & Scraping", sub:"Web · Idealista · FB · IG · YouTube",
+    color:0x9b5cff, status:"working", bubble:"2 nuevas propiedades en Ibiza",
+    note:"Bot explorando portales", metrics:[["Nuevas","2"],["Fuentes","5"],["Cola","OK"]],
+    angle: Math.PI * 0.75, bubbles:["2 nuevas propiedades en Ibiza","Escaneando Idealista…","1 anuncio nuevo en FB"] },
+  { id:"props", name:"Propiedades & Contenido", sub:"Fotos · Fichas · Web · RRSS",
+    color:0xf5c518, status:"needs", bubble:"1 ficha lista para publicar",
+    note:"Necesita tu revisión", metrics:[["Por publicar","1"],["Fotos","12"],["RRSS","Pendiente"]],
+    angle: Math.PI * 0.25, bubbles:["1 ficha lista para publicar","Subiendo 4 fotos…","PDF ES generado"] },
+  { id:"leads", name:"Clientes & Leads", sub:"Compradores · Vendedores · Matching IA",
+    color:0x2ee56a, status:"needs", bubble:"3 leads cualificados",
+    note:"Matching listo", metrics:[["Cualificados","3"],["Seguimiento","14"],["Match IA","8"]],
+    angle: -Math.PI * 0.05, bubbles:["3 leads cualificados","Match IA en curso…","1 lead respondió"] },
+  { id:"finance", name:"Finanzas & Administración", sub:"Facturas · Contratos · Legal",
+    color:0x3d8bff, status:"working", bubble:"2 facturas generadas",
+    note:"Admin al día", metrics:[["Facturas","2"],["Contratos","1"],["Legal","OK"]],
+    angle: -Math.PI * 0.45, bubbles:["2 facturas generadas","Contrato en revisión…","Pago registrado"] },
+  { id:"agenda", name:"Agenda & Operaciones", sub:"Visitas · Notaría · Contratos",
+    color:0xff4d5e, status:"working", bubble:"1 visita confirmada mañana",
+    note:"Calendario sync", metrics:[["Mañana","1"],["Semana","4"],["Notaría","0"]],
+    angle: -Math.PI * 0.85, bubbles:["1 visita confirmada mañana","Recordatorio enviado","Hueco a las 17:00"] },
+  { id:"ai", name:"IA & Automatización", sub:"Bots · Flujos · Integraciones",
+    color:0xff8a1f, status:"idle", bubble:"Workflow actualizado",
+    note:"En reposo", metrics:[["Bots","5"],["Flujos","11"],["Errores","0"]],
+    angle: Math.PI * 1.15, bubbles:["Workflow actualizado","Bot en espera…","Flujo WA sync"] }
+];
+const STATUS = { working:"Working", needs:"Needs you", idle:"Idle" };
+
+const canvas = document.getElementById("canvas");
+const labelsEl = document.getElementById("labels");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:false, powerPreference:"high-performance" });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = true;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a101c);
+scene.fog = new THREE.FogExp2(0x0a101c, 0.018);
+
+const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.1, 200);
+// Fixed isometric-like viewpoint matching the concept framing
+const camTarget = new THREE.Vector3(0, 0, 0);
+function placeCamera() {
+  const isPortrait = innerHeight > innerWidth;
+  const dist = isPortrait ? 22 : 18;
+  const height = isPortrait ? 16 : 14;
+  camera.position.set(-dist * 0.55, height, dist * 0.75);
+  camera.lookAt(camTarget);
+  camera.fov = isPortrait ? 48 : 42;
+  camera.updateProjectionMatrix();
+}
+placeCamera();
+
+// Lights — dark office + warm sunset rim
+scene.add(new THREE.AmbientLight(0x6a7a99, 0.55));
+const key = new THREE.DirectionalLight(0xffc08a, 1.15);
+key.position.set(8, 12, -6);
+key.castShadow = true;
+key.shadow.mapSize.set(1024, 1024);
+scene.add(key);
+const fill = new THREE.DirectionalLight(0x6aa0ff, 0.45);
+fill.position.set(-10, 8, 6);
+scene.add(fill);
+const hemi = new THREE.HemisphereLight(0xffb070, 0x1a2438, 0.35);
+scene.add(hemi);
+
+// —— Floor (dark polished tiles) ——
+const floorGeo = new THREE.PlaneGeometry(28, 28, 1, 1);
+const floorMat = new THREE.MeshStandardMaterial({
+  color: 0x121a2a, metalness: 0.35, roughness: 0.45
+});
+const floor = new THREE.Mesh(floorGeo, floorMat);
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor);
+
+// Tile grid lines
+const grid = new THREE.GridHelper(28, 14, 0x2a3548, 0x1a2436);
+grid.position.y = 0.01;
+scene.add(grid);
+
+// —— Sunset vista plane (through glass wall) ——
+function makeSunsetTexture() {
+  const c = document.createElement("canvas");
+  c.width = 1024; c.height = 512;
+  const g = c.getContext("2d");
+  const grd = g.createLinearGradient(0, 0, 0, 512);
+  grd.addColorStop(0, "#152038");
+  grd.addColorStop(0.35, "#4a2a4a");
+  grd.addColorStop(0.55, "#c45c3a");
+  grd.addColorStop(0.75, "#f0a060");
+  grd.addColorStop(1, "#ffe0b0");
+  g.fillStyle = grd; g.fillRect(0, 0, 1024, 512);
+  const sun = g.createRadialGradient(700, 340, 10, 700, 340, 120);
+  sun.addColorStop(0, "#fff2c8");
+  sun.addColorStop(0.4, "#ffb060");
+  sun.addColorStop(1, "rgba(255,160,80,0)");
+  g.fillStyle = sun; g.beginPath(); g.arc(700, 340, 120, 0, Math.PI * 2); g.fill();
+  g.fillStyle = "#1a2438";
+  g.beginPath(); g.moveTo(0, 420); g.quadraticCurveTo(200, 380, 400, 430); g.lineTo(400, 512); g.lineTo(0, 512); g.fill();
+  g.beginPath(); g.moveTo(450, 440); g.quadraticCurveTo(650, 390, 900, 450); g.lineTo(1024, 512); g.lineTo(450, 512); g.fill();
+  g.fillStyle = "rgba(30,50,90,0.55)"; g.fillRect(0, 450, 1024, 62);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+const vista = new THREE.Mesh(
+  new THREE.PlaneGeometry(36, 16),
+  new THREE.MeshBasicMaterial({ map: makeSunsetTexture() })
+);
+vista.position.set(0, 7, -13.5);
+scene.add(vista);
+
+// Glass wall frame
+const glass = new THREE.Mesh(
+  new THREE.PlaneGeometry(30, 10),
+  new THREE.MeshPhysicalMaterial({
+    color: 0x88aacc, transparent: true, opacity: 0.12,
+    metalness: 0.1, roughness: 0.05, transmission: 0.6, thickness: 0.2
+  })
+);
+glass.position.set(0, 5, -12.8);
+scene.add(glass);
+
+// Soft furniture blocks
+function sofa(x, z, rot = 0) {
+  const g = new THREE.Group();
+  const base = new THREE.Mesh(
+    new THREE.BoxGeometry(2.4, 0.55, 1.1),
+    new THREE.MeshStandardMaterial({ color: 0x2a364a, roughness: 0.7 })
+  );
+  base.position.y = 0.35; base.castShadow = true;
+  const back = new THREE.Mesh(
+    new THREE.BoxGeometry(2.4, 0.7, 0.28),
+    new THREE.MeshStandardMaterial({ color: 0x243044, roughness: 0.7 })
+  );
+  back.position.set(0, 0.75, -0.4);
+  g.add(base, back);
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  scene.add(g);
+}
+sofa(-3.5, -8.5, 0.2);
+sofa(7.5, 2.5, -1.1);
+
+function palm(x, z) {
+  const g = new THREE.Group();
+  const trunk = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.06, 0.1, 1.4, 8),
+    new THREE.MeshStandardMaterial({ color: 0x7a5530 })
+  );
+  trunk.position.y = 0.7;
+  const leafMat = new THREE.MeshStandardMaterial({ color: 0x2f8f5b, roughness: 0.8 });
+  for (let i = 0; i < 5; i++) {
+    const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.35, 8, 8), leafMat);
+    leaf.scale.set(1, 0.35, 0.6);
+    leaf.position.set(Math.cos(i * 1.3) * 0.25, 1.45, Math.sin(i * 1.3) * 0.25);
+    g.add(leaf);
+  }
+  g.add(trunk);
+  g.position.set(x, 0, z);
+  scene.add(g);
+}
+palm(5.5, -9);
+palm(-8, 4);
+
+// —— Pizza hub (6 3D wedges) ——
+const hubGroup = new THREE.Group();
+hubGroup.position.y = 0.08;
+scene.add(hubGroup);
+
+const crust = new THREE.Mesh(
+  new THREE.CylinderGeometry(3.35, 3.35, 0.45, 48),
+  new THREE.MeshStandardMaterial({ color: 0xb89562, roughness: 0.65, metalness: 0.15 })
+);
+crust.position.y = 0.22;
+crust.castShadow = true;
+hubGroup.add(crust);
+
+const hubGlow = new THREE.PointLight(0x3d8bff, 1.4, 10, 2);
+hubGlow.position.y = 0.3;
+hubGroup.add(hubGlow);
+
+const wedgeHits = [];
+function makeWedge(i, color) {
+  const shape = new THREE.Shape();
+  const r0 = 1.05, r1 = 3.05;
+  const a0 = -Math.PI / 2 + i * (Math.PI / 3) + 0.03;
+  const a1 = -Math.PI / 2 + (i + 1) * (Math.PI / 3) - 0.03;
+  shape.moveTo(Math.cos(a0) * r0, Math.sin(a0) * r0);
+  shape.lineTo(Math.cos(a0) * r1, Math.sin(a0) * r1);
+  const curve = [];
+  for (let t = 0; t <= 12; t++) {
+    const a = a0 + (a1 - a0) * (t / 12);
+    curve.push(new THREE.Vector2(Math.cos(a) * r1, Math.sin(a) * r1));
+  }
+  curve.forEach(p => shape.lineTo(p.x, p.y));
+  shape.lineTo(Math.cos(a1) * r0, Math.sin(a1) * r0);
+  for (let t = 12; t >= 0; t--) {
+    const a = a0 + (a1 - a0) * (t / 12);
+    shape.lineTo(Math.cos(a) * r0, Math.sin(a) * r0);
+  }
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: 0.38, bevelEnabled: false });
+  geo.rotateX(-Math.PI / 2);
+  const mat = new THREE.MeshStandardMaterial({
+    color, emissive: color, emissiveIntensity: 0.35, roughness: 0.4, metalness: 0.2
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.y = 0.28;
+  mesh.castShadow = true;
+  mesh.userData = { type: "sector", index: i, id: MODULES[i].id };
+  hubGroup.add(mesh);
+  wedgeHits.push(mesh);
+
+  // icon disc
+  const mid = (a0 + a1) / 2;
+  const ir = (r0 + r1) / 2;
+  const icon = new THREE.Mesh(
+    new THREE.CircleGeometry(0.28, 16),
+    new THREE.MeshBasicMaterial({ color: 0xffffff })
+  );
+  icon.rotation.x = -Math.PI / 2;
+  icon.position.set(Math.cos(mid) * ir, 0.7, Math.sin(mid) * ir);
+  hubGroup.add(icon);
+}
+
+MODULES.forEach((m, i) => makeWedge(i, m.color));
+
+const core = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.95, 0.95, 0.5, 32),
+  new THREE.MeshStandardMaterial({ color: 0xe8d2b0, roughness: 0.45 })
+);
+core.position.y = 0.55;
+hubGroup.add(core);
+
+// —— Stations + bots as 3D objects ——
+const stations = [];
+const pickables = [...wedgeHits];
+
+function makeBot(color) {
+  const g = new THREE.Group();
+  const head = new THREE.Mesh(
+    new THREE.BoxGeometry(0.42, 0.36, 0.36),
+    new THREE.MeshStandardMaterial({ color: 0xe8eef8, roughness: 0.35, emissive: color, emissiveIntensity: 0.15 })
+  );
+  head.position.y = 0.85;
+  const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), new THREE.MeshBasicMaterial({ color: 0x0b1220 }));
+  const eyeR = eyeL.clone();
+  eyeL.position.set(-0.1, 0.88, 0.18);
+  eyeR.position.set(0.1, 0.88, 0.18);
+  const body = new THREE.Mesh(
+    new THREE.BoxGeometry(0.32, 0.28, 0.26),
+    new THREE.MeshStandardMaterial({ color: 0xb7c2d4 })
+  );
+  body.position.y = 0.55;
+  const canL = new THREE.Mesh(
+    new THREE.TorusGeometry(0.14, 0.045, 8, 16),
+    new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.5 })
+  );
+  canL.position.set(0, 0.85, 0);
+  canL.rotation.y = Math.PI / 2;
+  g.add(head, body, eyeL, eyeR, canL);
+  g.userData.phase = Math.random() * Math.PI * 2;
+  return g;
+}
+
+MODULES.forEach((mod, i) => {
+  const g = new THREE.Group();
+  const R = 7.2;
+  const x = Math.cos(mod.angle) * R;
+  const z = Math.sin(mod.angle) * R;
+  g.position.set(x, 0, z);
+  g.lookAt(0, 0, 0);
+
+  // neon pad
+  const pad = new THREE.Mesh(
+    new THREE.BoxGeometry(2.6, 0.06, 2.1),
+    new THREE.MeshStandardMaterial({
+      color: mod.color, emissive: mod.color, emissiveIntensity: 0.55, transparent: true, opacity: 0.35
+    })
+  );
+  pad.position.y = 0.04;
+  pad.receiveShadow = true;
+  const rim = new THREE.Mesh(
+    new THREE.BoxGeometry(2.7, 0.08, 2.2),
+    new THREE.MeshStandardMaterial({ color: mod.color, emissive: mod.color, emissiveIntensity: 0.9 })
+  );
+  rim.position.y = 0.03;
+  rim.scale.set(1.02, 0.5, 1.02);
+
+  const desk = new THREE.Mesh(
+    new THREE.BoxGeometry(1.3, 0.35, 0.7),
+    new THREE.MeshStandardMaterial({ color: 0x3a4558, roughness: 0.55 })
+  );
+  desk.position.set(0, 0.45, 0.15);
+  desk.castShadow = true;
+
+  const monitor = new THREE.Mesh(
+    new THREE.BoxGeometry(0.7, 0.45, 0.06),
+    new THREE.MeshStandardMaterial({ color: 0x0b1220, emissive: mod.color, emissiveIntensity: 0.4 })
+  );
+  monitor.position.set(0, 0.9, -0.05);
+
+  const bot = makeBot(mod.color);
+  bot.position.set(0.15, 0, 0.45);
+
+  const light = new THREE.PointLight(mod.color, 0.8, 4.5, 2);
+  light.position.set(0, 1.2, 0);
+
+  g.add(rim, pad, desk, monitor, bot, light);
+  g.userData = { type: "station", id: mod.id, bot, pad, monitor, light, mod };
+  scene.add(g);
+  stations.push(g);
+  pickables.push(pad, desk, monitor, bot.children[0], bot.children[1]);
+
+  // HTML labels projected from 3D
+  const tag = document.createElement("div");
+  tag.className = "tag";
+  tag.innerHTML = `<strong>${mod.name}</strong><em>${mod.sub}</em>`;
+  tag.dataset.id = mod.id;
+  labelsEl.appendChild(tag);
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.textContent = mod.bubble;
+  bubble.dataset.id = mod.id;
+  labelsEl.appendChild(bubble);
+
+  g.userData.tag = tag;
+  g.userData.bubble = bubble;
+  g.userData.bubbleIdx = 0;
+});
+
+// mark wedges pickable with module ids already set
+wedgeHits.forEach((w, i) => { w.userData.id = MODULES[i].id; });
+
+// —— Interaction ——
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+let activeId = null;
+
+function projectLabel(obj3d, el, ox = 0, oy = 1.8, oz = 0) {
+  const v = new THREE.Vector3(ox, oy, oz);
+  obj3d.localToWorld(v);
+  v.project(camera);
+  const x = (v.x * 0.5 + 0.5) * innerWidth;
+  const y = (-v.y * 0.5 + 0.5) * innerHeight;
+  if (v.z > 1) { el.style.display = "none"; return; }
+  el.style.display = "block";
+  el.style.left = x + "px";
+  el.style.top = y + "px";
+}
+
+function openPanel(mod) {
+  activeId = mod.id;
+  const panel = document.getElementById("panel");
+  panel.style.setProperty("--accent", "#" + mod.color.toString(16).padStart(6, "0"));
+  document.getElementById("p-title").textContent = mod.name;
+  document.getElementById("p-sub").textContent = mod.sub + " — " + mod.bubble;
+  document.getElementById("p-orb").className = "orb " + mod.status;
+  document.getElementById("p-status").textContent = STATUS[mod.status];
+  document.getElementById("p-note").textContent = mod.note;
+  document.getElementById("p-metrics").innerHTML = mod.metrics.map(([k, v]) =>
+    `<div class="metric"><span>${k}</span><b>${v}</b></div>`
+  ).join("");
+  panel.classList.add("open");
+  document.getElementById("veil").classList.add("show");
+  panel.setAttribute("aria-hidden", "false");
+}
+function closePanel() {
+  activeId = null;
+  document.getElementById("panel").classList.remove("open");
+  document.getElementById("veil").classList.remove("show");
+}
+
+function pick(clientX, clientY) {
+  pointer.x = (clientX / innerWidth) * 2 - 1;
+  pointer.y = -(clientY / innerHeight) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(pickables, true);
+  if (!hits.length) return;
+  let obj = hits[0].object;
+  while (obj && !obj.userData?.id && obj.parent) obj = obj.parent;
+  const id = obj?.userData?.id || hits[0].object.userData.id;
+  const mod = MODULES.find(m => m.id === id);
+  if (mod) openPanel(mod);
+}
+
+canvas.addEventListener("pointerdown", (e) => pick(e.clientX, e.clientY));
+document.getElementById("close").onclick = closePanel;
+document.getElementById("close2").onclick = closePanel;
+document.getElementById("veil").onclick = closePanel;
+
+// —— Live loop ——
+const clock = new THREE.Clock();
+function animate() {
+  const t = clock.getElapsedTime();
+  requestAnimationFrame(animate);
+
+  hubGroup.rotation.y = Math.sin(t * 0.15) * 0.03;
+  hubGlow.intensity = 1.2 + Math.sin(t * 2) * 0.25;
+
+  stations.forEach((s, i) => {
+    const { bot, pad, monitor, light, tag, bubble } = s.userData;
+    const phase = bot.userData.phase;
+    bot.position.y = Math.sin(t * 2.2 + phase) * 0.04;
+    bot.rotation.y = Math.sin(t * 1.4 + phase) * 0.15;
+    pad.material.emissiveIntensity = 0.4 + Math.sin(t * 2 + i) * 0.2;
+    monitor.material.emissiveIntensity = 0.3 + Math.sin(t * 5 + phase) * 0.2;
+    light.intensity = 0.6 + Math.sin(t * 2 + i) * 0.25;
+    projectLabel(s, tag, 0, 2.35, 0);
+    projectLabel(s, bubble, 0.9, 1.9, 0.3);
   });
 
-  const holo=document.getElementById("holo"), veil=document.getElementById("veil");
-  let active=null;
-  const byId=id=>MODULES.find(m=>m.id===id);
-  const setHover=(id,on)=>document.querySelectorAll(`[data-id="${id}"]`).forEach(el=>el.classList.toggle("is-hover",on));
-  const clearHover=()=>document.querySelectorAll(".station,.sector").forEach(el=>el.classList.remove("is-hover"));
+  // subtle camera breathing — scene feels alive without breaking framing
+  const isPortrait = innerHeight > innerWidth;
+  const dist = isPortrait ? 22 : 18;
+  const height = isPortrait ? 16 : 14;
+  camera.position.set(
+    -dist * 0.55 + Math.sin(t * 0.25) * 0.12,
+    height + Math.sin(t * 0.3) * 0.08,
+    dist * 0.75 + Math.cos(t * 0.22) * 0.1
+  );
+  camera.lookAt(camTarget);
 
-  function openMod(m){
-    active=m.id;
-    document.querySelectorAll(".station,.sector").forEach(el=>{
-      el.classList.toggle("is-active",el.dataset.id===m.id);
-      el.classList.toggle("is-hover",el.dataset.id===m.id);
-    });
-    holo.style.setProperty("--accent",m.color);
-    document.getElementById("h-title").textContent=m.name;
-    document.getElementById("h-sub").textContent=m.sub+" — "+m.bubble;
-    document.getElementById("h-orb").className="orb "+m.status;
-    document.getElementById("h-status").textContent=STATUS[m.status];
-    document.getElementById("h-note").textContent=m.note;
-    document.getElementById("h-metrics").innerHTML=m.metrics.map(([k,v])=>`<div class="metric"><span>${k}</span><b>${v}</b></div>`).join("");
-    holo.classList.add("open"); holo.setAttribute("aria-hidden","false"); veil.classList.add("show");
-  }
-  function closeMod(){
-    active=null; holo.classList.remove("open"); holo.setAttribute("aria-hidden","true"); veil.classList.remove("show");
-    document.querySelectorAll(".station,.sector").forEach(el=>el.classList.remove("is-active","is-hover"));
-  }
-  function bind(el){
-    el.addEventListener("pointerenter",()=>{ if(active) return; clearHover(); setHover(el.dataset.id,true); });
-    el.addEventListener("pointerleave",()=>{ if(active) return; clearHover(); });
-    el.addEventListener("click",()=>{ const m=byId(el.dataset.id); if(m) openMod(m); });
-    el.addEventListener("keydown",e=>{ if(e.key!=="Enter"&&e.key!==" ") return; e.preventDefault(); const m=byId(el.dataset.id); if(m) openMod(m); });
-  }
-  document.querySelectorAll(".station,.sector").forEach(bind);
-  document.getElementById("close").onclick=closeMod;
-  document.getElementById("close2").onclick=closeMod;
-  veil.onclick=closeMod;
-  window.addEventListener("keydown",e=>{ if(e.key==="Escape") closeMod(); });
-  document.querySelectorAll(".bot").forEach((b,i)=>b.style.animationDelay=(i*.35)+"s");
-  document.querySelectorAll(".pad").forEach((p,i)=>p.style.animationDelay=(i*.4)+"s");
-  document.querySelectorAll(".bubble").forEach((b,i)=>b.style.animationDelay=(i*.7)+"s");
+  renderer.render(scene, camera);
+}
 
-  // Live office: bots go busy, bubbles refresh with operational updates (style from user's image only)
-  const LIVE = {
-    scraping: ["2 nuevas propiedades en Ibiza","Escaneando Idealista…","1 anuncio nuevo en FB"],
-    props: ["1 ficha lista para publicar","Subiendo 4 fotos…","PDF ES generado"],
-    leads: ["3 leads cualificados","Match IA en curso…","1 lead respondió"],
-    finance: ["2 facturas generadas","Contrato en revisión…","Pago registrado"],
-    agenda: ["1 visita confirmada mañana","Recordatorio enviado","Hueco libre a las 17:00"],
-    ai: ["Workflow actualizado","Bot en espera…","Flujo WA sincronizado"]
-  };
-  const liveCount = Object.fromEntries(ORDER.map(id => [id, 0]));
-  const livePill = document.querySelector(".live b");
+window.addEventListener("resize", () => {
+  camera.aspect = innerWidth / innerHeight;
+  placeCamera();
+  renderer.setSize(innerWidth, innerHeight);
+});
 
-  function pulseBot(id) {
-    const bot = document.querySelector(`.station[data-id="${id}"] .bot`);
-    if (!bot) return;
-    bot.classList.add("busy");
-    setTimeout(() => bot.classList.remove("busy"), 1600 + Math.random() * 900);
-  }
-  function refreshBubble(id) {
-    const el = document.querySelector(`.station[data-id="${id}"] .bubble`);
-    const list = LIVE[id];
-    if (!el || !list) return;
-    liveCount[id] = (liveCount[id] + 1) % list.length;
-    el.classList.remove("flash");
-    void el.offsetWidth;
-    el.textContent = list[liveCount[id]];
-    el.classList.add("flash");
-    const m = byId(id);
-    if (m) m.bubble = list[liveCount[id]];
-  }
-  function tickOffice() {
-    const id = ORDER[Math.floor(Math.random() * ORDER.length)];
-    pulseBot(id);
-    refreshBubble(id);
-    const busy = 4 + Math.floor(Math.random() * 2);
-    if (livePill) livePill.innerHTML = `<i></i>${busy} bots activos`;
-  }
-  setTimeout(tickOffice, 1800);
-  setInterval(tickOffice, 4200);
-})();
+// Operational bubble refresh — office feels at work
+setInterval(() => {
+  const s = stations[Math.floor(Math.random() * stations.length)];
+  const mod = s.userData.mod;
+  s.userData.bubbleIdx = (s.userData.bubbleIdx + 1) % mod.bubbles.length;
+  const text = mod.bubbles[s.userData.bubbleIdx];
+  s.userData.bubble.textContent = text;
+  mod.bubble = text;
+  const busy = 4 + Math.floor(Math.random() * 2);
+  document.getElementById("liveCount").textContent = busy + " bots activos";
+  // busy nod
+  s.userData.bot.scale.set(1.05, 1.05, 1.05);
+  setTimeout(() => s.userData.bot.scale.set(1, 1, 1), 400);
+}, 3800);
+
+animate();
 </script>
 </body>
 </html>
