@@ -57,28 +57,26 @@
   .toast{position:fixed;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);opacity:0;z-index:6;padding:8px 14px;border-radius:999px;font-size:12px;color:#e2e8f0;background:rgba(10,13,20,.8);border:1px solid rgba(255,255,255,.1);pointer-events:none;transition:all .4s}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-  /* ---- detail panel ---- */
-  .veil{position:fixed;inset:0;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .25s;z-index:20}
-  .veil.show{opacity:1;pointer-events:auto}
-  .panel{position:fixed;right:0;top:0;height:100%;width:min(360px,100vw);background:linear-gradient(160deg,rgba(18,24,38,.97),rgba(8,11,19,.98));border-left:1px solid rgba(255,255,255,.1);transform:translateX(105%);transition:transform .4s cubic-bezier(.2,.85,.2,1);z-index:30;padding:18px;display:flex;flex-direction:column;gap:11px;box-sizing:border-box}
-  .panel.open{transform:translateX(0)}
-  .panel h2{margin:0;font-family:"Outfit",sans-serif;font-size:1.35rem;display:flex;align-items:center;gap:10px}
-  .panel h2 .ico{width:34px;height:34px;border-radius:50%;background:var(--accent);display:grid;place-items:center;flex:0 0 34px}
-  .panel h2 .ico svg{width:18px;height:18px;fill:#fff}
-  .panel .sub{margin:0;color:#9aabbf;font-size:.9rem;line-height:1.4}
-  .stat{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;padding:12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
-  .orb{width:42px;height:42px;border-radius:50%;display:grid;place-items:center}
-  .orb span{width:10px;height:10px;border-radius:50%;background:currentColor;box-shadow:0 0 12px currentColor}
-  .orb.working{color:#2ee56a;background:rgba(46,229,106,.12)}
-  .orb.needs{color:#ff4d5e;background:rgba(255,77,94,.12)}
-  .orb.idle{color:#94a3b8;background:rgba(148,163,184,.12)}
-  .metric{display:flex;justify-content:space-between;padding:10px 12px;border-radius:11px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);font-size:.88rem}
-  .metric span{color:#9aabbf}
-  .btn{border:0;border-radius:12px;padding:12px;font:inherit;font-weight:650;cursor:pointer}
-  .btn.primary{background:linear-gradient(135deg,var(--accent,#8b5cf6),#1e3a5f);color:#fff}
-  .btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.14)}
-  .x{margin-left:auto;width:36px;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#fff;font-size:1.2rem;cursor:pointer}
-  .row{display:flex;align-items:center;gap:8px}
+  /* ---- first-person (bot's desk) mode ---- */
+  .bar{position:fixed;left:0;right:0;height:0;background:#000;z-index:4;transition:height .9s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+  .bar.top{top:0}.bar.bottom{bottom:0}
+  body.focus .bar{height:7vh}
+  #labels{transition:opacity .35s}
+  body.focus #labels{opacity:0}
+  body.focus .vignette{background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 45%,rgba(0,0,0,.6) 100%)}
+  .focusbar{position:fixed;left:50%;bottom:calc(7vh + 14px);transform:translate(-50%,30px);opacity:0;pointer-events:none;z-index:6;display:flex;align-items:center;gap:12px;padding:8px 10px 8px 8px;border-radius:999px;background:rgba(12,15,24,.82);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(10px);box-shadow:0 20px 50px rgba(0,0,0,.5);transition:all .5s cubic-bezier(.2,.8,.2,1) .4s}
+  body.focus .focusbar{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+  .focusbar .ico{width:34px;height:34px;border-radius:50%;background:var(--c);display:grid;place-items:center;flex:0 0 34px;box-shadow:0 0 16px color-mix(in srgb,var(--c) 70%,transparent)}
+  .focusbar .ico svg{width:18px;height:18px;fill:#fff}
+  .focusbar strong{display:block;font-family:"Outfit",sans-serif;font-size:14px;font-weight:700;line-height:1.1}
+  .focusbar em{display:block;font-style:normal;font-size:11px;color:#b8c4d6;margin-top:2px;white-space:nowrap}
+  .focusbar .st{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.06)}
+  .focusbar .st i{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
+  .focusbar .st.working{color:#2ee56a}.focusbar .st.needs{color:#ff4d5e}.focusbar .st.idle{color:#94a3b8}
+  .focusbar button{border:0;border-radius:999px;padding:9px 14px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;background:#fff;color:#0b1220}
+  .focusbar button:hover{background:#e6ecf5}
+  .hint{position:fixed;top:calc(7vh + 14px);left:50%;transform:translateX(-50%);z-index:6;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#cbd5e1;opacity:0;transition:opacity .5s .6s;pointer-events:none}
+  body.focus .hint{opacity:.8}
 
   @media (max-width:820px){
     .side button{width:auto}.side button span.t{display:none}.side{left:8px;padding:6px}
@@ -86,8 +84,7 @@
     .pill .avs{display:none}
   }
   @media (max-width:720px) and (orientation:portrait){
-    .panel{top:auto;bottom:0;height:auto;max-height:76dvh;width:100vw;border-left:0;border-radius:18px 18px 0 0;transform:translateY(110%)}
-    .panel.open{transform:translateY(0)}
+    .focusbar{bottom:calc(7vh + 70px);max-width:94vw}.focusbar em{display:none}
     .side{top:auto;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);flex-direction:row;border-radius:999px}
     .side .n{position:absolute;margin:0;top:-4px;right:-4px}
     .side button{position:relative;padding:6px}
@@ -114,19 +111,14 @@
 <nav class="side" id="side"></nav>
 <div class="toast" id="toast"></div>
 
-<div class="veil" id="veil"></div>
-<aside class="panel" id="panel" aria-hidden="true">
-  <div class="row"><small style="letter-spacing:.12em;text-transform:uppercase;color:#9aabbf;font-weight:700;font-size:.7rem">Módulo en vivo</small>
-    <button class="x" id="close" aria-label="Cerrar">×</button></div>
-  <h2><span class="ico" id="p-ico"></span><span id="p-title">—</span></h2>
-  <p class="sub" id="p-sub"></p>
-  <div class="stat"><div class="orb working" id="p-orb"><span></span></div><div><strong id="p-status">Working</strong><div id="p-note" style="color:#9aabbf;font-size:.85rem">Operativo</div></div></div>
-  <div id="p-metrics" style="display:grid;gap:7px"></div>
-  <div style="margin-top:auto;display:grid;gap:8px">
-    <button class="btn primary" type="button" id="enter">Entrar al módulo</button>
-    <button class="btn ghost" type="button" id="close2">Volver a la oficina</button>
-  </div>
-</aside>
+<div class="bar top"></div><div class="bar bottom"></div>
+<div class="hint">Puesto del bot · vista en primera persona</div>
+<div class="focusbar" id="focusbar">
+  <span class="ico" id="f-ico"></span>
+  <div><strong id="f-title">—</strong><em id="f-sub"></em></div>
+  <span class="st working" id="f-status"><i></i><span>Working</span></span>
+  <button type="button" id="f-back">Volver a la oficina</button>
+</div>
 
 <script type="importmap">
 {"imports":{
@@ -214,7 +206,7 @@ const MODULES = [
     tile:[338,437], face:-1, tag:[-147,-79], bub:[75,-40], bubIcon:"calendar",
     bubbles:["1 visita confirmada mañana","Recordatorio enviado","Hueco a las 17:00"] },
   { id:"ai", name:"IA & Automatización", sub:"Bots · Flujos · Integraciones", icon:"spark", wedge:"gear",
-    color:0xff8a1f, status:"idle", note:"En reposo",
+    color:0x14d8c8, status:"idle", note:"En reposo",
     metrics:[["Bots","5"],["Flujos","11"],["Errores","0"]],
     tile:[248,290], face:1, tag:[-82,-83], bub:[45,-44], bubIcon:"check",
     bubbles:["Workflow actualizado","Bot en espera…","Flujo WA sincronizado"] }
@@ -238,7 +230,8 @@ scene.background = new THREE.Color(0x05070d);
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 
-const camera = new THREE.PerspectiveCamera(10, innerWidth / innerHeight, 1, 400);
+const camera = new THREE.PerspectiveCamera(10, innerWidth / innerHeight, 0.1, 400);
+let officeFov = 10;
 const camTarget = new THREE.Vector3(0, 0, 0);
 const camBase = new THREE.Vector3();
 const portraitTarget = new THREE.Vector3(0, 0, 0.8);
@@ -276,14 +269,14 @@ function placeCamera() {
   const aspect = innerWidth / innerHeight;
   portrait = aspect < 0.9;
   if (!portrait) {
-    camera.fov = fovFor(aspect, VIS_HALF_W, CAM_DIST);
+    officeFov = fovFor(aspect, VIS_HALF_W, CAM_DIST);
     camBase.set(camTarget.x, camTarget.y + Math.sin(PITCH) * CAM_DIST, camTarget.z + Math.cos(PITCH) * CAM_DIST);
   } else {
     const pitch = THREE.MathUtils.degToRad(50);
-    camera.fov = fovFor(aspect, 10.2, CAM_DIST);
+    officeFov = fovFor(aspect, 10.2, CAM_DIST);
     camBase.set(-Math.cos(pitch) * CAM_DIST, Math.sin(pitch) * CAM_DIST, 0.8);
   }
-  camera.position.copy(camBase);
+  camera.fov = officeFov; camera.position.copy(camBase);
   camera.aspect = aspect;
   camera.lookAt(portrait ? portraitTarget : camTarget);
   camera.updateProjectionMatrix();
@@ -499,14 +492,19 @@ plantAt(486, 452, 0.9); plantAt(955, 140, 0.8); plantAt(1002, 336, 0.9); plantAt
 const hub = new THREE.Group(); hub.scale.setScalar(HUB_SCALE); scene.add(hub);
 const plate = new THREE.Mesh(new THREE.CylinderGeometry(3.5, 3.6, 0.1, 72), new THREE.MeshStandardMaterial({ color:0x0b1020, roughness:0.35, metalness:0.5 }));
 plate.position.y = 0.05; plate.receiveShadow = true; hub.add(plate);
-const ring = new THREE.Mesh(new THREE.TorusGeometry(3.52, 0.05, 10, 120), new THREE.MeshBasicMaterial({ color:new THREE.Color(0x55a8ff).multiplyScalar(2.4) }));
-ring.rotation.x = Math.PI/2; ring.position.y = 0.1; hub.add(ring);
-const ringGlow = glowSprite(0x3b8cff, 11, 0.45); ringGlow.position.y = 0.02; hub.add(ringGlow);
-const hubLight = new THREE.PointLight(0x4a90ff, 1.6, 10, 1.8); hubLight.position.y = 0.6; hub.add(hubLight);
+// neon rim: one arc per module, aligned with its slice, in the module colour
+const RING_R = 3.52, RING_GAP = 0.06;
+const ringArcs = MODULES.map((m, i) => {
+  const arc = new THREE.Mesh(new THREE.TorusGeometry(RING_R, 0.05, 10, 28, Math.PI/3 - RING_GAP),
+    new THREE.MeshBasicMaterial({ color:new THREE.Color(m.color).multiplyScalar(2.2) }));
+  arc.rotation.x = Math.PI/2; arc.rotation.z = THREE.MathUtils.degToRad(-120 + 60*i) - Math.PI/6 + RING_GAP/2; arc.position.y = 0.1;
+  arc.userData = { id:m.id, base:new THREE.Color(m.color) };
+  hub.add(arc); return arc;
+});
+const ringGlow = glowSprite(0x8fb8ff, 11, 0.28); ringGlow.position.y = 0.02; hub.add(ringGlow);
+const hubLight = new THREE.PointLight(0x7aa6ff, 1.4, 10, 1.8); hubLight.position.y = 0.6; hub.add(hubLight);
 
 const crustMat = new THREE.MeshPhysicalMaterial({ color:0xdc9a50, roughness:0.5, metalness:0.0, clearcoat:0.25, envMapIntensity:0.4 });
-const seedMat = new THREE.MeshStandardMaterial({ color:0xfff1c8, roughness:0.5 });
-for (let k=0;k<90;k++){ const a = Math.random()*Math.PI*2, r = 2.78 + (Math.random()-0.5)*0.4; const sd = new THREE.Mesh(new THREE.SphereGeometry(0.03, 6, 6), seedMat); sd.scale.set(1.6,0.6,1); sd.position.set(Math.cos(a)*r, 0.71 - Math.abs(r-2.78)*0.6, Math.sin(a)*r); sd.rotation.y = -a; hub.add(sd); }
 const crust = new THREE.Mesh(new THREE.TorusGeometry(2.78, 0.3, 16, 96), crustMat); crust.rotation.x = Math.PI/2; crust.position.y = 0.42; crust.castShadow = true; hub.add(crust);
 const base = new THREE.Mesh(new THREE.CylinderGeometry(2.95, 3.0, 0.3, 72), new THREE.MeshStandardMaterial({ color:0xb8743a, roughness:0.6 })); base.position.y = 0.25; base.castShadow = true; hub.add(base);
 const blueUnder = new THREE.PointLight(0x3b82f6, 0.9, 6, 2); blueUnder.position.y = 0.15; hub.add(blueUnder);
@@ -531,10 +529,6 @@ MODULES.forEach((m, i) => {
   mesh.userData = { id:m.id, type:"sector" };
   const icon = new THREE.Mesh(new THREE.PlaneGeometry(1.05, 1.05), new THREE.MeshBasicMaterial({ map:iconTexture(m.wedge), transparent:true, depthWrite:false }));
   icon.rotation.x = -Math.PI/2; icon.rotation.z = -g.rotation.y; icon.position.set(1.62, 0.78, 0);
-  // cheese bubbles on the slice
-  const bubMat = new THREE.MeshStandardMaterial({ color:new THREE.Color(m.color).lerp(new THREE.Color(0xffffff), 0.22), roughness:0.35 });
-  for (let k=0;k<7;k++){ const r = 0.7 + Math.random()*1.8, a = (Math.random()-0.5)*0.9; const bb = new THREE.Mesh(new THREE.SphereGeometry(0.03+Math.random()*0.03, 8, 8), bubMat);
-    bb.position.set(Math.cos(a)*r, 0.76, Math.sin(a)*r); if (Math.hypot(bb.position.x-1.62, bb.position.z) > 0.6) mesh.add(bb); }
   g.add(mesh, icon); g.userData = { mesh, mat, icon, baseY:0.4, id:m.id };
   hub.add(g); wedges.push(g);
 });
@@ -562,7 +556,7 @@ function botMaterials(color) {
     BotShell: new THREE.MeshPhysicalMaterial({ color:deep, emissive:c, emissiveIntensity:0.1, roughness:0.42, metalness:0.0, clearcoat:0.45, clearcoatRoughness:0.3, envMapIntensity:0.3 }),
     BotCan:   new THREE.MeshPhysicalMaterial({ color:deep.clone().multiplyScalar(0.8), emissive:c, emissiveIntensity:0.08, roughness:0.4, clearcoat:0.4, clearcoatRoughness:0.3, envMapIntensity:0.3 }),
     BotEyes:  new THREE.MeshBasicMaterial({ color:new THREE.Color(0xffffff).multiplyScalar(1.25) }),
-    BotGlow:  new THREE.MeshBasicMaterial({ color:c.clone().lerp(new THREE.Color(0xffffff), 0.45).multiplyScalar(1.9) }),
+    BotGlow:  new THREE.MeshBasicMaterial({ color:c.clone().lerp(new THREE.Color(0xffffff), 0.45).multiplyScalar(1.35) }),
     BotDark:  new THREE.MeshStandardMaterial({ color:0x120a28, roughness:0.4 }),
   };
 }
@@ -652,24 +646,26 @@ function makeStation(mod) {
   const tex = screenTexture(mod, mod.id === "props" ? 1 : 0);
   const monitors = [];
   // big curved main monitor
-  const curve = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.1, 0.5, 28, 1, true, -0.44, 0.88),
-    new THREE.MeshStandardMaterial({ map:tex, emissive:0xffffff, emissiveMap:tex, emissiveIntensity:1.05, roughness:0.35, side:THREE.BackSide }));
-  curve.position.set(0, 1.12, 1.12); curve.rotation.y = Math.PI;
-  const curveBack = new THREE.Mesh(new THREE.CylinderGeometry(1.125, 1.125, 0.54, 28, 1, true, -0.45, 0.9), visorMat); curveBack.position.copy(curve.position); curveBack.rotation.y = Math.PI; curveBack.castShadow = true;
-  const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.05, 0.3, 10), visorMat); stand.position.set(0, 0.88, 0.1);
-  const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.22, 0.03, 20), visorMat); foot.position.set(0, 0.77, 0.1);
+  // big curved main monitor: the panel faces the bot (-z); the office camera sees its dark back, like the concept
+  const SCREEN_Z = 0.42, SCREEN_R = 1.3;
+  const curve = new THREE.Mesh(new THREE.CylinderGeometry(SCREEN_R, SCREEN_R, 0.65, 36, 1, true, -0.52, 1.04),
+    new THREE.MeshStandardMaterial({ map:tex, emissive:0xffffff, emissiveMap:tex, emissiveIntensity:1.0, roughness:0.35, side:THREE.FrontSide }));
+  curve.position.set(0, 1.12, SCREEN_Z + SCREEN_R); curve.rotation.y = Math.PI;
+  const curveBack = new THREE.Mesh(new THREE.CylinderGeometry(SCREEN_R+0.025, SCREEN_R+0.025, 0.69, 36, 1, true, -0.53, 1.06), new THREE.MeshPhysicalMaterial({ color:0x0b0f1a, roughness:0.35, metalness:0.2, clearcoat:0.6, side:THREE.BackSide })); curveBack.position.copy(curve.position); curveBack.rotation.y = Math.PI; curveBack.castShadow = true;
+  const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.05, 0.3, 10), visorMat); stand.position.set(0, 0.88, SCREEN_Z + 0.08);
+  const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.22, 0.03, 20), visorMat); foot.position.set(0, 0.77, SCREEN_Z + 0.08);
   monitors.push(curve);
   // second, smaller monitor on the return
   const frame2 = new THREE.Mesh(new RoundedBoxGeometry(0.62, 0.42, 0.04, 2, 0.015), visorMat); frame2.position.set(side*0.95, 1.08, -0.3); frame2.rotation.y = -side*1.1; frame2.castShadow = true;
   const scr2 = new THREE.Mesh(new THREE.PlaneGeometry(0.56, 0.36), new THREE.MeshStandardMaterial({ map:tex, emissive:0xffffff, emissiveMap:tex, emissiveIntensity:1.0, roughness:0.4 })); scr2.position.z = 0.025; frame2.add(scr2);
   const stand2 = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.04, 0.22, 8), visorMat); stand2.position.set(side*0.95, 0.86, -0.3);
   monitors.push(scr2);
-  const kb = new THREE.Mesh(new RoundedBoxGeometry(0.62, 0.03, 0.2, 2, 0.01), chairMat); kb.position.set(0, 0.78, 0.4);
-  const kbGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.58, 0.16), new THREE.MeshBasicMaterial({ color:new THREE.Color(mod.color).multiplyScalar(1.6), transparent:true, opacity:0.6 })); kbGlow.rotation.x = -Math.PI/2; kbGlow.position.set(0, 0.8, 0.4);
+  const kb = new THREE.Mesh(new RoundedBoxGeometry(0.62, 0.03, 0.2, 2, 0.01), chairMat); kb.position.set(0, 0.78, 0.12);
+  const kbGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.58, 0.16), new THREE.MeshBasicMaterial({ color:new THREE.Color(mod.color).multiplyScalar(1.6), transparent:true, opacity:0.6 })); kbGlow.rotation.x = -Math.PI/2; kbGlow.position.set(0, 0.8, 0.12);
   const mug = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.05, 0.11, 14), whiteMat); mug.position.set(-side*0.7, 0.83, 0.5);
   const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 10), new THREE.MeshBasicMaterial({ color:0xffe2b0 })); lamp.position.set(side*1.05, 1.0, -0.65);
   const lampArm = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.3, 6), visorMat); lampArm.position.set(side*1.05, 0.9, -0.65);
-  const screenLight = new THREE.PointLight(mod.color, 0.3, 2.4, 2); screenLight.position.set(0, 1.2, -0.2);
+  const screenLight = new THREE.PointLight(0xdbe8ff, 0.45, 2.6, 2); screenLight.position.set(0, 1.3, -0.1);
 
   // sculpted office chair (GLB holder, filled on load)
   const chair = new THREE.Group(); chair.position.set(0, 0, -0.62); chair.add(contactShadow(1.6, 0.5));
@@ -677,7 +673,7 @@ function makeStation(mod) {
   const bot = makeBot(mod.color); bot.position.set(0, BOT_SEAT_Y, -0.56); bot.scale.setScalar(BOT_SCALE);
   g.add(pad, deskShadow, desk, deskRet, skirt, legA, legB, legC, curve, curveBack, stand, foot, frame2, stand2, kb, kbGlow, mug, lamp, lampArm, screenLight, chair, bot);
   g.traverse(o => { if (o.isMesh) o.userData.id = mod.id; });
-  g.userData = { mod, bot, chair, pad, monitors, id:mod.id };
+  g.userData = { mod, bot, chair, pad, monitors, screen:curve, id:mod.id };
   scene.add(g);
   return g;
 }
@@ -739,8 +735,9 @@ const pulses = [];
 const pulseGeo = new THREE.SphereGeometry(0.07, 10, 10);
 function spawnPulse(st) {
   const from = new THREE.Vector3(0, 1.3, 0); st.localToWorld(from);
-  const to = new THREE.Vector3(0, 1.0, 0);
-  const mid = from.clone().lerp(to, 0.5); mid.y += 2.2;
+  const dir = from.clone().setY(0).normalize();
+  const to = dir.multiplyScalar(RING_R * HUB_SCALE); to.y = 0.16;
+  const mid = from.clone().lerp(to, 0.5); mid.y += 1.8;
   const curve = new THREE.QuadraticBezierCurve3(from, mid, to);
   const m = new THREE.Mesh(pulseGeo, new THREE.MeshBasicMaterial({ color:st.userData.mod.color }));
   const trail = new THREE.Mesh(new THREE.PlaneGeometry(0.5,0.5), new THREE.MeshBasicMaterial({ map:GLOW, color:st.userData.mod.color, transparent:true, opacity:0.8, blending:THREE.AdditiveBlending, depthWrite:false }));
@@ -755,7 +752,7 @@ NAV.forEach(([label, ic, n, target], i) => {
   const b = document.createElement("button"); if (i===0) b.classList.add("active");
   b.innerHTML = `<span class="ic">${svg(ic)}</span><span class="t">${label}</span>${n?`<span class="n">${n}</span>`:""}`;
   b.onclick = () => { sideEl.querySelectorAll("button").forEach(x=>x.classList.remove("active")); b.classList.add("active");
-    const mod = MODULES.find(m=>m.id===target); if (mod) openPanel(mod); else { closePanel(); toast(i===0 ? "Vista de la oficina" : "Ajustes del hub"); } };
+    const mod = MODULES.find(m=>m.id===target); if (mod) enterFocus(mod); else { exitFocus(); toast(i===0 ? "Vista de la oficina" : "Ajustes del hub"); } };
   sideEl.appendChild(b);
 });
 let toastT; function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2200); }
@@ -769,20 +766,144 @@ const pickables = [];
 stations.forEach(s => s.traverse(o => { if (o.isMesh && !o.material.map?.image?.width) pickables.push(o); }));
 wedges.forEach(w => pickables.push(w.userData.mesh));
 
-function openPanel(mod) {
-  activeId = mod.id;
-  const panel = document.getElementById("panel");
-  panel.style.setProperty("--accent", hex(mod.color));
-  document.getElementById("p-ico").innerHTML = svg(mod.icon);
-  document.getElementById("p-title").textContent = mod.name;
-  document.getElementById("p-sub").textContent = mod.sub + " — " + mod.bubbles[0];
-  document.getElementById("p-orb").className = "orb " + mod.status;
-  document.getElementById("p-status").textContent = STATUS[mod.status];
-  document.getElementById("p-note").textContent = mod.note;
-  document.getElementById("p-metrics").innerHTML = mod.metrics.map(([k,v]) => `<div class="metric"><span>${k}</span><b>${v}</b></div>`).join("");
-  panel.classList.add("open"); document.getElementById("veil").classList.add("show");
+/* ---------- the bot's own screen: a live dashboard drawn on canvas ---------- */
+function iconPath(k, x, y, size) { const p = new Path2D(ICON[k]); const m = new DOMMatrix().translate(x, y).scale(size/24); const out = new Path2D(); out.addPath(p, m); return out; }
+function rrect(g, x, y, w, h, r) { g.beginPath(); g.roundRect(x, y, w, h, r); }
+function makeDashboard(mod) {
+  const c = document.createElement("canvas"); c.width = 1024; c.height = 544;
+  const g = c.getContext("2d");
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+  const col = hex(mod.color);
+  const series = Array.from({ length:48 }, (_, i) => 0.35 + Math.sin(i*0.5)*0.15 + Math.random()*0.3);
+  const feed = mod.bubbles.map((b, i) => ({ text:b, min:3 + i*7 }));
+  const STATUS_COL = { working:"#2ee56a", needs:"#ff4d5e", idle:"#94a3b8" };
+  let last = -1;
+  function draw(t) {
+    if (t - last < 0.08) return; last = t;
+    g.fillStyle = "#0a0f1c"; g.fillRect(0, 0, 1024, 544);
+    // faint grid
+    g.strokeStyle = "rgba(255,255,255,.035)"; g.lineWidth = 1;
+    for (let x = 0; x < 1024; x += 64) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 544); g.stroke(); }
+    for (let y = 0; y < 544; y += 64) { g.beginPath(); g.moveTo(0, y); g.lineTo(1024, y); g.stroke(); }
+    // header
+    const hg = g.createLinearGradient(0, 0, 1024, 0); hg.addColorStop(0, col); hg.addColorStop(1, "rgba(10,15,28,0)");
+    g.fillStyle = hg; g.globalAlpha = 0.35; g.fillRect(0, 0, 1024, 78); g.globalAlpha = 1;
+    g.fillStyle = col; g.beginPath(); g.arc(58, 39, 24, 0, Math.PI*2); g.fill();
+    g.fillStyle = "#fff"; g.fill(iconPath(mod.icon, 44, 25, 28));
+    g.font = "700 34px Outfit, Figtree, sans-serif"; g.fillStyle = "#fff"; g.fillText(mod.name, 98, 52);
+    g.font = "600 15px Figtree, sans-serif"; g.fillStyle = "rgba(255,255,255,.55)"; g.fillText("INMOBILIARIA IBIZA · OFFICE HUB", 98, 70);
+    // status + clock
+    const sc = STATUS_COL[mod.status];
+    g.fillStyle = "rgba(255,255,255,.08)"; rrect(g, 790, 22, 150, 34, 17); g.fill();
+    g.fillStyle = sc; g.shadowColor = sc; g.shadowBlur = 10; g.beginPath(); g.arc(812, 39, 5 + Math.sin(t*4)*1, 0, Math.PI*2); g.fill(); g.shadowBlur = 0;
+    g.font = "700 14px Figtree, sans-serif"; g.fillStyle = "#fff"; g.fillText(STATUS[mod.status].toUpperCase(), 828, 44);
+    const d = new Date(); g.font = "600 20px Outfit, sans-serif"; g.textAlign = "right"; g.fillText(d.toTimeString().slice(0,5), 992, 47); g.textAlign = "left";
+    // metric cards
+    mod.metrics.forEach(([k, v], i) => {
+      const x = 32 + i*172;
+      g.fillStyle = "rgba(255,255,255,.05)"; rrect(g, x, 100, 156, 104, 14); g.fill();
+      g.strokeStyle = "rgba(255,255,255,.08)"; g.stroke();
+      g.fillStyle = col; g.fillRect(x, 100, 156, 3);
+      g.font = "600 14px Figtree, sans-serif"; g.fillStyle = "rgba(255,255,255,.6)"; g.fillText(k.toUpperCase(), x+16, 132);
+      g.font = "700 46px Outfit, sans-serif"; g.fillStyle = "#fff"; g.fillText(v, x+16, 184);
+    });
+    // chart
+    g.fillStyle = "rgba(255,255,255,.04)"; rrect(g, 32, 228, 500, 272, 14); g.fill();
+    g.font = "600 14px Figtree, sans-serif"; g.fillStyle = "rgba(255,255,255,.6)"; g.fillText("ACTIVIDAD · ÚLTIMAS 24 H", 48, 256);
+    const cx0 = 48, cy0 = 480, cw = 468, ch = 190;
+    g.strokeStyle = "rgba(255,255,255,.08)"; for (let i=0;i<=4;i++){ const y = cy0 - ch*i/4; g.beginPath(); g.moveTo(cx0, y); g.lineTo(cx0+cw, y); g.stroke(); }
+    const pts = series.map((v, i) => [cx0 + cw*i/(series.length-1), cy0 - ch*(v + Math.sin(t*1.3 + i*0.4)*0.04)]);
+    g.beginPath(); g.moveTo(cx0, cy0); pts.forEach(p => g.lineTo(p[0], p[1])); g.lineTo(cx0+cw, cy0); g.closePath();
+    const ag = g.createLinearGradient(0, cy0-ch, 0, cy0); ag.addColorStop(0, col); ag.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = ag; g.globalAlpha = 0.35; g.fill(); g.globalAlpha = 1;
+    g.strokeStyle = col; g.lineWidth = 3; g.lineJoin = "round"; g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke();
+    const lp = pts[pts.length-1]; g.fillStyle = "#fff"; g.shadowColor = col; g.shadowBlur = 14; g.beginPath(); g.arc(lp[0], lp[1], 5, 0, Math.PI*2); g.fill(); g.shadowBlur = 0;
+    // live feed
+    g.fillStyle = "rgba(255,255,255,.04)"; rrect(g, 556, 100, 436, 300, 14); g.fill();
+    g.font = "600 14px Figtree, sans-serif"; g.fillStyle = "rgba(255,255,255,.6)"; g.fillText("FEED EN VIVO", 572, 128);
+    g.fillStyle = sc; g.beginPath(); g.arc(680, 123, 4, 0, Math.PI*2); g.fill();
+    feed.forEach((f, i) => {
+      const y = 160 + i*70;
+      g.fillStyle = i === 0 ? "rgba(255,255,255,.08)" : "rgba(255,255,255,.03)"; rrect(g, 572, y - 26, 404, 56, 10); g.fill();
+      g.fillStyle = i === 0 ? col : "rgba(255,255,255,.35)"; g.beginPath(); g.arc(594, y + 2, 6, 0, Math.PI*2); g.fill();
+      g.font = "700 21px Figtree, sans-serif"; g.fillStyle = "#fff"; g.fillText(f.text, 612, y);
+      g.font = "600 14px Figtree, sans-serif"; g.fillStyle = "rgba(255,255,255,.5)"; g.fillText(`hace ${f.min} min · ${mod.sub.split(" · ")[i % 2]}`, 612, y + 18);
+    });
+    // current task progress
+    g.fillStyle = "rgba(255,255,255,.04)"; rrect(g, 556, 420, 436, 80, 14); g.fill();
+    g.font = "600 14px Figtree, sans-serif"; g.fillStyle = "rgba(255,255,255,.6)"; g.fillText("TAREA ACTUAL", 572, 446);
+    g.font = "700 19px Figtree, sans-serif"; g.fillStyle = "#fff"; g.fillText(mod.note, 572, 471);
+    const prog = (t*0.07 + mod.id.length*0.13) % 1;
+    g.fillStyle = "rgba(255,255,255,.1)"; rrect(g, 572, 480, 404, 8, 4); g.fill();
+    g.fillStyle = col; rrect(g, 572, 480, 404*prog, 8, 4); g.fill();
+    // footer
+    g.font = "600 13px Figtree, sans-serif"; g.fillStyle = "rgba(255,255,255,.4)";
+    g.fillText(`BOT-${mod.id.toUpperCase()} · ${mod.sub}`, 32, 528);
+    g.textAlign = "right"; g.fillText(Math.floor(t) % 2 ? "▮" : " ", 992, 528); g.textAlign = "left";
+    tex.needsUpdate = true;
+  }
+  draw(0);
+  return { tex, draw };
 }
-function closePanel(){ activeId = null; document.getElementById("panel").classList.remove("open"); document.getElementById("veil").classList.remove("show"); }
+stations.forEach(s => {
+  const dash = makeDashboard(s.userData.mod); s.userData.dash = dash;
+  const m = s.userData.screen.material; m.map = dash.tex; m.emissiveMap = dash.tex; m.needsUpdate = true;
+});
+
+/* ---------- cinematic camera: office overview <-> first person at the bot's desk ---------- */
+let focusSt = null;
+const camFrom = { pos:new THREE.Vector3(), look:new THREE.Vector3(), fov:10 };
+const camNow = { pos:new THREE.Vector3(), look:new THREE.Vector3(), fov:10 };
+const camWant = { pos:new THREE.Vector3(), look:new THREE.Vector3(), fov:10 };
+let camBlend = 1; const CAM_DUR = 1.7;
+const easeInOut = k => k < 0.5 ? 4*k*k*k : 1 - Math.pow(-2*k + 2, 3) / 2;
+function officePose(t, out) {
+  out.pos.set(camBase.x + Math.sin(t*0.18)*0.12, camBase.y + Math.sin(t*0.23)*0.06, camBase.z + Math.cos(t*0.15)*0.1);
+  out.look.copy(portrait ? portraitTarget : camTarget); out.fov = officeFov;
+}
+function stationPose(st, t, out) {
+  // over the bot's shoulder (the side away from the desk return), looking at its main screen
+  const side = st.userData.mod.face;
+  out.pos.set(side * (1.7 + Math.sin(t*0.5)*0.02), 3.05 + Math.sin(t*0.7)*0.015, -2.1); st.localToWorld(out.pos);
+  out.look.set(side * -0.22, 1.0, 0.42); st.localToWorld(out.look);
+  out.fov = portrait ? 50 : 26;
+}
+function startCamMove() { camFrom.pos.copy(camNow.pos); camFrom.look.copy(camNow.look); camFrom.fov = camNow.fov; camBlend = 0; }
+const _dirA = new THREE.Vector3(), _dirB = new THREE.Vector3(), _qa = new THREE.Quaternion(), _qb = new THREE.Quaternion(), _up = new THREE.Vector3(0,1,0);
+function updateCamera(t, dt) {
+  if (focusSt) stationPose(focusSt, t, camWant); else officePose(t, camWant);
+  if (camBlend < 1) {
+    camBlend = Math.min(1, camBlend + dt / CAM_DUR);
+    const k = easeInOut(camBlend);
+    camNow.look.lerpVectors(camFrom.look, camWant.look, k);
+    // distance and apparent target size are interpolated geometrically (smooth dolly-zoom), direction is slerped
+    _dirA.subVectors(camFrom.pos, camFrom.look); const dA = _dirA.length(); _dirA.normalize();
+    _dirB.subVectors(camWant.pos, camWant.look); const dB = _dirB.length(); _dirB.normalize();
+    _qa.setFromUnitVectors(_up, _dirA); _qb.setFromUnitVectors(_up, _dirB); _qa.slerp(_qb, k);
+    const dist = Math.exp(THREE.MathUtils.lerp(Math.log(dA), Math.log(dB), k));
+    const sA = Math.tan(THREE.MathUtils.degToRad(camFrom.fov/2)) * dA, sB = Math.tan(THREE.MathUtils.degToRad(camWant.fov/2)) * dB;
+    const size = Math.exp(THREE.MathUtils.lerp(Math.log(sA), Math.log(sB), k));
+    camNow.pos.copy(_up).applyQuaternion(_qa).multiplyScalar(dist).add(camNow.look);
+    camNow.fov = THREE.MathUtils.radToDeg(2 * Math.atan(size / dist));
+  } else { camNow.pos.copy(camWant.pos); camNow.look.copy(camWant.look); camNow.fov = camWant.fov; }
+  camera.position.copy(camNow.pos); camera.lookAt(camNow.look);
+  if (Math.abs(camera.fov - camNow.fov) > 1e-3) { camera.fov = camNow.fov; camera.updateProjectionMatrix(); }
+}
+
+function enterFocus(mod) {
+  const st = stations.find(s => s.userData.id === mod.id); if (!st || st === focusSt) return;
+  activeId = mod.id; startCamMove(); focusSt = st;
+  document.body.classList.add("focus");
+  const fb = document.getElementById("focusbar"); fb.style.setProperty("--c", hex(mod.color));
+  document.getElementById("f-ico").innerHTML = svg(mod.icon);
+  document.getElementById("f-title").textContent = mod.name;
+  document.getElementById("f-sub").textContent = mod.sub;
+  const stEl = document.getElementById("f-status"); stEl.className = "st " + mod.status; stEl.querySelector("span").textContent = STATUS[mod.status];
+}
+function exitFocus() {
+  if (!focusSt) return;
+  activeId = null; startCamMove(); focusSt = null;
+  document.body.classList.remove("focus");
+}
 function hitId(cx, cy) {
   pointer.x = (cx / innerWidth) * 2 - 1; pointer.y = -(cy / innerHeight) * 2 + 1;
   raycaster.setFromCamera(pointer, camera);
@@ -793,11 +914,12 @@ let downAt = null;
 canvas.addEventListener("pointerdown", e => { downAt = [e.clientX, e.clientY]; });
 canvas.addEventListener("pointerup", e => {
   if (!downAt) return; const moved = Math.hypot(e.clientX-downAt[0], e.clientY-downAt[1]); downAt = null; if (moved > 8) return;
-  const id = hitId(e.clientX, e.clientY); const mod = MODULES.find(m => m.id === id); if (mod) openPanel(mod);
+  const id = hitId(e.clientX, e.clientY); const mod = MODULES.find(m => m.id === id);
+  if (mod) enterFocus(mod); else if (focusSt) exitFocus();
 });
+document.getElementById("f-back").onclick = exitFocus;
+window.addEventListener("keydown", e => { if (e.key === "Escape") exitFocus(); });
 canvas.addEventListener("pointermove", e => { if (e.pointerType === "mouse") { hoverId = hitId(e.clientX, e.clientY); canvas.style.cursor = hoverId ? "pointer" : "default"; } });
-document.getElementById("close").onclick = closePanel; document.getElementById("close2").onclick = closePanel; document.getElementById("veil").onclick = closePanel;
-document.getElementById("enter").onclick = () => toast("Abriendo módulo…");
 
 /* ---------- post-processing: bloom for the neon ---------- */
 const composer = new EffectComposer(renderer);
@@ -814,7 +936,7 @@ function animate() {
   const t = clock.getElapsedTime(), dt = Math.min(clock.getDelta(), 0.05) || 0.016;
 
   hubLight.intensity = 1.4 + Math.sin(t*2.2)*0.35;
-  ring.material.color.setHex(0x55a8ff).multiplyScalar(2.0 + Math.sin(t*2.2)*0.4);
+  ringArcs.forEach((a, i) => { const hot = a.userData.id === activeId || a.userData.id === hoverId; a.material.color.copy(a.userData.base).multiplyScalar((hot ? 3.2 : 2.0) + Math.sin(t*2.2 + i)*0.35); });
   wedges.forEach(w => {
     const lift = (w.userData.id === activeId || w.userData.id === hoverId) ? 0.22 : 0;
     w.userData.mesh.position.y += (w.userData.baseY + lift - w.userData.mesh.position.y) * 0.15;
@@ -822,33 +944,35 @@ function animate() {
   });
 
   stations.forEach((s, i) => {
-    const { bot, pad, monitors, mod } = s.userData;
+    const { bot, pad, monitors, mod, dash } = s.userData;
     const ph = bot.userData.phase;
-    const busy = mod.status !== "idle";
+    const focused = s === focusSt;
+    const busy = mod.status !== "idle" || focused;
+    if (focused) dash.draw(t);
     bot.position.y = BOT_SEAT_Y + Math.sin(t*2.1 + ph) * 0.02;
     if (bot.userData.head) {
-      bot.userData.head.rotation.y = Math.sin(t*0.9 + ph) * 0.35;
-      bot.userData.head.rotation.x = 0.08 + Math.sin(t*1.7 + ph) * 0.06;
+      // in first person the bot keeps its eyes on the screen
+      bot.userData.head.rotation.y = Math.sin(t*0.9 + ph) * (focused ? 0.08 : 0.35);
+      bot.userData.head.rotation.x = (focused ? 0.16 : 0.08) + Math.sin(t*1.7 + ph) * 0.06;
       bot.userData.arms.forEach((a, k) => { a.position.y = a.userData.baseY + (busy ? Math.sin(t*9 + ph + k*1.6) * 0.03 : 0); a.rotation.x = busy ? Math.sin(t*9 + ph + k*1.6) * 0.12 : 0; });
     }
     const pulse = 0.85 + Math.sin(t*2.4 + i) * 0.15;
     pad.userData.light.intensity = (busy ? 0.7 : 0.45) * pulse;
     pad.userData.glow.material.opacity = 0.42 + Math.sin(t*2.4 + i) * 0.08;
     monitors.forEach((m, k) => { m.material.emissiveIntensity = 1.0 + Math.sin(t*6 + ph + k) * 0.12; });
-    const active = s.userData.id === activeId || s.userData.id === hoverId;
+    const active = !focusSt && (s.userData.id === activeId || s.userData.id === hoverId);
     s.scale.setScalar(THREE.MathUtils.lerp(s.scale.x, active ? 1.05 : 1, 0.12));
   });
 
-  if (t - lastPulse > 0.9) { lastPulse = t; spawnPulse(stations[Math.floor(Math.random()*stations.length)]); }
+  if (!focusSt && t - lastPulse > 0.9) { lastPulse = t; spawnPulse(stations[Math.floor(Math.random()*stations.length)]); }
   for (let i = pulses.length - 1; i >= 0; i--) {
     const p = pulses[i]; p.t += dt * p.speed;
     if (p.t >= 1) { scene.remove(p.m); pulses.splice(i, 1); continue; }
     p.curve.getPoint(p.t, p.m.position); p.trail.lookAt(camera.position); p.trail.material.opacity = 0.9 * (1 - p.t*0.6);
   }
 
-  camera.position.set(camBase.x + Math.sin(t*0.18)*0.12, camBase.y + Math.sin(t*0.23)*0.06, camBase.z + Math.cos(t*0.15)*0.1);
-  camera.lookAt(portrait ? portraitTarget : camTarget);
-  layoutLabels();
+  updateCamera(t, dt);
+  if (!focusSt || camBlend < 1) layoutLabels();
   composer.render();
 }
 window.addEventListener("resize", () => {
@@ -867,6 +991,9 @@ setInterval(() => {
 }, 3400);
 
 if (innerHeight > innerWidth) setTimeout(() => toast("Gira el móvil para ver la oficina completa"), 1200);
+// deep link: ?focus=<module id> opens straight at that bot's desk
+const deep = MODULES.find(m => m.id === new URLSearchParams(location.search).get("focus"));
+if (deep) { enterFocus(deep); camBlend = 1; }
 animate();
 </script>
 </body>
