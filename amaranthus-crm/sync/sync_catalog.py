@@ -8,10 +8,10 @@ No Nestermind API — only public HTML pages.
 from __future__ import annotations
 
 import argparse
-import concurrent.futures
 import hashlib
 import json
 import os
+import random
 import re
 import sys
 import time
@@ -33,6 +33,8 @@ INDEX_PATHS = {
 }
 SKIP_SLUGS = set(INDEX_PATHS) | {"real-estate"}
 UA = "AmaranthusCatalogSync/1.0 (+internal CRM sync; public pages only)"
+# Polite delay between HTTP requests to avoid hammering the official site.
+REQUEST_PAUSE_SEC = (1.0, 2.0)
 FACT_KEYS = {
     "Bedrooms",
     "Rooms",
@@ -64,10 +66,15 @@ def clean_html(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+def polite_pause() -> None:
+    time.sleep(random.uniform(*REQUEST_PAUSE_SEC))
+
+
 def fetch(url: str, retries: int = 3) -> str:
     last: Exception | None = None
     for i in range(retries):
         try:
+            polite_pause()
             req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "text/html"})
             with urllib.request.urlopen(req, timeout=60) as resp:
                 return resp.read().decode("utf-8", "ignore")
@@ -78,6 +85,7 @@ def fetch(url: str, retries: int = 3) -> str:
 
 
 def fetch_bytes(url: str) -> bytes:
+    polite_pause()
     req = urllib.request.Request(url, headers={"User-Agent": UA})
     with urllib.request.urlopen(req, timeout=60) as resp:
         return resp.read()
@@ -397,10 +405,11 @@ def sync(site_dir: Path, refresh_thumbs: bool = False) -> dict[str, Any]:
             errors.append(f"{slug}: {exc}")
             return None
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
-        for item in pool.map(one, slugs):
-            if item:
-                props.append(item)
+    # Sequential fetches so polite_pause between requests is respected.
+    for slug in slugs:
+        item = one(slug)
+        if item:
+            props.append(item)
 
     props.sort(key=lambda x: x["slug"])
     out = site_dir / "data.json"
