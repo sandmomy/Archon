@@ -30,9 +30,9 @@
   /* ---- HUD ---- */
   .hud{position:fixed;z-index:5;display:flex;align-items:center;gap:10px}
   .brand{top:max(10px,env(safe-area-inset-top));left:14px;pointer-events:none}
-  .brand .logo{width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 50% 35%,#ffe29a 0,#ff9a3c 32%,#2b6fb0 33%,#164a78 60%,#0b2a46 100%);display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.5)}
+  .brand .logo{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 50% 35%,#ffe29a 0,#ff9a3c 32%,#2b6fb0 33%,#164a78 60%,#0b2a46 100%);display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.5)}
   .brand .logo svg{width:22px;height:22px;fill:#0f3d2e}
-  .brand strong{display:block;font-family:"Outfit",sans-serif;font-size:19px;font-weight:800;letter-spacing:-.02em;line-height:1}
+  .brand strong{display:block;font-family:"Outfit",sans-serif;font-size:17px;font-weight:800;letter-spacing:-.02em;line-height:1}
   .brand span{display:block;font-size:12px;color:#c9d4e4;margin-top:3px;font-weight:600}
   .top-right{top:max(10px,env(safe-area-inset-top));right:14px}
   .pill{display:flex;align-items:center;gap:8px;padding:7px 12px 7px 10px;border-radius:999px;background:rgba(16,20,32,.72);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);font-size:12.5px;font-weight:700}
@@ -45,13 +45,13 @@
   .me{background:radial-gradient(circle at 35% 30%,#ffd4b5,#c77a4a 60%,#4b2a1a)}
 
   /* ---- sidebar like the concept ---- */
-  .side{position:fixed;left:14px;top:80px;z-index:5;display:flex;flex-direction:column;gap:3px;padding:8px;border-radius:18px;background:rgba(12,15,24,.78);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(10px);box-shadow:0 20px 50px rgba(0,0,0,.5)}
-  .side button{display:flex;align-items:center;gap:10px;border:0;background:transparent;color:#e5ebf5;font:inherit;font-size:13px;font-weight:600;padding:6px 12px 6px 6px;border-radius:12px;cursor:pointer;text-align:left;width:118px}
+  .side{position:fixed;left:10px;top:78px;z-index:5;display:flex;flex-direction:column;gap:2px;padding:6px;border-radius:16px;background:rgba(12,15,24,.78);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(10px);box-shadow:0 20px 50px rgba(0,0,0,.5)}
+  .side button{display:flex;align-items:center;gap:10px;border:0;background:transparent;color:#e5ebf5;font:inherit;font-size:12px;font-weight:600;padding:4px 10px 4px 5px;border-radius:11px;cursor:pointer;text-align:left;width:104px}
   .side button:hover{background:rgba(255,255,255,.06)}
   .side button.active{background:rgba(255,255,255,.12)}
-  .side .ic{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.08);display:grid;place-items:center;flex:0 0 26px}
-  .side .ic svg{width:14px;height:14px;fill:#dbe4f3}
-  .side .n{margin-left:auto;background:#ff4d5e;color:#fff;font-size:10px;font-weight:800;min-width:18px;height:18px;border-radius:9px;display:grid;place-items:center;padding:0 5px}
+  .side .ic{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.08);display:grid;place-items:center;flex:0 0 26px}
+  .side .ic svg{width:13px;height:13px;fill:#dbe4f3}
+  .side .n{margin-left:auto;background:#ff4d5e;color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:grid;place-items:center;padding:0 5px}
 
   .toast{position:fixed;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);opacity:0;z-index:6;padding:8px 14px;border-radius:999px;font-size:12px;color:#e2e8f0;background:rgba(10,13,20,.8);border:1px solid rgba(255,255,255,.1);pointer-events:none;transition:all .4s}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
