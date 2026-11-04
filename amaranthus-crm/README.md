@@ -8,7 +8,7 @@ Fuente: **https://www.amaranthus-realestate.com/real-estate** (HTML público).
 
 1. Un scraper propio (`sync/sync_catalog.py`) lee el listado y cada ficha de la web oficial.
 2. Regenera `site/data.json` (+ miniaturas en `site/th/`).
-3. GitHub Action lo ejecuta cada 6 horas y hace commit si hay cambios.
+3. GitHub Action lo ejecuta cada hora y hace commit si hay cambios.
 4. La CRM carga el catálogo en este orden:
    - `raw.githubusercontent.com/.../main/.../data.json` (actualización automática al merge)
    - Worker Cloudflare opcional (`amaranthus-catalog-sync`)
