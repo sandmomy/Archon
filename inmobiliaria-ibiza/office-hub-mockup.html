@@ -12,6 +12,7 @@
   html,body{margin:0;height:100%;overflow:hidden;background:#06080f;color:#eef3fb;font-family:"Figtree",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
   #canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
   #labels{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:3}
+  .vignette{position:fixed;inset:0;pointer-events:none;z-index:2;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(0,0,0,.42) 100%)}
 
   /* ---- module labels (icon circle + title + subtitle) ---- */
   .tag{position:absolute;display:flex;align-items:flex-start;gap:8px;transform:translate(0,-50%) scale(var(--ui-scale));transform-origin:0 50%;pointer-events:none;white-space:nowrap;filter:drop-shadow(0 2px 6px rgba(0,0,0,.9))}
@@ -96,6 +97,7 @@
 <body>
 <canvas id="canvas"></canvas>
 <div id="labels"></div>
+<div class="vignette"></div>
 
 <div class="hud brand">
   <div class="logo"><svg viewBox="0 0 24 24"><path d="M13 22h-2v-9.1c-1.9.3-3.6 1.4-4.7 3.1l-1.6-1.2c1.2-1.7 2.9-2.9 4.9-3.4-2.4-.3-4.6-1.5-6.1-3.4l1.6-1.2c1.2 1.6 3 2.6 4.9 2.9-1.5-1.6-2.3-3.7-2.3-5.9h2c0 2 .8 3.9 2.3 5.3 1.5-1.4 2.3-3.3 2.3-5.3h2c0 2.2-.8 4.3-2.3 5.9 1.9-.3 3.7-1.3 4.9-2.9l1.6 1.2c-1.5 1.9-3.7 3.1-6.1 3.4 2 .5 3.7 1.7 4.9 3.4l-1.6 1.2c-1.1-1.7-2.8-2.8-4.7-3.1V22z"/></svg></div>
@@ -408,6 +410,9 @@ for (let z = BACK_Z; z <= BACK_Z + WIN_LEN; z += 2.4) { const m = new THREE.Mesh
 const sillR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.12, WIN_LEN), trimMat); sillR.position.set(RIGHT_X - 0.05, 0.06, BACK_Z + WIN_LEN/2); room.add(sillR);
 const headerR = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.35, WIN_LEN), trimMat); headerR.position.set(RIGHT_X - 0.1, WALL_H - 0.17, BACK_Z + WIN_LEN/2); room.add(headerR);
 const corner = new THREE.Mesh(new THREE.BoxGeometry(0.4, WALL_H, 0.4), trimMat); corner.position.set(RIGHT_X, WALL_H/2, BACK_Z); room.add(corner);
+const spill = new THREE.Mesh(new THREE.PlaneGeometry(9, WIN_LEN), new THREE.MeshBasicMaterial({ map:GLOW, color:0xff8a40, transparent:true, opacity:0.22, blending:THREE.AdditiveBlending, depthWrite:false }));
+spill.rotation.x = -Math.PI/2; spill.position.set(RIGHT_X - 3.5, 0.02, BACK_Z + WIN_LEN/2); spill.scale.set(1, 1, 1); room.add(spill);
+const windowLight = new THREE.PointLight(0xffb27a, 1.4, 22, 1.5); windowLight.position.set(RIGHT_X - 1, 3.2, BACK_Z + 10); room.add(windowLight);
 
 // TV wall (local back, runs from the corner towards the viewer's left)
 const backWall = new THREE.Mesh(new THREE.BoxGeometry(40, WALL_H, 0.3), wallMat); backWall.position.set(RIGHT_X - 20, WALL_H/2, BACK_Z - 0.15); backWall.receiveShadow = true; room.add(backWall);
@@ -454,7 +459,7 @@ function sofaAt(sx, sy, rot, len=2.4) {
   const aR = aL.clone(); aR.position.x = len/2-0.1;
   const n = Math.max(1, Math.round(len/1.2));
   for (let i=0;i<n;i++){ const cu = new THREE.Mesh(new RoundedBoxGeometry(len/n-0.1, 0.16, 0.9, 3, 0.06), fabric); cu.position.set(-len/2 + (i+0.5)*(len/n), 0.6, 0.02); g.add(cu); }
-  g.add(base, back, aL, aR); g.position.copy(groundAt(sx, sy)); g.rotation.y = rot; scene.add(g); return g;
+  g.add(base, back, aL, aR, contactShadow(len+1.2, 0.5)); g.position.copy(groundAt(sx, sy)); g.rotation.y = rot; scene.add(g); return g;
 }
 sofaAt(852, 170, -ISO, 2.6);          // against the window wall
 sofaAt(975, 432, -ISO - Math.PI/2, 2.4);
@@ -482,7 +487,9 @@ function plantAt(sx, sy, s=1) {
     const pa = leafGeo.attributes.position; for (let i=0;i<pa.count;i++){ const px = pa.getX(i); pa.setY(i, pa.getY(i) - (px/(1.3*s))*(px/(1.3*s))*0.5*s); pa.setZ(i, Math.abs(pa.getY(i))*0.1); }
     leafGeo.computeVertexNormals(); leafGeoCache[s] = leafGeo;
   }
-  for (let i=0;i<9;i++){ const leaf = new THREE.Mesh(leafGeo, leafMat); const a = i/9*Math.PI*2; leaf.position.set(0, 1.72*s + (i%2)*0.1*s, 0); leaf.rotation.y = a; leaf.rotation.z = -0.35 - (i%3)*0.15; leaf.translateX(0.6*s); leaf.castShadow = true; g.add(leaf); }
+  for (let i=0;i<13;i++){ const leaf = new THREE.Mesh(leafGeo, leafMat); const a = i/13*Math.PI*2 + (i%2)*0.2; leaf.position.set(0, 1.7*s + (i%3)*0.08*s, 0); leaf.rotation.y = a; leaf.rotation.z = -0.25 - (i%3)*0.22; leaf.translateX(0.58*s); leaf.castShadow = true; g.add(leaf); }
+  for (let i=0;i<5;i++){ const ringR = new THREE.Mesh(new THREE.TorusGeometry(0.07*s, 0.015*s, 6, 12), new THREE.MeshStandardMaterial({ color:0x4e3620 })); ringR.rotation.x = Math.PI/2; ringR.position.y = (0.6 + i*0.25)*s; g.add(ringR); }
+  g.add(contactShadow(1.2*s, 0.4));
   g.position.copy(groundAt(sx, sy)); scene.add(g); return g;
 }
 plantAt(578, 34, 1.0); plantAt(240, 124, 0.9); plantAt(520, 102, 0.8); plantAt(150, 300, 0.85);
@@ -497,7 +504,9 @@ ring.rotation.x = Math.PI/2; ring.position.y = 0.1; hub.add(ring);
 const ringGlow = glowSprite(0x3b8cff, 11, 0.45); ringGlow.position.y = 0.02; hub.add(ringGlow);
 const hubLight = new THREE.PointLight(0x4a90ff, 1.6, 10, 1.8); hubLight.position.y = 0.6; hub.add(hubLight);
 
-const crustMat = new THREE.MeshStandardMaterial({ color:0xd9924a, roughness:0.55, metalness:0.02, envMapIntensity:0.4 });
+const crustMat = new THREE.MeshPhysicalMaterial({ color:0xdc9a50, roughness:0.5, metalness:0.0, clearcoat:0.25, envMapIntensity:0.4 });
+const seedMat = new THREE.MeshStandardMaterial({ color:0xfff1c8, roughness:0.5 });
+for (let k=0;k<90;k++){ const a = Math.random()*Math.PI*2, r = 2.78 + (Math.random()-0.5)*0.4; const sd = new THREE.Mesh(new THREE.SphereGeometry(0.03, 6, 6), seedMat); sd.scale.set(1.6,0.6,1); sd.position.set(Math.cos(a)*r, 0.71 - Math.abs(r-2.78)*0.6, Math.sin(a)*r); sd.rotation.y = -a; hub.add(sd); }
 const crust = new THREE.Mesh(new THREE.TorusGeometry(2.78, 0.3, 16, 96), crustMat); crust.rotation.x = Math.PI/2; crust.position.y = 0.42; crust.castShadow = true; hub.add(crust);
 const base = new THREE.Mesh(new THREE.CylinderGeometry(2.95, 3.0, 0.3, 72), new THREE.MeshStandardMaterial({ color:0xb8743a, roughness:0.6 })); base.position.y = 0.25; base.castShadow = true; hub.add(base);
 const blueUnder = new THREE.PointLight(0x3b82f6, 0.9, 6, 2); blueUnder.position.y = 0.15; hub.add(blueUnder);
@@ -517,53 +526,94 @@ const wedgeGeoCache = (() => {
 MODULES.forEach((m, i) => {
   const g = new THREE.Group();
   g.rotation.y = -THREE.MathUtils.degToRad(-120 + 60*i);
-  const mat = new THREE.MeshStandardMaterial({ color:m.color, emissive:m.color, emissiveIntensity:0.28, roughness:0.38, metalness:0.08, envMapIntensity:0.5 });
+  const mat = new THREE.MeshPhysicalMaterial({ color:m.color, emissive:m.color, emissiveIntensity:0.26, roughness:0.3, metalness:0.05, clearcoat:0.7, clearcoatRoughness:0.25, envMapIntensity:0.5 });
   const mesh = new THREE.Mesh(wedgeGeoCache, mat); mesh.position.y = 0.4; mesh.castShadow = true; mesh.receiveShadow = true;
   mesh.userData = { id:m.id, type:"sector" };
   const icon = new THREE.Mesh(new THREE.PlaneGeometry(1.05, 1.05), new THREE.MeshBasicMaterial({ map:iconTexture(m.wedge), transparent:true, depthWrite:false }));
   icon.rotation.x = -Math.PI/2; icon.rotation.z = -g.rotation.y; icon.position.set(1.62, 0.78, 0);
+  // cheese bubbles on the slice
+  const bubMat = new THREE.MeshStandardMaterial({ color:new THREE.Color(m.color).lerp(new THREE.Color(0xffffff), 0.22), roughness:0.35 });
+  for (let k=0;k<7;k++){ const r = 0.7 + Math.random()*1.8, a = (Math.random()-0.5)*0.9; const bb = new THREE.Mesh(new THREE.SphereGeometry(0.03+Math.random()*0.03, 8, 8), bubMat);
+    bb.position.set(Math.cos(a)*r, 0.76, Math.sin(a)*r); if (Math.hypot(bb.position.x-1.62, bb.position.z) > 0.6) mesh.add(bb); }
   g.add(mesh, icon); g.userData = { mesh, mat, icon, baseY:0.4, id:m.id };
   hub.add(g); wedges.push(g);
 });
 
 /* ---------- bots (chibi: big head, big eyes, oversized headset) ---------- */
-const whiteMat = new THREE.MeshStandardMaterial({ color:0xd9dee8, roughness:0.42, metalness:0.0, envMapIntensity:0.35 });
-const visorMat = new THREE.MeshStandardMaterial({ color:0x0b1020, roughness:0.15, metalness:0.6, envMapIntensity:1 });
+const whiteMat = new THREE.MeshPhysicalMaterial({ color:0xe3e7ef, roughness:0.32, metalness:0.0, clearcoat:1, clearcoatRoughness:0.12, envMapIntensity:0.5, sheen:0.4, sheenColor:new THREE.Color(0xffffff) });
+const visorMat = new THREE.MeshPhysicalMaterial({ color:0x070b16, roughness:0.08, metalness:0.3, clearcoat:1, clearcoatRoughness:0.05, envMapIntensity:1.2 });
+function contactShadow(size, opacity=0.55) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(size, size), new THREE.MeshBasicMaterial({ map:GLOW, color:0x000000, transparent:true, opacity, depthWrite:false }));
+  m.rotation.x = -Math.PI/2; m.position.y = 0.012; return m;
+}
 function makeBot(color) {
   const g = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.SphereGeometry(0.33, 28, 20), whiteMat); body.scale.set(1, 1.0, 0.86); body.position.y = 0.62; body.castShadow = true;
-  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.12, 12), visorMat); neck.position.y = 0.95;
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.42, 30, 24), whiteMat); head.position.y = 1.36; head.castShadow = true;
-  const visor = new THREE.Mesh(new THREE.SphereGeometry(0.36, 24, 16), visorMat); visor.scale.set(1.0, 0.68, 0.62); visor.position.set(0, 1.34, 0.24);
-  const eyeMat = new THREE.MeshBasicMaterial({ color:new THREE.Color(color).multiplyScalar(2.5) });
-  const e1 = new THREE.Mesh(new THREE.SphereGeometry(0.085, 12, 12), eyeMat); e1.scale.set(1, 1.3, 0.5); e1.position.set(-0.14, 1.36, 0.5);
-  const e2 = e1.clone(); e2.position.x = 0.14;
-  const canMat = new THREE.MeshStandardMaterial({ color, roughness:0.35, metalness:0.2, emissive:color, emissiveIntensity:0.25 });
-  const ringMat = new THREE.MeshBasicMaterial({ color:new THREE.Color(color).multiplyScalar(2.2) });
-  const canL = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.11, 20), canMat); canL.rotation.z = Math.PI/2; canL.position.set(-0.43, 1.32, 0.04);
-  const canR = canL.clone(); canR.position.x = 0.43;
-  const rL = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.022, 8, 24), ringMat); rL.rotation.y = Math.PI/2; rL.position.set(-0.49, 1.32, 0.04);
-  const rR = rL.clone(); rR.position.x = 0.49;
-  const band = new THREE.Mesh(new THREE.TorusGeometry(0.44, 0.04, 8, 28, Math.PI), canMat); band.position.y = 1.34; band.position.z = 0.04;
-  const armGeo = new THREE.CapsuleGeometry(0.07, 0.3, 4, 10);
-  const aL = new THREE.Mesh(armGeo, whiteMat); aL.position.set(-0.36, 0.7, 0.2); aL.rotation.x = -1.2; aL.rotation.z = 0.25;
-  const aR = aL.clone(); aR.position.x = 0.36; aR.rotation.z = -0.25;
-  const glow = new THREE.PointLight(color, 0.12, 2.0, 2); glow.position.set(0, 1.0, 0.7);
-  g.add(body, neck, head, visor, e1, e2, canL, canR, rL, rR, band, aL, aR, glow);
+  const c = new THREE.Color(color);
+  const tint = whiteMat.clone(); tint.emissive = c.clone(); tint.emissiveIntensity = 0.06;
+  // body: soft egg
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.34, 32, 24), tint); body.scale.set(1, 1.05, 0.88); body.position.y = 0.6; body.castShadow = true;
+  const chestMat = new THREE.MeshBasicMaterial({ color:c.clone().multiplyScalar(1.8) });
+  const chest = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.018, 8, 32), chestMat); chest.position.set(0, 0.64, 0.3); chest.rotation.x = 0.2;
+  const collar = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.035, 10, 32), new THREE.MeshStandardMaterial({ color, emissive:color, emissiveIntensity:0.5, roughness:0.4 })); collar.rotation.x = Math.PI/2; collar.position.y = 0.96;
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.14, 16), visorMat); neck.position.y = 0.97;
+  // head: big sphere with wrap-around glossy visor
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.43, 36, 28), tint); head.position.y = 1.38; head.castShadow = true;
+  const visor = new THREE.Mesh(new THREE.SphereGeometry(0.405, 32, 24, 0, Math.PI*2, 0, Math.PI), visorMat);
+  visor.scale.set(1.0, 0.6, 0.98); visor.position.set(0, 1.36, 0.15);
+  // keep only the front of the visor: clip the back with a second white cap
+  const visorCap = new THREE.Mesh(new THREE.SphereGeometry(0.415, 32, 24), tint); visorCap.scale.set(1, 1, 0.72); visorCap.position.set(0, 1.38, -0.16);
+  const eyeMat = new THREE.MeshBasicMaterial({ color:c.clone().multiplyScalar(2.6) });
+  const e1 = new THREE.Mesh(new THREE.CapsuleGeometry(0.055, 0.1, 4, 12), eyeMat); e1.position.set(-0.14, 1.37, 0.53); e1.rotation.z = 0.12;
+  const e2 = e1.clone(); e2.position.x = 0.14; e2.rotation.z = -0.12;
+  const eyeGlowMat = new THREE.MeshBasicMaterial({ map:GLOW, color, transparent:true, opacity:0.55, blending:THREE.AdditiveBlending, depthWrite:false });
+  const eg = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.4), eyeGlowMat); eg.position.set(0, 1.36, 0.57);
+  const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.012, 6, 16, Math.PI), eyeMat); mouth.position.set(0, 1.26, 0.54); mouth.rotation.z = Math.PI; mouth.scale.set(1,0.6,1);
+  // headset: chunky cans with glowing rings, padded band
+  const canMat = new THREE.MeshPhysicalMaterial({ color, roughness:0.3, metalness:0.1, clearcoat:0.8, emissive:color, emissiveIntensity:0.2 });
+  const ringMat = new THREE.MeshBasicMaterial({ color:c.clone().multiplyScalar(2.3) });
+  const canGeo = new THREE.CylinderGeometry(0.19, 0.19, 0.13, 28);
+  const canL = new THREE.Mesh(canGeo, canMat); canL.rotation.z = Math.PI/2; canL.position.set(-0.45, 1.34, 0.04);
+  const canR = canL.clone(); canR.position.x = 0.45;
+  const capL = new THREE.Mesh(new THREE.SphereGeometry(0.17, 24, 16, 0, Math.PI*2, 0, Math.PI/2), canMat); capL.rotation.z = Math.PI/2; capL.position.set(-0.51, 1.34, 0.04);
+  const capR = capL.clone(); capR.rotation.z = -Math.PI/2; capR.position.x = 0.51;
+  const rL = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.024, 8, 32), ringMat); rL.rotation.y = Math.PI/2; rL.position.set(-0.53, 1.34, 0.04);
+  const rR = rL.clone(); rR.position.x = 0.53;
+  const band = new THREE.Mesh(new THREE.TorusGeometry(0.46, 0.05, 10, 36, Math.PI), canMat); band.position.y = 1.36; band.position.z = 0.04;
+  const bandPad = new THREE.Mesh(new THREE.TorusGeometry(0.46, 0.065, 10, 20, Math.PI*0.5), visorMat); bandPad.position.y = 1.36; bandPad.position.z = 0.04; bandPad.rotation.z = Math.PI*0.25;
+  // arms + hands
+  const armGeo = new THREE.CapsuleGeometry(0.075, 0.3, 4, 12);
+  const aL = new THREE.Mesh(armGeo, tint); aL.position.set(-0.37, 0.7, 0.22); aL.rotation.x = -1.2; aL.rotation.z = 0.25;
+  const aR = aL.clone(); aR.position.x = 0.37; aR.rotation.z = -0.25;
+  const hL = new THREE.Mesh(new THREE.SphereGeometry(0.075, 12, 10), visorMat); hL.position.set(-0.42, 0.6, 0.44);
+  const hR = hL.clone(); hR.position.x = 0.42;
+  const glow = new THREE.PointLight(color, 0.14, 2.0, 2); glow.position.set(0, 1.0, 0.7);
+  const shadow = contactShadow(1.6, 0.5);
+  g.add(shadow, body, chest, collar, neck, head, visorCap, visor, e1, e2, eg, mouth, canL, canR, capL, capR, rL, rR, band, bandPad, aL, aR, hL, hR, glow);
   g.userData = { head, arms:[aL,aR], phase:Math.random()*Math.PI*2 };
   return g;
 }
 
 /* ---------- workstations (square tiles on the iso grid) ---------- */
-function screenTexture(mod) {
-  const c = document.createElement("canvas"); c.width = 256; c.height = 160;
+function screenTexture(mod, variant=0) {
+  const c = document.createElement("canvas"); c.width = 320; c.height = 180;
   const g = c.getContext("2d");
-  g.fillStyle = "#0b1020"; g.fillRect(0,0,256,160);
-  g.fillStyle = hex(mod.color); g.fillRect(0,0,256,26);
-  g.fillStyle = "#fff"; g.font = "bold 13px Figtree, sans-serif"; g.fillText(mod.name.split(" &")[0], 10, 18);
-  for (let i=0;i<5;i++){ g.fillStyle = `rgba(255,255,255,${0.12+Math.random()*0.15})`; g.fillRect(12, 40+i*20, 60+Math.random()*150, 9); }
-  g.fillStyle = hex(mod.color); for (let i=0;i<6;i++){ g.globalAlpha = 0.5+Math.random()*0.5; g.fillRect(150+i*16, 150-20-Math.random()*60, 10, 80); }
-  g.globalAlpha = 1;
+  const col = hex(mod.color);
+  g.fillStyle = "#0a0f1e"; g.fillRect(0,0,320,180);
+  g.fillStyle = col; g.fillRect(0,0,320,26);
+  g.fillStyle = "#fff"; g.font = "bold 14px Figtree, sans-serif"; g.fillText(mod.name.split(" &")[0], 10, 18);
+  if (variant === 0) {
+    for (let i=0;i<6;i++){ g.fillStyle = `rgba(255,255,255,${0.1+Math.random()*0.15})`; g.fillRect(12, 40+i*20, 60+Math.random()*120, 8); }
+    g.strokeStyle = col; g.lineWidth = 3; g.beginPath();
+    for (let i=0;i<=10;i++){ const x = 190+i*12, y = 150-Math.random()*70; i?g.lineTo(x,y):g.moveTo(x,y); } g.stroke();
+    g.fillStyle = col; g.globalAlpha = 0.25; g.fillRect(190, 40, 120, 110); g.globalAlpha = 1;
+  } else {
+    // photo-ish cards (property listings)
+    for (let i=0;i<3;i++){ const x = 12+i*100;
+      const grd = g.createLinearGradient(0, 40, 0, 110); grd.addColorStop(0,"#5b7fd6"); grd.addColorStop(0.55,"#f0a35c"); grd.addColorStop(1,"#2b3a5c");
+      g.fillStyle = grd; g.fillRect(x, 40, 90, 70);
+      g.fillStyle = "#fff"; g.fillRect(x+10, 70, 40, 30); g.fillStyle = "#c0392b"; g.fillRect(x+8, 62, 44, 8);
+      g.fillStyle = "rgba(255,255,255,.8)"; g.fillRect(x, 120, 70, 8); g.fillStyle = col; g.fillRect(x, 136, 40, 10); }
+  }
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
 const TILE = 3.1;
@@ -576,7 +626,7 @@ function neonPad(color) {
     new THREE.MeshBasicMaterial({ color:new THREE.Color(color).multiplyScalar(2.2) }));
   rim.rotation.x = -Math.PI/2; rim.position.y = 0.0;
   const inside = new THREE.Mesh(new THREE.ExtrudeGeometry(roundedRect(W-0.22, D-0.22, R-0.1), { depth:0.035, bevelEnabled:false }),
-    new THREE.MeshStandardMaterial({ color:0x0c1220, roughness:0.3, metalness:0.5, transparent:true, opacity:0.85, envMapIntensity:0.6 }));
+    new THREE.MeshPhysicalMaterial({ color:0x0c1220, roughness:0.25, metalness:0.4, clearcoat:0.6, transparent:true, opacity:0.85, envMapIntensity:0.6 }));
   inside.rotation.x = -Math.PI/2; inside.receiveShadow = true;
   const glow = glowSprite(color, 9, 0.5);
   const light = new THREE.PointLight(color, 0.8, 6.5, 2); light.position.set(0, 1.9, 0.3);
@@ -584,38 +634,54 @@ function neonPad(color) {
   g.userData = { rim, light, glow };
   return g;
 }
-const deskMat = new THREE.MeshStandardMaterial({ color:0x2a303d, roughness:0.35, metalness:0.35, envMapIntensity:0.6 });
-const chairMat = new THREE.MeshStandardMaterial({ color:0x1a1f2b, roughness:0.6, metalness:0.2 });
+const deskMat = new THREE.MeshPhysicalMaterial({ color:0x2a303d, roughness:0.3, metalness:0.3, clearcoat:0.5, clearcoatRoughness:0.2, envMapIntensity:0.6 });
+const deskEdge = new THREE.MeshStandardMaterial({ color:0x3b4356, roughness:0.5, metalness:0.2 });
+const chairMat = new THREE.MeshPhysicalMaterial({ color:0x181c27, roughness:0.55, metalness:0.1, clearcoat:0.3 });
 function makeStation(mod) {
   const g = new THREE.Group();
   g.position.copy(groundAt(mod.tile[0], mod.tile[1]));
 
   const pad = neonPad(mod.color);
-  const desk = new THREE.Mesh(new RoundedBoxGeometry(1.8, 0.08, 0.75, 2, 0.03), deskMat); desk.position.set(0, 0.72, 0.35); desk.castShadow = true;
-  const panel = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.66, 0.06), deskMat); panel.position.set(0, 0.36, 0.7); panel.castShadow = true;
-  const legL = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.68, 0.66), deskMat); legL.position.set(-0.86, 0.36, 0.35);
-  const legR = legL.clone(); legR.position.x = 0.86;
-  const tex = screenTexture(mod);
+  // L-shaped desk: main slab + side return on the inner side
+  const desk = new THREE.Mesh(new RoundedBoxGeometry(1.9, 0.07, 0.72, 3, 0.035), deskMat); desk.position.set(0, 0.73, 0.36); desk.castShadow = true;
+  const side = -mod.face;
+  const deskRet = new THREE.Mesh(new RoundedBoxGeometry(0.6, 0.07, 1.1, 3, 0.035), deskMat); deskRet.position.set(side*0.95, 0.73, -0.2); deskRet.castShadow = true;
+  const skirt = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.62, 0.05), deskEdge); skirt.position.set(0, 0.38, 0.7);
+  const legA = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.7, 0.66), deskEdge); legA.position.set(-0.9, 0.35, 0.36);
+  const legB = legA.clone(); legB.position.x = 0.9;
+  const legC = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.7, 0.05), deskEdge); legC.position.set(side*0.95, 0.35, -0.72);
+  const deskShadow = contactShadow(3.0, 0.45); deskShadow.position.z = 0.3;
+  const tex = screenTexture(mod, mod.id === "props" ? 1 : 0);
   const monitors = [];
-  [[-0.46, 0.05],[0.46, 0.05]].forEach(([mx, mz], k) => {
-    const frame = new THREE.Mesh(new RoundedBoxGeometry(0.8, 0.52, 0.05, 2, 0.02), visorMat); frame.position.set(mx, 1.1, mz); frame.rotation.y = (k?-1:1)*0.14; frame.castShadow = true;
-    const scr = new THREE.Mesh(new THREE.PlaneGeometry(0.73, 0.45), new THREE.MeshStandardMaterial({ map:tex, emissive:0xffffff, emissiveMap:tex, emissiveIntensity:1.1, roughness:0.4 }));
-    scr.position.set(0, 0, 0.03); frame.add(scr);
-    const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.04, 0.28, 8), visorMat); stand.position.set(mx, 0.86, mz+0.05);
-    const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.03, 16), visorMat); foot.position.set(mx, 0.76, mz+0.05);
-    g.add(frame, stand, foot); monitors.push(scr);
-  });
-  const kb = new THREE.Mesh(new RoundedBoxGeometry(0.6, 0.03, 0.2, 2, 0.01), chairMat); kb.position.set(0, 0.77, 0.45);
-  const mug = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.05, 0.11, 12), whiteMat); mug.position.set(0.72, 0.82, 0.5);
-  const screenLight = new THREE.PointLight(mod.color, 0.25, 2.2, 2); screenLight.position.set(0, 1.2, -0.25);
+  // big curved main monitor
+  const curve = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.1, 0.5, 28, 1, true, -0.44, 0.88),
+    new THREE.MeshStandardMaterial({ map:tex, emissive:0xffffff, emissiveMap:tex, emissiveIntensity:1.05, roughness:0.35, side:THREE.BackSide }));
+  curve.position.set(0, 1.12, 1.12); curve.rotation.y = Math.PI;
+  const curveBack = new THREE.Mesh(new THREE.CylinderGeometry(1.125, 1.125, 0.54, 28, 1, true, -0.45, 0.9), visorMat); curveBack.position.copy(curve.position); curveBack.rotation.y = Math.PI; curveBack.castShadow = true;
+  const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.05, 0.3, 10), visorMat); stand.position.set(0, 0.88, 0.1);
+  const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.22, 0.03, 20), visorMat); foot.position.set(0, 0.77, 0.1);
+  monitors.push(curve);
+  // second, smaller monitor on the return
+  const frame2 = new THREE.Mesh(new RoundedBoxGeometry(0.62, 0.42, 0.04, 2, 0.015), visorMat); frame2.position.set(side*0.95, 1.08, -0.3); frame2.rotation.y = -side*1.1; frame2.castShadow = true;
+  const scr2 = new THREE.Mesh(new THREE.PlaneGeometry(0.56, 0.36), new THREE.MeshStandardMaterial({ map:tex, emissive:0xffffff, emissiveMap:tex, emissiveIntensity:1.0, roughness:0.4 })); scr2.position.z = 0.025; frame2.add(scr2);
+  const stand2 = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.04, 0.22, 8), visorMat); stand2.position.set(side*0.95, 0.86, -0.3);
+  monitors.push(scr2);
+  const kb = new THREE.Mesh(new RoundedBoxGeometry(0.62, 0.03, 0.2, 2, 0.01), chairMat); kb.position.set(0, 0.78, 0.4);
+  const kbGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.58, 0.16), new THREE.MeshBasicMaterial({ color:new THREE.Color(mod.color).multiplyScalar(1.6), transparent:true, opacity:0.6 })); kbGlow.rotation.x = -Math.PI/2; kbGlow.position.set(0, 0.8, 0.4);
+  const mug = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.05, 0.11, 14), whiteMat); mug.position.set(-side*0.7, 0.83, 0.5);
+  const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 10), new THREE.MeshBasicMaterial({ color:0xffe2b0 })); lamp.position.set(side*1.05, 1.0, -0.65);
+  const lampArm = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.3, 6), visorMat); lampArm.position.set(side*1.05, 0.9, -0.65);
+  const screenLight = new THREE.PointLight(mod.color, 0.3, 2.4, 2); screenLight.position.set(0, 1.2, -0.2);
 
-  const chairSeat = new THREE.Mesh(new RoundedBoxGeometry(0.62, 0.1, 0.6, 2, 0.05), chairMat); chairSeat.position.set(0, 0.5, -0.55);
-  const chairBack = new THREE.Mesh(new RoundedBoxGeometry(0.62, 0.7, 0.1, 2, 0.05), chairMat); chairBack.position.set(0, 0.9, -0.88);
-  const chairPost = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.4, 8), visorMat); chairPost.position.set(0, 0.28, -0.55);
-  const chairBase = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.32, 0.04, 16), visorMat); chairBase.position.set(0, 0.04, -0.55);
+  // rounded office chair
+  const chairSeat = new THREE.Mesh(new RoundedBoxGeometry(0.66, 0.12, 0.62, 3, 0.06), chairMat); chairSeat.position.set(0, 0.5, -0.58);
+  const chairBack = new THREE.Mesh(new RoundedBoxGeometry(0.66, 0.78, 0.12, 3, 0.06), chairMat); chairBack.position.set(0, 0.95, -0.9); chairBack.rotation.x = -0.1;
+  const headrest = new THREE.Mesh(new RoundedBoxGeometry(0.4, 0.18, 0.1, 3, 0.05), chairMat); headrest.position.set(0, 1.45, -0.95);
+  const chairPost = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.4, 8), visorMat); chairPost.position.set(0, 0.28, -0.58);
+  const chairBase = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.34, 0.04, 20), visorMat); chairBase.position.set(0, 0.04, -0.58);
 
-  const bot = makeBot(mod.color); bot.position.set(0, 0.2, -0.6); bot.scale.setScalar(1.15);
-  g.add(pad, desk, panel, legL, legR, kb, mug, screenLight, chairSeat, chairBack, chairPost, chairBase, bot);
+  const bot = makeBot(mod.color); bot.position.set(0, 0.2, -0.62); bot.scale.setScalar(1.15);
+  g.add(pad, deskShadow, desk, deskRet, skirt, legA, legB, legC, curve, curveBack, stand, foot, frame2, stand2, kb, kbGlow, mug, lamp, lampArm, screenLight, chairSeat, chairBack, headrest, chairPost, chairBase, bot);
   g.traverse(o => { if (o.isMesh) o.userData.id = mod.id; });
   g.userData = { mod, bot, pad, monitors, id:mod.id };
   scene.add(g);
