@@ -172,32 +172,32 @@ const MODULES = [
   { id:"scraping", name:"Exploración & Scraping", sub:"Web · Idealista · FB · IG · YouTube", icon:"hub", wedge:"search",
     color:0x8b3dff, status:"working", note:"Bot explorando portales",
     metrics:[["Nuevas","2"],["Fuentes","5"],["Cola","OK"]],
-    pos:[-4.4,-3.2], tag:[-24,-94], bub:[112,-36], bubIcon:"search",
+    pos:[-5.0,-3.7], tag:[-24,-94], bub:[112,-36], bubIcon:"search",
     bubbles:["2 nuevas propiedades en Ibiza","Escaneando Idealista…","1 anuncio nuevo en FB"] },
   { id:"props", name:"Propiedades & Contenido", sub:"Fotos · Fichas · Web · RRSS", icon:"home", wedge:"home",
     color:0xf5b400, status:"needs", note:"Necesita tu revisión",
     metrics:[["Por publicar","1"],["Fotos","12"],["RRSS","Pendiente"]],
-    pos:[3.4,-3.1], tag:[-64,-100], bub:[96,-46], bubIcon:"doc",
+    pos:[3.9,-3.6], tag:[-64,-100], bub:[96,-46], bubIcon:"doc",
     bubbles:["1 ficha lista para publicar","Subiendo 4 fotos…","PDF ES generado"] },
   { id:"leads", name:"Clientes & Leads", sub:"Compradores · Vendedores · Matching IA", icon:"people", wedge:"people",
     color:0x22c55e, status:"needs", note:"Matching listo",
     metrics:[["Cualificados","3"],["Seguimiento","14"],["Match IA","8"]],
-    pos:[6.7,0.2], tag:[44,-82], bub:[108,-14], bubIcon:"target",
+    pos:[7.7,0.1], tag:[44,-82], bub:[108,-14], bubIcon:"target",
     bubbles:["3 leads cualificados","Match IA en curso…","1 lead respondió"] },
   { id:"finance", name:"Finanzas & Administración", sub:"Facturas · Contratos · Legal", icon:"coins", wedge:"chart",
     color:0x3b82f6, status:"working", note:"Admin al día",
     metrics:[["Facturas","2"],["Contratos","1"],["Legal","OK"]],
-    pos:[3.9,4.4], tag:[50,-96], bub:[142,-30], bubIcon:"bill",
+    pos:[4.6,5.0], tag:[50,-96], bub:[142,-30], bubIcon:"bill",
     bubbles:["2 facturas generadas","Contrato en revisión…","Pago registrado"] },
   { id:"agenda", name:"Agenda & Operaciones", sub:"Visitas · Notaría · Contratos", icon:"calendar", wedge:"calendar",
     color:0xef4444, status:"working", note:"Calendario sincronizado",
     metrics:[["Mañana","1"],["Semana","4"],["Notaría","0"]],
-    pos:[-4.6,4.6], tag:[-124,-92], bub:[112,-40], bubIcon:"calendar",
+    pos:[-5.4,5.2], tag:[-124,-92], bub:[112,-40], bubIcon:"calendar",
     bubbles:["1 visita confirmada mañana","Recordatorio enviado","Hueco a las 17:00"] },
   { id:"ai", name:"IA & Automatización", sub:"Bots · Flujos · Integraciones", icon:"spark", wedge:"gear",
     color:0xff8a1f, status:"idle", note:"En reposo",
     metrics:[["Bots","5"],["Flujos","11"],["Errores","0"]],
-    pos:[-6.4,0.2], tag:[-66,-82], bub:[66,-24], bubIcon:"check",
+    pos:[-7.6,0.1], tag:[-66,-82], bub:[66,-24], bubIcon:"check",
     bubbles:["Workflow actualizado","Bot en espera…","Flujo WA sincronizado"] }
 ];
 const STATUS = { working:"Working", needs:"Needs you", idle:"Idle" };
@@ -226,33 +226,34 @@ let portrait = false;
 function placeCamera() {
   const aspect = innerWidth / innerHeight;
   portrait = aspect < 0.9;
-  const pitch = THREE.MathUtils.degToRad(portrait ? 52 : 47);
+  const pitch = THREE.MathUtils.degToRad(portrait ? 52 : 46);
   // landscape: the concept framing (whole office ±11.8 wide). portrait: look along the room from the left wall.
-  const halfW = portrait ? 7.4 : 11.8;
-  const fov = portrait ? 40 : 30;
+  const halfW = portrait ? 8.2 : 13.6;
+  const fov = portrait ? 26 : 18;
   camera.fov = fov;
   const halfTan = Math.tan(THREE.MathUtils.degToRad(fov / 2));
   let dist = halfW / (halfTan * aspect);
-  dist = Math.max(dist, 22);
+  dist = Math.max(dist, 30);
   if (portrait) camBase.set(-Math.cos(pitch) * dist, Math.sin(pitch) * dist, 1.2).add(camTarget);
   else camBase.set(0, Math.sin(pitch) * dist, Math.cos(pitch) * dist).add(camTarget);
   camera.position.copy(camBase);
   camera.aspect = aspect;
   camera.lookAt(camTarget);
   camera.updateProjectionMatrix();
-  document.documentElement.style.setProperty("--ui-scale", String(Math.max(0.62, Math.min(1, innerWidth / 1100))));
+  document.documentElement.style.setProperty("--ui-scale", String(Math.max(0.6, Math.min(1, innerWidth / 1180))));
 }
 placeCamera();
 
 /* ---------- lighting: Ibiza dusk from the right windows + cool fill ---------- */
-scene.add(new THREE.HemisphereLight(0xffcfa8, 0x141a2c, 0.42));
+scene.add(new THREE.HemisphereLight(0xffcfa8, 0x1a2034, 0.55));
+scene.add(new THREE.AmbientLight(0x9aa8c4, 0.3));
 const sun = new THREE.DirectionalLight(0xffa565, 1.45);
 sun.position.set(14, 8, -5);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
 sun.shadow.camera.near = 1; sun.shadow.camera.far = 60;
-sun.shadow.camera.left = -16; sun.shadow.camera.right = 16;
-sun.shadow.camera.top = 16; sun.shadow.camera.bottom = -16;
+sun.shadow.camera.left = -18; sun.shadow.camera.right = 18;
+sun.shadow.camera.top = 18; sun.shadow.camera.bottom = -18;
 sun.shadow.bias = -0.0005;
 scene.add(sun);
 const fill = new THREE.DirectionalLight(0x5f7dff, 0.28); fill.position.set(-10, 9, 10); scene.add(fill);
@@ -294,24 +295,24 @@ function iconTexture(key, bg=null) {
 }
 
 /* ---------- floor: glossy dark with real reflections ---------- */
-const mirror = new Reflector(new THREE.PlaneGeometry(34, 26), {
+const mirror = new Reflector(new THREE.PlaneGeometry(38, 28), {
   clipBias:0.003, textureWidth: 1024, textureHeight: 1024, color: 0x6a717c
 });
 mirror.rotation.x = -Math.PI/2; mirror.position.y = -0.002; scene.add(mirror);
 function floorTexture() {
   const c = document.createElement("canvas"); c.width = c.height = 512;
   const g = c.getContext("2d");
-  g.fillStyle = "#1a1a24"; g.fillRect(0,0,512,512);
-  g.strokeStyle = "rgba(255,255,255,.06)"; g.lineWidth = 2;
+  g.fillStyle = "#2b2e3a"; g.fillRect(0,0,512,512);
+  g.strokeStyle = "rgba(255,255,255,.085)"; g.lineWidth = 2;
   for (let i=0;i<=512;i+=128){ g.beginPath(); g.moveTo(i,0); g.lineTo(i,512); g.stroke(); g.beginPath(); g.moveTo(0,i); g.lineTo(512,i); g.stroke(); }
-  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(8.5, 6.5); t.colorSpace = THREE.SRGBColorSpace; return t;
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(9.5, 7); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
-const floor = new THREE.Mesh(new THREE.PlaneGeometry(34, 26),
-  new THREE.MeshStandardMaterial({ map:floorTexture(), color:0xbfb3ae, transparent:true, opacity:0.78, roughness:0.32, metalness:0.25, envMapIntensity:0.35 }));
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(38, 28),
+  new THREE.MeshStandardMaterial({ map:floorTexture(), color:0xc9c0bc, transparent:true, opacity:0.8, roughness:0.32, metalness:0.25, envMapIntensity:0.35 }));
 floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; scene.add(floor);
 
 /* ---------- walls, windows & the Ibiza bay ---------- */
-const ROOM = { back:-6.2, right:12.6, left:-12.6, h:4.6, front:9 };
+const ROOM = { back:-6.4, right:13.8, left:-13.8, h:4.6, front:9 };
 const wallMat = new THREE.MeshStandardMaterial({ color:0x171c28, roughness:0.9, metalness:0.05, envMapIntensity:0.15 });
 const trimMat = new THREE.MeshStandardMaterial({ color:0x0a0d14, roughness:0.6, metalness:0.4 });
 
@@ -355,26 +356,26 @@ function vistaTexture() {
 const vistaTex = vistaTexture();
 const vistaMat = new THREE.MeshBasicMaterial({ map:vistaTex, toneMapped:false });
 // back window vista (right 2/3 of the back wall) + right wall vista
-const backVista = new THREE.Mesh(new THREE.PlaneGeometry(16, 5.3), vistaMat.clone());
+const backVista = new THREE.Mesh(new THREE.PlaneGeometry(18, 5.3), vistaMat.clone());
 backVista.material.map = vistaTex.clone(); backVista.material.map.repeat.set(0.55,1); backVista.material.map.offset.set(0,0); backVista.material.map.needsUpdate = true;
-backVista.position.set(5.4, 2.65, ROOM.back - 0.9); scene.add(backVista);
+backVista.position.set(6.2, 2.65, ROOM.back - 0.9); scene.add(backVista);
 const rightVista = new THREE.Mesh(new THREE.PlaneGeometry(18, 5.3), vistaMat.clone());
 rightVista.material.map = vistaTex.clone(); rightVista.material.map.repeat.set(0.45,1); rightVista.material.map.offset.set(0.55,0); rightVista.material.map.needsUpdate = true;
 rightVista.position.set(ROOM.right + 0.9, 2.65, 1.5); rightVista.rotation.y = -Math.PI/2; scene.add(rightVista);
 
 // glazing + mullions
 const glassMat = new THREE.MeshPhysicalMaterial({ color:0xbfd4ee, transparent:true, opacity:0.09, roughness:0.02, metalness:0.0, envMapIntensity:0.6 });
-const backGlass = new THREE.Mesh(new THREE.PlaneGeometry(15.5, ROOM.h), glassMat); backGlass.position.set(5.4, ROOM.h/2, ROOM.back); scene.add(backGlass);
+const backGlass = new THREE.Mesh(new THREE.PlaneGeometry(17, ROOM.h), glassMat); backGlass.position.set(6.1, ROOM.h/2, ROOM.back); scene.add(backGlass);
 const rightGlass = new THREE.Mesh(new THREE.PlaneGeometry(17, ROOM.h), glassMat); rightGlass.position.set(ROOM.right, ROOM.h/2, 1.5); rightGlass.rotation.y = -Math.PI/2; scene.add(rightGlass);
-for (let x = -2.3; x <= 13.2; x += 2.6) { const m = new THREE.Mesh(new THREE.BoxGeometry(0.1, ROOM.h, 0.14), trimMat); m.position.set(x, ROOM.h/2, ROOM.back + 0.02); scene.add(m); }
+for (let x = -2.3; x <= 14; x += 2.6) { const m = new THREE.Mesh(new THREE.BoxGeometry(0.1, ROOM.h, 0.14), trimMat); m.position.set(x, ROOM.h/2, ROOM.back + 0.02); scene.add(m); }
 for (let z = ROOM.back; z <= 10; z += 2.6) { const m = new THREE.Mesh(new THREE.BoxGeometry(0.14, ROOM.h, 0.1), trimMat); m.position.set(ROOM.right - 0.02, ROOM.h/2, z); scene.add(m); }
-const sillB = new THREE.Mesh(new THREE.BoxGeometry(15.6, 0.12, 0.3), trimMat); sillB.position.set(5.4, 0.06, ROOM.back + 0.05); scene.add(sillB);
+const sillB = new THREE.Mesh(new THREE.BoxGeometry(17, 0.12, 0.3), trimMat); sillB.position.set(6.1, 0.06, ROOM.back + 0.05); scene.add(sillB);
 const sillR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.12, 17), trimMat); sillR.position.set(ROOM.right - 0.05, 0.06, 1.5); scene.add(sillR);
-const headerB = new THREE.Mesh(new THREE.BoxGeometry(15.6, 0.35, 0.4), trimMat); headerB.position.set(5.4, ROOM.h - 0.17, ROOM.back + 0.1); scene.add(headerB);
+const headerB = new THREE.Mesh(new THREE.BoxGeometry(17, 0.35, 0.4), trimMat); headerB.position.set(6.1, ROOM.h - 0.17, ROOM.back + 0.1); scene.add(headerB);
 
 // solid back wall (left part) with TV + sideboard + shelves
-const backWallL = new THREE.Mesh(new THREE.BoxGeometry(10.6, ROOM.h, 0.3), wallMat); backWallL.position.set(-7.6, ROOM.h/2, ROOM.back - 0.15); backWallL.receiveShadow = true; scene.add(backWallL);
-const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, ROOM.h, 22), wallMat); leftWall.position.set(ROOM.left, ROOM.h/2, 2); scene.add(leftWall);
+const backWallL = new THREE.Mesh(new THREE.BoxGeometry(12, ROOM.h, 0.3), wallMat); backWallL.position.set(-8.3, ROOM.h/2, ROOM.back - 0.15); backWallL.receiveShadow = true; scene.add(backWallL);
+const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, ROOM.h, 24), wallMat); leftWall.position.set(ROOM.left, ROOM.h/2, 2); scene.add(leftWall);
 const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(34, 26), new THREE.MeshStandardMaterial({ color:0x0a0d15, roughness:1 }));
 ceiling.rotation.x = Math.PI/2; ceiling.position.y = ROOM.h; scene.add(ceiling);
 // recessed ceiling lights (warm)
@@ -393,11 +394,11 @@ function tvTexture() {
   g.fillStyle = "rgba(255,255,255,.12)"; for (let i=0;i<5;i++) g.fillRect(24, 150+i*22, 180+Math.random()*200, 8);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
-const tvFrame = new THREE.Mesh(new THREE.BoxGeometry(3.9, 2.2, 0.08), trimMat); tvFrame.position.set(-6.4, 2.7, ROOM.back + 0.05); scene.add(tvFrame);
-const tv = new THREE.Mesh(new THREE.PlaneGeometry(3.7, 2.0), new THREE.MeshBasicMaterial({ map:tvTexture() })); tv.position.set(-6.4, 2.7, ROOM.back + 0.1); scene.add(tv);
-const tvGlow = new THREE.PointLight(0xffa070, 0.6, 7, 2); tvGlow.position.set(-6.4, 2.4, ROOM.back + 1.2); scene.add(tvGlow);
+const tvFrame = new THREE.Mesh(new THREE.BoxGeometry(3.9, 2.2, 0.08), trimMat); tvFrame.position.set(-7.2, 2.7, ROOM.back + 0.05); scene.add(tvFrame);
+const tv = new THREE.Mesh(new THREE.PlaneGeometry(3.7, 2.0), new THREE.MeshBasicMaterial({ map:tvTexture() })); tv.position.set(-7.2, 2.7, ROOM.back + 0.1); scene.add(tv);
+const tvGlow = new THREE.PointLight(0xffa070, 0.6, 7, 2); tvGlow.position.set(-7.2, 2.4, ROOM.back + 1.2); scene.add(tvGlow);
 const sideboard = new THREE.Mesh(new RoundedBoxGeometry(4.4, 0.8, 0.7, 3, 0.06), new THREE.MeshStandardMaterial({ color:0x3a2e25, roughness:0.5, metalness:0.1 }));
-sideboard.position.set(-6.4, 0.4, ROOM.back + 0.45); sideboard.castShadow = true; scene.add(sideboard);
+sideboard.position.set(-7.2, 0.4, ROOM.back + 0.45); sideboard.castShadow = true; scene.add(sideboard);
 // wall art on left wall
 [[-1.5,2.6],[2.2,2.6]].forEach(([z,y])=>{ const f = new THREE.Mesh(new THREE.BoxGeometry(0.06, 1.1, 1.5), trimMat); f.position.set(ROOM.left+0.18, y, z); scene.add(f);
   const p = new THREE.Mesh(new THREE.PlaneGeometry(1.35, 0.95), new THREE.MeshBasicMaterial({ map:vistaTex })); p.rotation.y = Math.PI/2; p.position.set(ROOM.left+0.22, y, z); scene.add(p); });
@@ -414,16 +415,16 @@ function sofa(x, z, rot, len=2.6) {
   for (let i=0;i<Math.round(len/1.3);i++){ const cu = new THREE.Mesh(new RoundedBoxGeometry(len/Math.round(len/1.3)-0.1, 0.16, 0.9, 3, 0.06), fabric); cu.position.set(-len/2+ (i+0.5)*(len/Math.round(len/1.3)), 0.6, 0.02); g.add(cu); }
   g.add(base, back, aL, aR); g.position.set(x,0,z); g.rotation.y = rot; scene.add(g); return g;
 }
-sofa(10.3, -3.6, -Math.PI/2, 2.2);
-sofa(10.4, 4.2, -Math.PI/2, 2.2);
-sofa(-9.6, 7.4, Math.PI/2 + 0.1, 3.0);
-sofa(-3.0, -5.2, 0, 2.2);
+sofa(11.6, -3.4, -Math.PI/2, 2.2);
+sofa(11.8, 4.4, -Math.PI/2, 2.2);
+sofa(-11.2, 7.2, Math.PI/2 + 0.1, 2.8);
+sofa(-2.6, -5.4, 0, 2.0);
 function table(x, z, w=1.4, d=0.8) {
   const top = new THREE.Mesh(new RoundedBoxGeometry(w, 0.08, d, 2, 0.03), new THREE.MeshStandardMaterial({ color:0x2a2f3a, roughness:0.3, metalness:0.4 }));
   top.position.set(x, 0.42, z); top.castShadow = true; scene.add(top);
   const leg = new THREE.Mesh(new THREE.BoxGeometry(w*0.7, 0.4, d*0.6), trimMat); leg.position.set(x,0.2,z); scene.add(leg);
 }
-table(-8.1, 6.9, 1.2, 0.8); table(8.3, 0.2, 1.1, 0.8);
+table(-9.6, 6.7, 1.1, 0.75); table(9.9, 0.3, 1.0, 0.75);
 
 const leafMat = new THREE.MeshStandardMaterial({ color:0x2f8f52, roughness:0.7, side:THREE.DoubleSide, envMapIntensity:0.2 });
 const potMat = new THREE.MeshStandardMaterial({ color:0x2b2f3b, roughness:0.6, metalness:0.2 });
@@ -439,12 +440,12 @@ function plant(x, z, s=1) {
   for (let i=0;i<9;i++){ const leaf = new THREE.Mesh(leafGeo, leafMat); const a = i/9*Math.PI*2; leaf.position.set(0, 1.72*s + (i%2)*0.1*s, 0); leaf.rotation.y = a; leaf.rotation.z = -0.35 - (i%3)*0.15; leaf.translateX(0.6*s); leaf.castShadow = true; g.add(leaf); }
   g.position.set(x,0,z); scene.add(g); return g;
 }
-plant(-10.9, -4.6, 1.1); plant(-1.2, -5.3, 0.9); plant(1.3, -5.4, 0.8); plant(8.0, -5.4, 1.05);
-plant(11.0, 1.1, 0.9); plant(11.2, 6.9, 1.0); plant(-11.0, 2.6, 1.0); plant(-7.6, 2.3, 0.8);
-plant(0.6, 7.2, 0.9); plant(-1.9, 7.6, 0.7);
+plant(-12.2, -4.8, 1.0); plant(-0.6, -5.5, 0.85); plant(1.4, -5.6, 0.7); plant(9.2, -5.6, 0.95);
+plant(12.4, 1.2, 0.85); plant(12.5, 7.2, 0.9); plant(-12.3, 2.4, 0.9); plant(-8.6, 2.2, 0.7);
+plant(0.9, 7.6, 0.85);
 
 /* ---------- the pizza hub ---------- */
-const hub = new THREE.Group(); scene.add(hub);
+const hub = new THREE.Group(); hub.scale.setScalar(1.12); scene.add(hub);
 const plate = new THREE.Mesh(new THREE.CylinderGeometry(3.5, 3.6, 0.1, 72), new THREE.MeshStandardMaterial({ color:0x0b1020, roughness:0.35, metalness:0.5 }));
 plate.position.y = 0.05; plate.receiveShadow = true; hub.add(plate);
 const ring = new THREE.Mesh(new THREE.TorusGeometry(3.52, 0.05, 10, 120), new THREE.MeshBasicMaterial({ color:new THREE.Color(0x55a8ff).multiplyScalar(2.4) }));
@@ -487,20 +488,20 @@ const whiteMat = new THREE.MeshStandardMaterial({ color:0xd9dee8, roughness:0.42
 const visorMat = new THREE.MeshStandardMaterial({ color:0x0b1020, roughness:0.15, metalness:0.6, envMapIntensity:1 });
 function makeBot(color) {
   const g = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.SphereGeometry(0.36, 28, 20), whiteMat); body.scale.set(1, 1.08, 0.86); body.position.y = 0.62; body.castShadow = true;
-  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.12, 12), visorMat); neck.position.y = 0.98;
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.33, 28, 22), whiteMat); head.position.y = 1.3; head.castShadow = true;
-  const visor = new THREE.Mesh(new THREE.SphereGeometry(0.27, 24, 16), visorMat); visor.scale.set(1.0, 0.72, 0.62); visor.position.set(0, 1.3, 0.2);
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.33, 28, 20), whiteMat); body.scale.set(1, 1.0, 0.86); body.position.y = 0.62; body.castShadow = true;
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.12, 12), visorMat); neck.position.y = 0.95;
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.42, 30, 24), whiteMat); head.position.y = 1.36; head.castShadow = true;
+  const visor = new THREE.Mesh(new THREE.SphereGeometry(0.36, 24, 16), visorMat); visor.scale.set(1.0, 0.68, 0.62); visor.position.set(0, 1.34, 0.24);
   const eyeMat = new THREE.MeshBasicMaterial({ color:new THREE.Color(color).multiplyScalar(2.5) });
-  const e1 = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 12), eyeMat); e1.scale.set(1, 1.25, 0.5); e1.position.set(-0.11, 1.32, 0.4);
-  const e2 = e1.clone(); e2.position.x = 0.11;
+  const e1 = new THREE.Mesh(new THREE.SphereGeometry(0.085, 12, 12), eyeMat); e1.scale.set(1, 1.3, 0.5); e1.position.set(-0.14, 1.36, 0.5);
+  const e2 = e1.clone(); e2.position.x = 0.14;
   const canMat = new THREE.MeshStandardMaterial({ color, roughness:0.35, metalness:0.2, emissive:color, emissiveIntensity:0.25 });
   const ringMat = new THREE.MeshBasicMaterial({ color:new THREE.Color(color).multiplyScalar(2.2) });
-  const canL = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.1, 20), canMat); canL.rotation.z = Math.PI/2; canL.position.set(-0.34, 1.28, 0.02);
-  const canR = canL.clone(); canR.position.x = 0.34;
-  const rL = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.022, 8, 24), ringMat); rL.rotation.y = Math.PI/2; rL.position.set(-0.4, 1.28, 0.02);
-  const rR = rL.clone(); rR.position.x = 0.4;
-  const band = new THREE.Mesh(new THREE.TorusGeometry(0.34, 0.035, 8, 28, Math.PI), canMat); band.position.y = 1.3; band.position.z = 0.02;
+  const canL = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.11, 20), canMat); canL.rotation.z = Math.PI/2; canL.position.set(-0.43, 1.32, 0.04);
+  const canR = canL.clone(); canR.position.x = 0.43;
+  const rL = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.022, 8, 24), ringMat); rL.rotation.y = Math.PI/2; rL.position.set(-0.49, 1.32, 0.04);
+  const rR = rL.clone(); rR.position.x = 0.49;
+  const band = new THREE.Mesh(new THREE.TorusGeometry(0.44, 0.04, 8, 28, Math.PI), canMat); band.position.y = 1.34; band.position.z = 0.04;
   const armGeo = new THREE.CapsuleGeometry(0.07, 0.3, 4, 10);
   const aL = new THREE.Mesh(armGeo, whiteMat); aL.position.set(-0.36, 0.7, 0.2); aL.rotation.x = -1.2; aL.rotation.z = 0.25;
   const aR = aL.clone(); aR.position.x = 0.36; aR.rotation.z = -0.25;
@@ -546,30 +547,30 @@ function makeStation(mod) {
   g.position.set(mod.pos[0], 0, mod.pos[1]);
 
   const pad = neonPad(mod.color);
-  const desk = new THREE.Mesh(new RoundedBoxGeometry(2.1, 0.08, 0.8, 2, 0.03), deskMat); desk.position.set(0, 0.76, 0.35); desk.castShadow = true;
-  const panel = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.7, 0.06), deskMat); panel.position.set(0, 0.38, 0.72); panel.castShadow = true;
-  const legL = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.72, 0.7), deskMat); legL.position.set(-1.0, 0.38, 0.35);
-  const legR = legL.clone(); legR.position.x = 1.0;
+  const desk = new THREE.Mesh(new RoundedBoxGeometry(1.8, 0.08, 0.75, 2, 0.03), deskMat); desk.position.set(0, 0.72, 0.35); desk.castShadow = true;
+  const panel = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.66, 0.06), deskMat); panel.position.set(0, 0.36, 0.7); panel.castShadow = true;
+  const legL = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.68, 0.66), deskMat); legL.position.set(-0.86, 0.36, 0.35);
+  const legR = legL.clone(); legR.position.x = 0.86;
   const tex = screenTexture(mod);
   const monitors = [];
-  [[-0.56, 0.05],[0.56, 0.05]].forEach(([mx, mz], k) => {
-    const frame = new THREE.Mesh(new RoundedBoxGeometry(0.92, 0.6, 0.05, 2, 0.02), visorMat); frame.position.set(mx, 1.2, mz); frame.rotation.y = (k?-1:1)*0.14; frame.castShadow = true;
-    const scr = new THREE.Mesh(new THREE.PlaneGeometry(0.84, 0.52), new THREE.MeshStandardMaterial({ map:tex, emissive:0xffffff, emissiveMap:tex, emissiveIntensity:1.1, roughness:0.4 }));
+  [[-0.46, 0.05],[0.46, 0.05]].forEach(([mx, mz], k) => {
+    const frame = new THREE.Mesh(new RoundedBoxGeometry(0.8, 0.52, 0.05, 2, 0.02), visorMat); frame.position.set(mx, 1.1, mz); frame.rotation.y = (k?-1:1)*0.14; frame.castShadow = true;
+    const scr = new THREE.Mesh(new THREE.PlaneGeometry(0.73, 0.45), new THREE.MeshStandardMaterial({ map:tex, emissive:0xffffff, emissiveMap:tex, emissiveIntensity:1.1, roughness:0.4 }));
     scr.position.set(0, 0, 0.03); frame.add(scr);
-    const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.04, 0.28, 8), visorMat); stand.position.set(mx, 0.92, mz+0.05);
-    const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.03, 16), visorMat); foot.position.set(mx, 0.8, mz+0.05);
+    const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.04, 0.28, 8), visorMat); stand.position.set(mx, 0.86, mz+0.05);
+    const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.03, 16), visorMat); foot.position.set(mx, 0.76, mz+0.05);
     g.add(frame, stand, foot); monitors.push(scr);
   });
-  const kb = new THREE.Mesh(new RoundedBoxGeometry(0.6, 0.03, 0.2, 2, 0.01), chairMat); kb.position.set(0, 0.81, 0.45);
-  const mug = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.05, 0.11, 12), whiteMat); mug.position.set(0.85, 0.86, 0.5);
+  const kb = new THREE.Mesh(new RoundedBoxGeometry(0.6, 0.03, 0.2, 2, 0.01), chairMat); kb.position.set(0, 0.77, 0.45);
+  const mug = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.05, 0.11, 12), whiteMat); mug.position.set(0.72, 0.82, 0.5);
   const screenLight = new THREE.PointLight(mod.color, 0.25, 2.2, 2); screenLight.position.set(0, 1.2, -0.25);
 
-  const chairSeat = new THREE.Mesh(new RoundedBoxGeometry(0.62, 0.1, 0.6, 2, 0.05), chairMat); chairSeat.position.set(0, 0.55, -0.55);
-  const chairBack = new THREE.Mesh(new RoundedBoxGeometry(0.62, 0.7, 0.1, 2, 0.05), chairMat); chairBack.position.set(0, 1.0, -0.88);
+  const chairSeat = new THREE.Mesh(new RoundedBoxGeometry(0.62, 0.1, 0.6, 2, 0.05), chairMat); chairSeat.position.set(0, 0.5, -0.55);
+  const chairBack = new THREE.Mesh(new RoundedBoxGeometry(0.62, 0.7, 0.1, 2, 0.05), chairMat); chairBack.position.set(0, 0.9, -0.88);
   const chairPost = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.4, 8), visorMat); chairPost.position.set(0, 0.28, -0.55);
   const chairBase = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.32, 0.04, 16), visorMat); chairBase.position.set(0, 0.04, -0.55);
 
-  const bot = makeBot(mod.color); bot.position.set(0, 0.22, -0.6); bot.scale.setScalar(1.3);
+  const bot = makeBot(mod.color); bot.position.set(0, 0.2, -0.55); bot.scale.setScalar(1.0);
   g.add(pad, desk, panel, legL, legR, kb, mug, screenLight, chairSeat, chairBack, chairPost, chairBase, bot);
   g.traverse(o => { if (o.isMesh) o.userData.id = mod.id; });
   g.userData = { mod, bot, pad, monitors, id:mod.id };
@@ -704,7 +705,7 @@ function animate() {
     const { bot, pad, monitors, mod } = s.userData;
     const ph = bot.userData.phase;
     const busy = mod.status !== "idle";
-    bot.position.y = 0.22 + Math.sin(t*2.1 + ph) * 0.03;
+    bot.position.y = 0.2 + Math.sin(t*2.1 + ph) * 0.03;
     bot.userData.head.rotation.y = Math.sin(t*0.9 + ph) * 0.35;
     bot.userData.head.rotation.x = Math.sin(t*1.7 + ph) * 0.06;
     bot.userData.arms.forEach((a, k) => { a.position.y = 0.7 + (busy ? Math.sin(t*9 + ph + k*1.6) * 0.03 : 0); });
