@@ -1,0 +1,27 @@
+{
+ "name": "Amaranthus Ibiza Real Estate",
+ "short": "Amaranthus",
+ "tagline": "Swiss mindset - Ibiza lifestyle",
+ "logo": "logo.png",
+ "colors": {
+  "bg": "#ffffff",
+  "ink": "#151515",
+  "muted": "#5d5952",
+  "line": "#e5e0d8",
+  "accent": "#8a7458",
+  "sand": "#f4f1ec"
+ },
+ "fonts": {
+  "sans": "Jost (300)",
+  "caps": "Cinzel (solo lema)",
+  "google": "family=Jost:wght@300;400;500&family=Cinzel:wght@400"
+ },
+ "language_private_link": "en",
+ "phone_display": "+41 79 797 40 08",
+ "phone_e164": "41797974008",
+ "email": "info@amaranthusibiza.es",
+ "agent_name": "Francesco Rocca",
+ "website": "https://www.amaranthus-realestate.com",
+ "featured_private_slug": "vistaalegre-villa",
+ "tokens_source": "/workspace/pexp/brand/brand.json"
+}
