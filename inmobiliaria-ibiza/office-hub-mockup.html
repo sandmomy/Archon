@@ -8,549 +8,466 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Figtree:wght@500;600;700&display=swap" rel="stylesheet" />
 <style>
-  html, body { margin:0; height:100%; overflow:hidden; background:#060910; color:#eef3fb; font-family:"Figtree",system-ui,sans-serif; }
-  #canvas { position:fixed; inset:0; width:100%; height:100%; display:block; touch-action:none; }
-  #labels { position:fixed; inset:0; pointer-events:none; overflow:hidden; }
-  .tag {
-    position:absolute; transform:translate(-50%,-100%);
-    text-align:center; white-space:nowrap; pointer-events:none;
-    text-shadow:0 2px 8px rgba(0,0,0,.75);
-  }
-  .tag strong { display:block; font-family:"Outfit",sans-serif; font-size:12px; }
-  .tag em { display:block; font-style:normal; font-size:9px; color:#c9d6ea; margin-top:2px; }
-  .bubble {
-    position:absolute; transform:translate(-20%,-120%);
-    background:rgba(255,255,255,.96); color:#0f172a;
-    padding:7px 10px; border-radius:12px; font-size:10px; font-weight:650;
-    max-width:140px; line-height:1.25; white-space:normal;
-    box-shadow:0 10px 24px rgba(0,0,0,.4);
-    pointer-events:none;
-  }
-  .bubble::after {
-    content:""; position:absolute; left:14px; bottom:-5px;
-    width:10px; height:10px; background:inherit; transform:rotate(45deg);
-  }
-  .hud-brand, .hud-live {
-    position:fixed; z-index:5; pointer-events:none;
-    display:flex; align-items:center; gap:8px;
-    padding:8px 12px; border-radius:14px;
-    background:rgba(8,12,22,.55); border:1px solid rgba(255,255,255,.12);
-    backdrop-filter:blur(8px);
-  }
-  .hud-brand { top:max(12px, env(safe-area-inset-top)); left:12px; }
-  .hud-live { top:max(12px, env(safe-area-inset-top)); right:12px; font-size:12px; color:#9dffc0; }
-  .hud-live i { width:7px; height:7px; border-radius:50%; background:#2ee56a; display:inline-block; box-shadow:0 0 0 4px rgba(46,229,106,.2); }
-  .logo {
-    width:28px; height:28px; border-radius:50%;
-    background:linear-gradient(145deg,#ffd27a,#e07040 55%,#1d4d3a);
-  }
-  .hud-brand strong { display:block; font-family:"Outfit",sans-serif; font-size:13px; }
-  .hud-brand span { display:block; font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#ffb070; }
-  .hint {
-    position:fixed; left:50%; bottom:max(12px, env(safe-area-inset-bottom));
-    transform:translateX(-50%); z-index:5;
-    padding:8px 14px; border-radius:999px; font-size:12px; color:#cbd5e1;
-    background:rgba(6,9,16,.6); border:1px solid rgba(255,255,255,.1);
-    pointer-events:none; max-width:92vw; text-align:center;
-  }
-  .veil {
-    position:fixed; inset:0; background:rgba(0,0,0,.45); opacity:0; pointer-events:none;
-    transition:opacity .25s; z-index:20;
-  }
-  .veil.show { opacity:1; pointer-events:auto; }
-  .panel {
-    position:fixed; right:0; top:0; height:100%; width:min(360px,100vw);
-    background:linear-gradient(160deg, rgba(18,28,44,.96), rgba(8,12,22,.98));
-    border-left:1px solid rgba(255,255,255,.1);
-    transform:translateX(105%); transition:transform .4s cubic-bezier(.2,.85,.2,1);
-    z-index:30; padding:20px; display:flex; flex-direction:column; gap:12px;
-  }
-  .panel.open { transform:translateX(0); }
-  .panel h2 { margin:0; font-family:"Outfit",sans-serif; font-size:1.45rem; }
-  .panel .sub { margin:0; color:#9aabbf; font-size:.92rem; line-height:1.4; }
-  .stat { display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:center; padding:12px; border-radius:14px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); }
-  .orb { width:42px; height:42px; border-radius:50%; display:grid; place-items:center; }
-  .orb span { width:10px; height:10px; border-radius:50%; background:currentColor; }
-  .orb.working { color:#2ee56a; background:rgba(46,229,106,.12); }
-  .orb.needs { color:#ff4d5e; background:rgba(255,77,94,.12); }
-  .orb.idle { color:#94a3b8; background:rgba(148,163,184,.12); }
-  .metric { display:flex; justify-content:space-between; padding:10px 12px; border-radius:11px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); font-size:.9rem; }
-  .metric span { color:#9aabbf; }
-  .btn { border:0; border-radius:12px; padding:12px; font:inherit; font-weight:650; cursor:pointer; }
-  .btn.primary { background:linear-gradient(135deg, var(--accent,#8b5cf6), #1e3a5f); color:#fff; }
-  .btn.ghost { background:transparent; color:#fff; border:1px solid rgba(255,255,255,.14); }
-  .x { margin-left:auto; width:36px; height:36px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:transparent; color:#fff; font-size:1.2rem; cursor:pointer; }
-  .row { display:flex; align-items:center; gap:8px; }
-  .swatch { width:10px; height:10px; border-radius:3px; background:var(--accent); }
-  @media (max-width:720px) and (orientation:portrait) {
-    .panel { top:auto; bottom:0; height:auto; max-height:78dvh; width:100vw; border-left:0; border-radius:18px 18px 0 0; transform:translateY(110%); }
-    .panel.open { transform:translateY(0); }
-    .tag strong { font-size:11px; }
-    .bubble { font-size:9px; max-width:120px; }
+  html,body{margin:0;height:100%;overflow:hidden;background:#070b14;color:#eef3fb;font-family:"Figtree",system-ui,sans-serif}
+  #canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  #labels{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+  .tag{position:absolute;transform:translate(-50%,-110%);text-align:center;pointer-events:none;text-shadow:0 2px 10px rgba(0,0,0,.85)}
+  .tag strong{display:block;font-family:"Outfit",sans-serif;font-size:11px;letter-spacing:-.01em}
+  .tag em{display:block;font-style:normal;font-size:8px;color:#c5d3e8;margin-top:2px;max-width:150px;white-space:normal}
+  .bubble{position:absolute;transform:translate(-10%,-130%);background:rgba(255,255,255,.97);color:#0f172a;padding:6px 9px;border-radius:11px;font-size:9.5px;font-weight:650;max-width:130px;line-height:1.25;box-shadow:0 10px 22px rgba(0,0,0,.4);pointer-events:none}
+  .bubble::after{content:"";position:absolute;left:12px;bottom:-4px;width:8px;height:8px;background:inherit;transform:rotate(45deg)}
+  .hud-brand,.hud-live{position:fixed;z-index:5;pointer-events:none;display:flex;align-items:center;gap:8px;padding:8px 11px;border-radius:14px;background:rgba(8,12,22,.62);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(8px)}
+  .hud-brand{top:max(10px,env(safe-area-inset-top));left:10px}
+  .hud-live{top:max(10px,env(safe-area-inset-top));right:10px;font-size:11px;color:#9dffc0}
+  .hud-live i{width:7px;height:7px;border-radius:50%;background:#2ee56a;display:inline-block;box-shadow:0 0 0 4px rgba(46,229,106,.2)}
+  .logo{width:26px;height:26px;border-radius:50%;background:linear-gradient(145deg,#ffd27a,#e07040 55%,#1d4d3a)}
+  .hud-brand strong{display:block;font-family:"Outfit",sans-serif;font-size:12px}
+  .hud-brand span{display:block;font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:#ffb070}
+  .hint{position:fixed;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:5;padding:7px 12px;border-radius:999px;font-size:11px;color:#cbd5e1;background:rgba(6,9,16,.62);border:1px solid rgba(255,255,255,.1);pointer-events:none;max-width:92vw;text-align:center}
+  .veil{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .25s;z-index:20}
+  .veil.show{opacity:1;pointer-events:auto}
+  .panel{position:fixed;right:0;top:0;height:100%;width:min(360px,100vw);background:linear-gradient(160deg,rgba(18,28,44,.96),rgba(8,12,22,.98));border-left:1px solid rgba(255,255,255,.1);transform:translateX(105%);transition:transform .4s cubic-bezier(.2,.85,.2,1);z-index:30;padding:18px;display:flex;flex-direction:column;gap:11px}
+  .panel.open{transform:translateX(0)}
+  .panel h2{margin:0;font-family:"Outfit",sans-serif;font-size:1.4rem}
+  .panel .sub{margin:0;color:#9aabbf;font-size:.9rem;line-height:1.4}
+  .stat{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;padding:12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+  .orb{width:42px;height:42px;border-radius:50%;display:grid;place-items:center}
+  .orb span{width:10px;height:10px;border-radius:50%;background:currentColor}
+  .orb.working{color:#2ee56a;background:rgba(46,229,106,.12)}
+  .orb.needs{color:#ff4d5e;background:rgba(255,77,94,.12)}
+  .orb.idle{color:#94a3b8;background:rgba(148,163,184,.12)}
+  .metric{display:flex;justify-content:space-between;padding:10px 12px;border-radius:11px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);font-size:.88rem}
+  .metric span{color:#9aabbf}
+  .btn{border:0;border-radius:12px;padding:12px;font:inherit;font-weight:650;cursor:pointer}
+  .btn.primary{background:linear-gradient(135deg,var(--accent,#8b5cf6),#1e3a5f);color:#fff}
+  .btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.14)}
+  .x{margin-left:auto;width:36px;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#fff;font-size:1.2rem;cursor:pointer}
+  .row{display:flex;align-items:center;gap:8px}
+  .swatch{width:10px;height:10px;border-radius:3px;background:var(--accent)}
+  @media (max-width:720px) and (orientation:portrait){
+    .panel{top:auto;bottom:0;height:auto;max-height:76dvh;width:100vw;border-left:0;border-radius:18px 18px 0 0;transform:translateY(110%)}
+    .panel.open{transform:translateY(0)}
+    .tag strong{font-size:10px}.bubble{font-size:9px;max-width:112px}
   }
 </style>
 </head>
 <body>
-  <canvas id="canvas"></canvas>
-  <div id="labels"></div>
-  <div class="hud-brand"><div class="logo"></div><div><strong>Inmobiliaria Ibiza</strong><span>Office Hub</span></div></div>
-  <div class="hud-live"><i></i><span id="liveCount">5 bots activos</span></div>
-  <div class="hint">Toca un bot o un sector del hub — tu escena, en 3D vivo</div>
-
-  <div class="veil" id="veil"></div>
-  <aside class="panel" id="panel" aria-hidden="true">
-    <div class="row"><span class="swatch"></span><small style="letter-spacing:.12em;text-transform:uppercase;color:#9aabbf;font-weight:700;font-size:.7rem">Módulo vivo</small>
-      <button class="x" id="close" aria-label="Cerrar">×</button></div>
-    <h2 id="p-title">—</h2>
-    <p class="sub" id="p-sub"></p>
-    <div class="stat"><div class="orb working" id="p-orb"><span></span></div><div><strong id="p-status">Working</strong><div id="p-note" style="color:#9aabbf;font-size:.85rem">Operativo</div></div></div>
-    <div id="p-metrics" style="display:grid;gap:7px"></div>
-    <div style="margin-top:auto;display:grid;gap:8px">
-      <button class="btn primary" type="button">Entrar al módulo</button>
-      <button class="btn ghost" type="button" id="close2">Volver a la oficina</button>
-    </div>
-  </aside>
+<canvas id="canvas"></canvas>
+<div id="labels"></div>
+<div class="hud-brand"><div class="logo"></div><div><strong>Inmobiliaria Ibiza</strong><span>Office Hub</span></div></div>
+<div class="hud-live"><i></i><span id="liveCount">5 bots activos</span></div>
+<div class="hint">Toca un bot o un sector — la misma oficina de tu concepto, en 3D vivo</div>
+<div class="veil" id="veil"></div>
+<aside class="panel" id="panel" aria-hidden="true">
+  <div class="row"><span class="swatch"></span><small style="letter-spacing:.12em;text-transform:uppercase;color:#9aabbf;font-weight:700;font-size:.7rem">Módulo vivo</small>
+    <button class="x" id="close" aria-label="Cerrar">×</button></div>
+  <h2 id="p-title">—</h2>
+  <p class="sub" id="p-sub"></p>
+  <div class="stat"><div class="orb working" id="p-orb"><span></span></div><div><strong id="p-status">Working</strong><div id="p-note" style="color:#9aabbf;font-size:.85rem">Operativo</div></div></div>
+  <div id="p-metrics" style="display:grid;gap:7px"></div>
+  <div style="margin-top:auto;display:grid;gap:8px">
+    <button class="btn primary" type="button">Entrar al módulo</button>
+    <button class="btn ghost" type="button" id="close2">Volver a la oficina</button>
+  </div>
+</aside>
 
 <script type="importmap">
-{
-  "imports": {
-    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-  }
-}
+{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}
 </script>
 <script type="module">
 import * as THREE from "three";
 
-/* Blueprint = user's Office Hub concept image.
-   Every visible piece becomes a real 3D object + animation. No Fable, no photo backdrop. */
+/* Blueprint = user's concept image (cute bots, neon pads, pizza hub, enclosed office, Ibiza dusk).
+   Each piece is a real 3D object. No photo backdrop. No Fable. */
 
 const MODULES = [
   { id:"scraping", name:"Exploración & Scraping", sub:"Web · Idealista · FB · IG · YouTube",
-    color:0x9b5cff, status:"working", bubble:"2 nuevas propiedades en Ibiza",
-    note:"Bot explorando portales", metrics:[["Nuevas","2"],["Fuentes","5"],["Cola","OK"]],
-    angle: Math.PI * 0.75, bubbles:["2 nuevas propiedades en Ibiza","Escaneando Idealista…","1 anuncio nuevo en FB"] },
+    color:0x9b5cff, status:"working", bubble:"2 nuevas propiedades en Ibiza", note:"Bot explorando portales",
+    metrics:[["Nuevas","2"],["Fuentes","5"],["Cola","OK"]],
+    // angles: 0 = +X; layout matches concept (top-left scraping ≈ NW)
+    angle: Math.PI * 0.72,
+    bubbles:["2 nuevas propiedades en Ibiza","Escaneando Idealista…","1 anuncio nuevo en FB"] },
   { id:"props", name:"Propiedades & Contenido", sub:"Fotos · Fichas · Web · RRSS",
-    color:0xf5c518, status:"needs", bubble:"1 ficha lista para publicar",
-    note:"Necesita tu revisión", metrics:[["Por publicar","1"],["Fotos","12"],["RRSS","Pendiente"]],
-    angle: Math.PI * 0.25, bubbles:["1 ficha lista para publicar","Subiendo 4 fotos…","PDF ES generado"] },
+    color:0xf5c518, status:"needs", bubble:"1 ficha lista para publicar", note:"Necesita tu revisión",
+    metrics:[["Por publicar","1"],["Fotos","12"],["RRSS","Pendiente"]],
+    angle: Math.PI * 0.28,
+    bubbles:["1 ficha lista para publicar","Subiendo 4 fotos…","PDF ES generado"] },
   { id:"leads", name:"Clientes & Leads", sub:"Compradores · Vendedores · Matching IA",
-    color:0x2ee56a, status:"needs", bubble:"3 leads cualificados",
-    note:"Matching listo", metrics:[["Cualificados","3"],["Seguimiento","14"],["Match IA","8"]],
-    angle: -Math.PI * 0.05, bubbles:["3 leads cualificados","Match IA en curso…","1 lead respondió"] },
+    color:0x2ee56a, status:"needs", bubble:"3 leads cualificados", note:"Matching listo",
+    metrics:[["Cualificados","3"],["Seguimiento","14"],["Match IA","8"]],
+    angle: -Math.PI * 0.08,
+    bubbles:["3 leads cualificados","Match IA en curso…","1 lead respondió"] },
   { id:"finance", name:"Finanzas & Administración", sub:"Facturas · Contratos · Legal",
-    color:0x3d8bff, status:"working", bubble:"2 facturas generadas",
-    note:"Admin al día", metrics:[["Facturas","2"],["Contratos","1"],["Legal","OK"]],
-    angle: -Math.PI * 0.45, bubbles:["2 facturas generadas","Contrato en revisión…","Pago registrado"] },
+    color:0x3d8bff, status:"working", bubble:"2 facturas generadas", note:"Admin al día",
+    metrics:[["Facturas","2"],["Contratos","1"],["Legal","OK"]],
+    angle: -Math.PI * 0.42,
+    bubbles:["2 facturas generadas","Contrato en revisión…","Pago registrado"] },
   { id:"agenda", name:"Agenda & Operaciones", sub:"Visitas · Notaría · Contratos",
-    color:0xff4d5e, status:"working", bubble:"1 visita confirmada mañana",
-    note:"Calendario sync", metrics:[["Mañana","1"],["Semana","4"],["Notaría","0"]],
-    angle: -Math.PI * 0.85, bubbles:["1 visita confirmada mañana","Recordatorio enviado","Hueco a las 17:00"] },
+    color:0xff4d5e, status:"working", bubble:"1 visita confirmada mañana", note:"Calendario sync",
+    metrics:[["Mañana","1"],["Semana","4"],["Notaría","0"]],
+    angle: -Math.PI * 0.78,
+    bubbles:["1 visita confirmada mañana","Recordatorio enviado","Hueco a las 17:00"] },
   { id:"ai", name:"IA & Automatización", sub:"Bots · Flujos · Integraciones",
-    color:0xff8a1f, status:"idle", bubble:"Workflow actualizado",
-    note:"En reposo", metrics:[["Bots","5"],["Flujos","11"],["Errores","0"]],
-    angle: Math.PI * 1.15, bubbles:["Workflow actualizado","Bot en espera…","Flujo WA sync"] }
+    color:0xff8a1f, status:"idle", bubble:"Workflow actualizado", note:"En reposo",
+    metrics:[["Bots","5"],["Flujos","11"],["Errores","0"]],
+    angle: Math.PI * 1.12,
+    bubbles:["Workflow actualizado","Bot en espera…","Flujo WA sync"] }
 ];
 const STATUS = { working:"Working", needs:"Needs you", idle:"Idle" };
 
 const canvas = document.getElementById("canvas");
 const labelsEl = document.getElementById("labels");
-const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:false, powerPreference:"high-performance" });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, powerPreference:"high-performance" });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0a101c);
-scene.fog = new THREE.FogExp2(0x0a101c, 0.018);
+scene.background = new THREE.Color(0x0c121f);
+scene.fog = new THREE.Fog(0x0c121f, 22, 48);
 
-const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.1, 200);
-// Fixed isometric-like viewpoint matching the concept framing
-const camTarget = new THREE.Vector3(0, 0, 0);
+const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 100);
+const camTarget = new THREE.Vector3(0, 0.2, 0);
 function placeCamera() {
-  const isPortrait = innerHeight > innerWidth;
-  const dist = isPortrait ? 22 : 18;
-  const height = isPortrait ? 16 : 14;
-  camera.position.set(-dist * 0.55, height, dist * 0.75);
+  const p = innerHeight > innerWidth;
+  // High isometric angle like the concept
+  camera.position.set(p ? -11.5 : -10.5, p ? 13.5 : 12.2, p ? 11.5 : 10.8);
+  camera.fov = p ? 46 : 40;
   camera.lookAt(camTarget);
-  camera.fov = isPortrait ? 48 : 42;
   camera.updateProjectionMatrix();
 }
 placeCamera();
 
-// Lights — dark office + warm sunset rim
-scene.add(new THREE.AmbientLight(0x6a7a99, 0.55));
-const key = new THREE.DirectionalLight(0xffc08a, 1.15);
-key.position.set(8, 12, -6);
-key.castShadow = true;
-key.shadow.mapSize.set(1024, 1024);
-scene.add(key);
-const fill = new THREE.DirectionalLight(0x6aa0ff, 0.45);
-fill.position.set(-10, 8, 6);
-scene.add(fill);
-const hemi = new THREE.HemisphereLight(0xffb070, 0x1a2438, 0.35);
-scene.add(hemi);
+// Lights — warm dusk + cool fill like the concept
+scene.add(new THREE.AmbientLight(0x7a889e, 0.45));
+const sun = new THREE.DirectionalLight(0xffb27a, 1.35);
+sun.position.set(6, 10, -8);
+sun.castShadow = true;
+sun.shadow.mapSize.set(1024, 1024);
+sun.shadow.camera.near = 1; sun.shadow.camera.far = 40;
+sun.shadow.camera.left = -14; sun.shadow.camera.right = 14;
+sun.shadow.camera.top = 14; sun.shadow.camera.bottom = -14;
+scene.add(sun);
+scene.add(new THREE.DirectionalLight(0x6aa8ff, 0.4).translateX(-8).translateY(6).translateZ(4));
+scene.add(new THREE.HemisphereLight(0xffc090, 0x1a2438, 0.4));
 
-// —— Floor (dark polished tiles) ——
-const floorGeo = new THREE.PlaneGeometry(28, 28, 1, 1);
-const floorMat = new THREE.MeshStandardMaterial({
-  color: 0x121a2a, metalness: 0.35, roughness: 0.45
-});
-const floor = new THREE.Mesh(floorGeo, floorMat);
+// —— Enclosed office floor ——
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(22, 18),
+  new THREE.MeshStandardMaterial({ color:0x151d2c, metalness:0.45, roughness:0.35 })
+);
 floor.rotation.x = -Math.PI / 2;
 floor.receiveShadow = true;
 scene.add(floor);
 
-// Tile grid lines
-const grid = new THREE.GridHelper(28, 14, 0x2a3548, 0x1a2436);
-grid.position.y = 0.01;
-scene.add(grid);
-
-// —— Sunset vista plane (through glass wall) ——
-function makeSunsetTexture() {
-  const c = document.createElement("canvas");
-  c.width = 1024; c.height = 512;
-  const g = c.getContext("2d");
-  const grd = g.createLinearGradient(0, 0, 0, 512);
-  grd.addColorStop(0, "#152038");
-  grd.addColorStop(0.35, "#4a2a4a");
-  grd.addColorStop(0.55, "#c45c3a");
-  grd.addColorStop(0.75, "#f0a060");
-  grd.addColorStop(1, "#ffe0b0");
-  g.fillStyle = grd; g.fillRect(0, 0, 1024, 512);
-  const sun = g.createRadialGradient(700, 340, 10, 700, 340, 120);
-  sun.addColorStop(0, "#fff2c8");
-  sun.addColorStop(0.4, "#ffb060");
-  sun.addColorStop(1, "rgba(255,160,80,0)");
-  g.fillStyle = sun; g.beginPath(); g.arc(700, 340, 120, 0, Math.PI * 2); g.fill();
-  g.fillStyle = "#1a2438";
-  g.beginPath(); g.moveTo(0, 420); g.quadraticCurveTo(200, 380, 400, 430); g.lineTo(400, 512); g.lineTo(0, 512); g.fill();
-  g.beginPath(); g.moveTo(450, 440); g.quadraticCurveTo(650, 390, 900, 450); g.lineTo(1024, 512); g.lineTo(450, 512); g.fill();
-  g.fillStyle = "rgba(30,50,90,0.55)"; g.fillRect(0, 450, 1024, 62);
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
+// Subtle tile marks (not open infinite grid)
+const tileMat = new THREE.LineBasicMaterial({ color:0x243044, transparent:true, opacity:0.55 });
+for (let i = -10; i <= 10; i += 2) {
+  const ptsH = [new THREE.Vector3(-10, 0.012, i), new THREE.Vector3(10, 0.012, i)];
+  const ptsV = [new THREE.Vector3(i * 1.1, 0.012, -8), new THREE.Vector3(i * 1.1, 0.012, 8)];
+  scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(ptsH), tileMat));
+  scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(ptsV), tileMat));
 }
-const vista = new THREE.Mesh(
-  new THREE.PlaneGeometry(36, 16),
-  new THREE.MeshBasicMaterial({ map: makeSunsetTexture() })
-);
-vista.position.set(0, 7, -13.5);
+
+// Back glass + sunset (room wall, not open horizon)
+function sunsetTex() {
+  const c = document.createElement("canvas"); c.width = 1024; c.height = 512;
+  const g = c.getContext("2d");
+  const grd = g.createLinearGradient(0,0,0,512);
+  grd.addColorStop(0,"#141c34"); grd.addColorStop(0.3,"#3a2748");
+  grd.addColorStop(0.52,"#c45c3a"); grd.addColorStop(0.72,"#f0a060"); grd.addColorStop(1,"#ffe2b5");
+  g.fillStyle = grd; g.fillRect(0,0,1024,512);
+  const sunG = g.createRadialGradient(720,360,8,720,360,110);
+  sunG.addColorStop(0,"#fff4d0"); sunG.addColorStop(0.4,"#ffb060"); sunG.addColorStop(1,"rgba(255,160,80,0)");
+  g.fillStyle = sunG; g.beginPath(); g.arc(720,360,110,0,Math.PI*2); g.fill();
+  g.fillStyle = "#1a2438";
+  g.beginPath(); g.moveTo(0,430); g.quadraticCurveTo(260,370,520,440); g.lineTo(520,512); g.lineTo(0,512); g.fill();
+  g.beginPath(); g.moveTo(480,445); g.quadraticCurveTo(720,380,1024,450); g.lineTo(1024,512); g.lineTo(480,512); g.fill();
+  // palm silhouettes
+  g.fillStyle = "rgba(10,16,28,0.75)";
+  [[180,420],[860,430]].forEach(([x,y])=>{
+    g.fillRect(x, y-40, 6, 50);
+    for (let i=0;i<5;i++){ g.beginPath(); g.ellipse(x+3+Math.cos(i)*18, y-48+Math.sin(i)*6, 16, 5, i*0.6, 0, Math.PI*2); g.fill(); }
+  });
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+const vista = new THREE.Mesh(new THREE.PlaneGeometry(24, 11), new THREE.MeshBasicMaterial({ map: sunsetTex() }));
+vista.position.set(0, 5.2, -8.6);
 scene.add(vista);
 
-// Glass wall frame
 const glass = new THREE.Mesh(
-  new THREE.PlaneGeometry(30, 10),
-  new THREE.MeshPhysicalMaterial({
-    color: 0x88aacc, transparent: true, opacity: 0.12,
-    metalness: 0.1, roughness: 0.05, transmission: 0.6, thickness: 0.2
-  })
+  new THREE.PlaneGeometry(22, 7.5),
+  new THREE.MeshPhysicalMaterial({ color:0xa8c4e8, transparent:true, opacity:0.1, roughness:0.05, metalness:0.1, transmission:0.55 })
 );
-glass.position.set(0, 5, -12.8);
+glass.position.set(0, 3.8, -8.2);
 scene.add(glass);
 
-// Soft furniture blocks
-function sofa(x, z, rot = 0) {
+// Side walls (enclose the room)
+const wallMat = new THREE.MeshStandardMaterial({ color:0x1a2333, roughness:0.85 });
+[-10.5, 10.5].forEach((x) => {
+  const w = new THREE.Mesh(new THREE.BoxGeometry(0.25, 5.5, 16.5), wallMat);
+  w.position.set(x, 2.75, -0.5);
+  scene.add(w);
+});
+const backWallL = new THREE.Mesh(new THREE.BoxGeometry(5, 5.5, 0.25), wallMat);
+backWallL.position.set(-8.5, 2.75, -8.3); scene.add(backWallL);
+const backWallR = new THREE.Mesh(new THREE.BoxGeometry(5, 5.5, 0.25), wallMat);
+backWallR.position.set(8.5, 2.75, -8.3); scene.add(backWallR);
+
+function sofa(x, z, rot=0) {
   const g = new THREE.Group();
-  const base = new THREE.Mesh(
-    new THREE.BoxGeometry(2.4, 0.55, 1.1),
-    new THREE.MeshStandardMaterial({ color: 0x2a364a, roughness: 0.7 })
-  );
+  const base = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.45, 0.95), new THREE.MeshStandardMaterial({ color:0x2c384c, roughness:0.7 }));
   base.position.y = 0.35; base.castShadow = true;
-  const back = new THREE.Mesh(
-    new THREE.BoxGeometry(2.4, 0.7, 0.28),
-    new THREE.MeshStandardMaterial({ color: 0x243044, roughness: 0.7 })
-  );
-  back.position.set(0, 0.75, -0.4);
-  g.add(base, back);
-  g.position.set(x, 0, z);
-  g.rotation.y = rot;
-  scene.add(g);
+  const back = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.65, 0.28), new THREE.MeshStandardMaterial({ color:0x243044 }));
+  back.position.set(0, 0.7, -0.34);
+  const armL = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.4, 0.95), base.material);
+  armL.position.set(-1.0, 0.5, 0);
+  const armR = armL.clone(); armR.position.x = 1.0;
+  g.add(base, back, armL, armR);
+  g.position.set(x, 0, z); g.rotation.y = rot; scene.add(g);
 }
-sofa(-3.5, -8.5, 0.2);
-sofa(7.5, 2.5, -1.1);
+sofa(-2.2, -6.2, 0.15);
+sofa(7.2, 1.8, -1.2);
 
 function palm(x, z) {
   const g = new THREE.Group();
-  const trunk = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.06, 0.1, 1.4, 8),
-    new THREE.MeshStandardMaterial({ color: 0x7a5530 })
-  );
-  trunk.position.y = 0.7;
-  const leafMat = new THREE.MeshStandardMaterial({ color: 0x2f8f5b, roughness: 0.8 });
-  for (let i = 0; i < 5; i++) {
-    const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.35, 8, 8), leafMat);
-    leaf.scale.set(1, 0.35, 0.6);
-    leaf.position.set(Math.cos(i * 1.3) * 0.25, 1.45, Math.sin(i * 1.3) * 0.25);
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.09, 1.5, 8), new THREE.MeshStandardMaterial({ color:0x7a5530 }));
+  trunk.position.y = 0.75;
+  const leafMat = new THREE.MeshStandardMaterial({ color:0x2f8f5b, roughness:0.75 });
+  for (let i = 0; i < 6; i++) {
+    const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.38, 10, 10), leafMat);
+    leaf.scale.set(1.1, 0.28, 0.55);
+    const a = i * 1.05;
+    leaf.position.set(Math.cos(a)*0.28, 1.55, Math.sin(a)*0.28);
+    leaf.rotation.z = Math.cos(a)*0.4;
     g.add(leaf);
   }
-  g.add(trunk);
-  g.position.set(x, 0, z);
-  scene.add(g);
+  g.add(trunk); g.position.set(x,0,z); scene.add(g);
 }
-palm(5.5, -9);
-palm(-8, 4);
+palm(5.2, -6.5); palm(-7.5, 3.2); palm(8.2, -3);
 
-// —— Pizza hub (6 3D wedges) ——
-const hubGroup = new THREE.Group();
-hubGroup.position.y = 0.08;
-scene.add(hubGroup);
-
+// —— Pizza hub ——
+const hub = new THREE.Group(); hub.position.y = 0.02; scene.add(hub);
 const crust = new THREE.Mesh(
-  new THREE.CylinderGeometry(3.35, 3.35, 0.45, 48),
-  new THREE.MeshStandardMaterial({ color: 0xb89562, roughness: 0.65, metalness: 0.15 })
+  new THREE.CylinderGeometry(2.95, 3.05, 0.42, 64),
+  new THREE.MeshStandardMaterial({ color:0xc4a574, roughness:0.55, metalness:0.12 })
 );
-crust.position.y = 0.22;
-crust.castShadow = true;
-hubGroup.add(crust);
+crust.position.y = 0.22; crust.castShadow = true; hub.add(crust);
+const hubLight = new THREE.PointLight(0x4a90ff, 1.5, 9, 2); hubLight.position.y = 0.4; hub.add(hubLight);
 
-const hubGlow = new THREE.PointLight(0x3d8bff, 1.4, 10, 2);
-hubGlow.position.y = 0.3;
-hubGroup.add(hubGlow);
-
-const wedgeHits = [];
-function makeWedge(i, color) {
+const wedgeMeshes = [];
+function addWedge(i, color, id) {
   const shape = new THREE.Shape();
-  const r0 = 1.05, r1 = 3.05;
-  const a0 = -Math.PI / 2 + i * (Math.PI / 3) + 0.03;
-  const a1 = -Math.PI / 2 + (i + 1) * (Math.PI / 3) - 0.03;
-  shape.moveTo(Math.cos(a0) * r0, Math.sin(a0) * r0);
-  shape.lineTo(Math.cos(a0) * r1, Math.sin(a0) * r1);
-  const curve = [];
-  for (let t = 0; t <= 12; t++) {
-    const a = a0 + (a1 - a0) * (t / 12);
-    curve.push(new THREE.Vector2(Math.cos(a) * r1, Math.sin(a) * r1));
-  }
-  curve.forEach(p => shape.lineTo(p.x, p.y));
-  shape.lineTo(Math.cos(a1) * r0, Math.sin(a1) * r0);
-  for (let t = 12; t >= 0; t--) {
-    const a = a0 + (a1 - a0) * (t / 12);
-    shape.lineTo(Math.cos(a) * r0, Math.sin(a) * r0);
-  }
-  const geo = new THREE.ExtrudeGeometry(shape, { depth: 0.38, bevelEnabled: false });
-  geo.rotateX(-Math.PI / 2);
-  const mat = new THREE.MeshStandardMaterial({
-    color, emissive: color, emissiveIntensity: 0.35, roughness: 0.4, metalness: 0.2
-  });
+  const r0 = 0.95, r1 = 2.72;
+  const a0 = -Math.PI/2 + i*(Math.PI/3) + 0.035;
+  const a1 = -Math.PI/2 + (i+1)*(Math.PI/3) - 0.035;
+  shape.moveTo(Math.cos(a0)*r0, Math.sin(a0)*r0);
+  for (let t=0;t<=16;t++){ const a=a0+(a1-a0)*(t/16); shape.lineTo(Math.cos(a)*r1, Math.sin(a)*r1); }
+  for (let t=16;t>=0;t--){ const a=a0+(a1-a0)*(t/16); shape.lineTo(Math.cos(a)*r0, Math.sin(a)*r0); }
+  const geo = new THREE.ExtrudeGeometry(shape, { depth:0.36, bevelEnabled:true, bevelThickness:0.02, bevelSize:0.02, bevelSegments:2 });
+  geo.rotateX(-Math.PI/2);
+  const mat = new THREE.MeshStandardMaterial({ color, emissive:color, emissiveIntensity:0.42, roughness:0.35, metalness:0.18 });
   const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.y = 0.28;
-  mesh.castShadow = true;
-  mesh.userData = { type: "sector", index: i, id: MODULES[i].id };
-  hubGroup.add(mesh);
-  wedgeHits.push(mesh);
+  mesh.position.y = 0.28; mesh.castShadow = true;
+  mesh.userData = { id, type:"sector" };
+  hub.add(mesh); wedgeMeshes.push(mesh);
 
-  // icon disc
-  const mid = (a0 + a1) / 2;
-  const ir = (r0 + r1) / 2;
-  const icon = new THREE.Mesh(
-    new THREE.CircleGeometry(0.28, 16),
-    new THREE.MeshBasicMaterial({ color: 0xffffff })
+  // white icon plate
+  const mid = (a0+a1)/2, ir = (r0+r1)/2;
+  const plate = new THREE.Mesh(
+    new THREE.CircleGeometry(0.26, 20),
+    new THREE.MeshBasicMaterial({ color:0xffffff })
   );
-  icon.rotation.x = -Math.PI / 2;
-  icon.position.set(Math.cos(mid) * ir, 0.7, Math.sin(mid) * ir);
-  hubGroup.add(icon);
+  plate.rotation.x = -Math.PI/2;
+  plate.position.set(Math.cos(mid)*ir, 0.68, Math.sin(mid)*ir);
+  hub.add(plate);
 }
-
-MODULES.forEach((m, i) => makeWedge(i, m.color));
+MODULES.forEach((m,i)=>addWedge(i, m.color, m.id));
 
 const core = new THREE.Mesh(
-  new THREE.CylinderGeometry(0.95, 0.95, 0.5, 32),
-  new THREE.MeshStandardMaterial({ color: 0xe8d2b0, roughness: 0.45 })
+  new THREE.CylinderGeometry(0.88, 0.88, 0.48, 32),
+  new THREE.MeshStandardMaterial({ color:0xead6b4, roughness:0.4 })
 );
-core.position.y = 0.55;
-hubGroup.add(core);
+core.position.y = 0.52; hub.add(core);
 
-// —— Stations + bots as 3D objects ——
-const stations = [];
-const pickables = [...wedgeHits];
-
+// —— Cute rounded bots (concept style) ——
 function makeBot(color) {
   const g = new THREE.Group();
-  const head = new THREE.Mesh(
-    new THREE.BoxGeometry(0.42, 0.36, 0.36),
-    new THREE.MeshStandardMaterial({ color: 0xe8eef8, roughness: 0.35, emissive: color, emissiveIntensity: 0.15 })
-  );
-  head.position.y = 0.85;
-  const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), new THREE.MeshBasicMaterial({ color: 0x0b1220 }));
-  const eyeR = eyeL.clone();
-  eyeL.position.set(-0.1, 0.88, 0.18);
-  eyeR.position.set(0.1, 0.88, 0.18);
-  const body = new THREE.Mesh(
-    new THREE.BoxGeometry(0.32, 0.28, 0.26),
-    new THREE.MeshStandardMaterial({ color: 0xb7c2d4 })
-  );
-  body.position.y = 0.55;
-  const canL = new THREE.Mesh(
-    new THREE.TorusGeometry(0.14, 0.045, 8, 16),
-    new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.5 })
-  );
-  canL.position.set(0, 0.85, 0);
-  canL.rotation.y = Math.PI / 2;
-  g.add(head, body, eyeL, eyeR, canL);
-  g.userData.phase = Math.random() * Math.PI * 2;
+  const white = new THREE.MeshStandardMaterial({ color:0xf2f5fa, roughness:0.35, emissive:color, emissiveIntensity:0.12 });
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.32, 24, 24), white);
+  body.scale.set(1, 0.95, 0.9); body.position.y = 0.55; body.castShadow = true;
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 24, 24), white);
+  head.position.y = 0.95; head.castShadow = true;
+  const eyeMat = new THREE.MeshBasicMaterial({ color:0x101820 });
+  const e1 = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 10), eyeMat);
+  const e2 = e1.clone();
+  e1.position.set(-0.09, 0.98, 0.22); e2.position.set(0.09, 0.98, 0.22);
+  // headphone cans
+  const canMat = new THREE.MeshStandardMaterial({ color, emissive:color, emissiveIntensity:0.65, roughness:0.4 });
+  const canL = new THREE.Mesh(new THREE.SphereGeometry(0.11, 14, 14), canMat);
+  canL.scale.set(0.7, 1, 0.85); canL.position.set(-0.28, 0.95, 0);
+  const canR = canL.clone(); canR.position.x = 0.28;
+  const band = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.03, 8, 20, Math.PI), canMat);
+  band.rotation.x = Math.PI; band.position.y = 1.12;
+  // soft glow halo
+  const glow = new THREE.PointLight(color, 0.55, 2.2, 2);
+  glow.position.y = 0.9;
+  g.add(body, head, e1, e2, canL, canR, band, glow);
+  g.userData.phase = Math.random()*Math.PI*2;
+  g.userData.head = head;
   return g;
 }
 
-MODULES.forEach((mod, i) => {
+function neonPad(color, w=2.35, d=1.85) {
   const g = new THREE.Group();
-  const R = 7.2;
-  const x = Math.cos(mod.angle) * R;
-  const z = Math.sin(mod.angle) * R;
+  // dark inner floor
+  const inner = new THREE.Mesh(
+    new THREE.BoxGeometry(w-0.12, 0.04, d-0.12),
+    new THREE.MeshStandardMaterial({ color:0x0e1522, metalness:0.3, roughness:0.5 })
+  );
+  inner.position.y = 0.02; inner.receiveShadow = true;
+  // glowing rim as thin box frame pieces
+  const rimMat = new THREE.MeshStandardMaterial({ color, emissive:color, emissiveIntensity:0.95, roughness:0.3 });
+  const t = 0.07, h = 0.06;
+  const top = new THREE.Mesh(new THREE.BoxGeometry(w, h, t), rimMat); top.position.set(0, 0.04, -d/2);
+  const bot = new THREE.Mesh(new THREE.BoxGeometry(w, h, t), rimMat); bot.position.set(0, 0.04, d/2);
+  const left = new THREE.Mesh(new THREE.BoxGeometry(t, h, d), rimMat); left.position.set(-w/2, 0.04, 0);
+  const right = new THREE.Mesh(new THREE.BoxGeometry(t, h, d), rimMat); right.position.set(w/2, 0.04, 0);
+  const light = new THREE.PointLight(color, 0.9, 4.2, 2); light.position.set(0, 0.8, 0);
+  g.add(inner, top, bot, left, right, light);
+  g.userData.rimMat = rimMat; g.userData.light = light;
+  return g;
+}
+
+const stations = [];
+const pickables = [...wedgeMeshes];
+const STATION_R = 6.15;
+
+MODULES.forEach((mod) => {
+  const g = new THREE.Group();
+  const x = Math.cos(mod.angle) * STATION_R;
+  const z = Math.sin(mod.angle) * STATION_R;
   g.position.set(x, 0, z);
   g.lookAt(0, 0, 0);
 
-  // neon pad
-  const pad = new THREE.Mesh(
-    new THREE.BoxGeometry(2.6, 0.06, 2.1),
-    new THREE.MeshStandardMaterial({
-      color: mod.color, emissive: mod.color, emissiveIntensity: 0.55, transparent: true, opacity: 0.35
-    })
-  );
-  pad.position.y = 0.04;
-  pad.receiveShadow = true;
-  const rim = new THREE.Mesh(
-    new THREE.BoxGeometry(2.7, 0.08, 2.2),
-    new THREE.MeshStandardMaterial({ color: mod.color, emissive: mod.color, emissiveIntensity: 0.9 })
-  );
-  rim.position.y = 0.03;
-  rim.scale.set(1.02, 0.5, 1.02);
-
+  const pad = neonPad(mod.color);
   const desk = new THREE.Mesh(
-    new THREE.BoxGeometry(1.3, 0.35, 0.7),
-    new THREE.MeshStandardMaterial({ color: 0x3a4558, roughness: 0.55 })
+    new THREE.BoxGeometry(1.15, 0.28, 0.62),
+    new THREE.MeshStandardMaterial({ color:0x3d4a5e, roughness:0.55 })
   );
-  desk.position.set(0, 0.45, 0.15);
-  desk.castShadow = true;
-
+  desk.position.set(0, 0.42, 0.05); desk.castShadow = true;
   const monitor = new THREE.Mesh(
-    new THREE.BoxGeometry(0.7, 0.45, 0.06),
-    new THREE.MeshStandardMaterial({ color: 0x0b1220, emissive: mod.color, emissiveIntensity: 0.4 })
+    new THREE.BoxGeometry(0.62, 0.4, 0.05),
+    new THREE.MeshStandardMaterial({ color:0x0a1020, emissive:mod.color, emissiveIntensity:0.45 })
   );
-  monitor.position.set(0, 0.9, -0.05);
+  monitor.position.set(0, 0.82, -0.12);
+  const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.2, 8), desk.material);
+  stand.position.set(0, 0.58, -0.1);
 
   const bot = makeBot(mod.color);
-  bot.position.set(0.15, 0, 0.45);
+  bot.position.set(0.2, 0, 0.42);
+  bot.userData.id = mod.id;
 
-  const light = new THREE.PointLight(mod.color, 0.8, 4.5, 2);
-  light.position.set(0, 1.2, 0);
-
-  g.add(rim, pad, desk, monitor, bot, light);
-  g.userData = { type: "station", id: mod.id, bot, pad, monitor, light, mod };
+  g.add(pad, desk, stand, monitor, bot);
+  g.userData = { id: mod.id, type:"station", bot, pad, monitor, mod };
   scene.add(g);
   stations.push(g);
-  pickables.push(pad, desk, monitor, bot.children[0], bot.children[1]);
+  pickables.push(desk, monitor, bot.children[0], bot.children[1], pad.children[0]);
 
-  // HTML labels projected from 3D
   const tag = document.createElement("div");
   tag.className = "tag";
   tag.innerHTML = `<strong>${mod.name}</strong><em>${mod.sub}</em>`;
-  tag.dataset.id = mod.id;
   labelsEl.appendChild(tag);
-
   const bubble = document.createElement("div");
   bubble.className = "bubble";
   bubble.textContent = mod.bubble;
-  bubble.dataset.id = mod.id;
   labelsEl.appendChild(bubble);
-
-  g.userData.tag = tag;
-  g.userData.bubble = bubble;
-  g.userData.bubbleIdx = 0;
+  g.userData.tag = tag; g.userData.bubble = bubble; g.userData.bubbleIdx = 0;
 });
 
-// mark wedges pickable with module ids already set
-wedgeHits.forEach((w, i) => { w.userData.id = MODULES[i].id; });
-
-// —— Interaction ——
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 let activeId = null;
 
-function projectLabel(obj3d, el, ox = 0, oy = 1.8, oz = 0) {
-  const v = new THREE.Vector3(ox, oy, oz);
-  obj3d.localToWorld(v);
-  v.project(camera);
-  const x = (v.x * 0.5 + 0.5) * innerWidth;
-  const y = (-v.y * 0.5 + 0.5) * innerHeight;
+function project(obj, el, lx, ly, lz) {
+  const v = new THREE.Vector3(lx, ly, lz);
+  obj.localToWorld(v); v.project(camera);
   if (v.z > 1) { el.style.display = "none"; return; }
   el.style.display = "block";
-  el.style.left = x + "px";
-  el.style.top = y + "px";
+  el.style.left = ((v.x * 0.5 + 0.5) * innerWidth) + "px";
+  el.style.top = ((-v.y * 0.5 + 0.5) * innerHeight) + "px";
 }
 
 function openPanel(mod) {
   activeId = mod.id;
   const panel = document.getElementById("panel");
-  panel.style.setProperty("--accent", "#" + mod.color.toString(16).padStart(6, "0"));
+  panel.style.setProperty("--accent", "#" + mod.color.toString(16).padStart(6,"0"));
   document.getElementById("p-title").textContent = mod.name;
   document.getElementById("p-sub").textContent = mod.sub + " — " + mod.bubble;
   document.getElementById("p-orb").className = "orb " + mod.status;
   document.getElementById("p-status").textContent = STATUS[mod.status];
   document.getElementById("p-note").textContent = mod.note;
-  document.getElementById("p-metrics").innerHTML = mod.metrics.map(([k, v]) =>
-    `<div class="metric"><span>${k}</span><b>${v}</b></div>`
-  ).join("");
+  document.getElementById("p-metrics").innerHTML = mod.metrics.map(([k,v]) =>
+    `<div class="metric"><span>${k}</span><b>${v}</b></div>`).join("");
   panel.classList.add("open");
   document.getElementById("veil").classList.add("show");
-  panel.setAttribute("aria-hidden", "false");
 }
 function closePanel() {
   activeId = null;
   document.getElementById("panel").classList.remove("open");
   document.getElementById("veil").classList.remove("show");
 }
-
-function pick(clientX, clientY) {
-  pointer.x = (clientX / innerWidth) * 2 - 1;
-  pointer.y = -(clientY / innerHeight) * 2 + 1;
+function pick(cx, cy) {
+  pointer.x = (cx / innerWidth) * 2 - 1;
+  pointer.y = -(cy / innerHeight) * 2 + 1;
   raycaster.setFromCamera(pointer, camera);
   const hits = raycaster.intersectObjects(pickables, true);
   if (!hits.length) return;
-  let obj = hits[0].object;
-  while (obj && !obj.userData?.id && obj.parent) obj = obj.parent;
-  const id = obj?.userData?.id || hits[0].object.userData.id;
+  let o = hits[0].object;
+  while (o && !o.userData?.id && o.parent) o = o.parent;
+  const id = o?.userData?.id;
   const mod = MODULES.find(m => m.id === id);
   if (mod) openPanel(mod);
 }
-
-canvas.addEventListener("pointerdown", (e) => pick(e.clientX, e.clientY));
+canvas.addEventListener("pointerdown", e => pick(e.clientX, e.clientY));
 document.getElementById("close").onclick = closePanel;
 document.getElementById("close2").onclick = closePanel;
 document.getElementById("veil").onclick = closePanel;
 
-// —— Live loop ——
 const clock = new THREE.Clock();
 function animate() {
   const t = clock.getElapsedTime();
   requestAnimationFrame(animate);
-
-  hubGroup.rotation.y = Math.sin(t * 0.15) * 0.03;
-  hubGlow.intensity = 1.2 + Math.sin(t * 2) * 0.25;
+  hub.rotation.y = Math.sin(t * 0.12) * 0.025;
+  hubLight.intensity = 1.25 + Math.sin(t * 2.1) * 0.3;
 
   stations.forEach((s, i) => {
-    const { bot, pad, monitor, light, tag, bubble } = s.userData;
-    const phase = bot.userData.phase;
-    bot.position.y = Math.sin(t * 2.2 + phase) * 0.04;
-    bot.rotation.y = Math.sin(t * 1.4 + phase) * 0.15;
-    pad.material.emissiveIntensity = 0.4 + Math.sin(t * 2 + i) * 0.2;
-    monitor.material.emissiveIntensity = 0.3 + Math.sin(t * 5 + phase) * 0.2;
-    light.intensity = 0.6 + Math.sin(t * 2 + i) * 0.25;
-    projectLabel(s, tag, 0, 2.35, 0);
-    projectLabel(s, bubble, 0.9, 1.9, 0.3);
+    const { bot, pad, monitor, tag, bubble } = s.userData;
+    const ph = bot.userData.phase;
+    bot.position.y = Math.sin(t * 2.3 + ph) * 0.035;
+    bot.rotation.y = Math.sin(t * 1.2 + ph) * 0.18;
+    if (bot.userData.head) bot.userData.head.rotation.x = Math.sin(t * 1.6 + ph) * 0.08;
+    pad.userData.rimMat.emissiveIntensity = 0.75 + Math.sin(t * 2.2 + i) * 0.25;
+    pad.userData.light.intensity = 0.7 + Math.sin(t * 2 + i) * 0.25;
+    monitor.material.emissiveIntensity = 0.35 + Math.sin(t * 5.5 + ph) * 0.2;
+    project(s, tag, 0, 2.15, 0);
+    project(s, bubble, 0.85, 1.75, 0.25);
   });
 
-  // subtle camera breathing — scene feels alive without breaking framing
-  const isPortrait = innerHeight > innerWidth;
-  const dist = isPortrait ? 22 : 18;
-  const height = isPortrait ? 16 : 14;
+  // gentle camera life
+  const p = innerHeight > innerWidth;
+  const dist = p ? 11.5 : 10.5;
+  const height = p ? 13.5 : 12.2;
   camera.position.set(
-    -dist * 0.55 + Math.sin(t * 0.25) * 0.12,
-    height + Math.sin(t * 0.3) * 0.08,
-    dist * 0.75 + Math.cos(t * 0.22) * 0.1
+    -dist + Math.sin(t * 0.22) * 0.1,
+    height + Math.sin(t * 0.28) * 0.06,
+    (p ? 11.5 : 10.8) + Math.cos(t * 0.2) * 0.08
   );
   camera.lookAt(camTarget);
-
   renderer.render(scene, camera);
 }
 
@@ -560,7 +477,6 @@ window.addEventListener("resize", () => {
   renderer.setSize(innerWidth, innerHeight);
 });
 
-// Operational bubble refresh — office feels at work
 setInterval(() => {
   const s = stations[Math.floor(Math.random() * stations.length)];
   const mod = s.userData.mod;
@@ -568,12 +484,10 @@ setInterval(() => {
   const text = mod.bubbles[s.userData.bubbleIdx];
   s.userData.bubble.textContent = text;
   mod.bubble = text;
-  const busy = 4 + Math.floor(Math.random() * 2);
-  document.getElementById("liveCount").textContent = busy + " bots activos";
-  // busy nod
-  s.userData.bot.scale.set(1.05, 1.05, 1.05);
-  setTimeout(() => s.userData.bot.scale.set(1, 1, 1), 400);
-}, 3800);
+  document.getElementById("liveCount").textContent = (4 + Math.floor(Math.random()*2)) + " bots activos";
+  s.userData.bot.scale.setScalar(1.06);
+  setTimeout(() => s.userData.bot.scale.setScalar(1), 350);
+}, 3600);
 
 animate();
 </script>
