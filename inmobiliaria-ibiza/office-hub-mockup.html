@@ -143,6 +143,7 @@ import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { Reflector } from "three/addons/objects/Reflector.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 /* ============================================================
    The concept image is the blueprint. Everything below is real
@@ -449,17 +450,16 @@ for (let i=0;i<3;i++){ const sh = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.06
 const wallWash = new THREE.PointLight(0xffc9a0, 0.6, 10, 2); wallWash.position.set(TV_X-9, 3.2, BACK_Z + 1.5); room.add(wallWash);
 
 /* ---------- furniture: sofas, tables, plants (placed from concept pixels) ---------- */
-const fabric = new THREE.MeshStandardMaterial({ color:0xcdb995, roughness:0.85, envMapIntensity:0.2 });
-const fabricDark = new THREE.MeshStandardMaterial({ color:0xb8a27e, roughness:0.85 });
+const fabric = new THREE.MeshStandardMaterial({ color:0xb89f78, roughness:0.9, envMapIntensity:0.12 });
+const fabricDark = new THREE.MeshStandardMaterial({ color:0x9c8562, roughness:0.9, envMapIntensity:0.1 });
+// sofas are sculpted GLB assets (see office-hub-assets-src/build_glb.py); the holder is
+// placed now and the mesh is dropped in once the asset has loaded
+const sofaHolders = [];
 function sofaAt(sx, sy, rot, len=2.4) {
   const g = new THREE.Group();
-  const base = new THREE.Mesh(new RoundedBoxGeometry(len, 0.5, 1.0, 3, 0.12), fabric); base.position.y = 0.3; base.castShadow = true;
-  const back = new THREE.Mesh(new RoundedBoxGeometry(len, 0.55, 0.3, 3, 0.1), fabricDark); back.position.set(0, 0.75, -0.38);
-  const aL = new THREE.Mesh(new RoundedBoxGeometry(0.28, 0.45, 1.0, 3, 0.1), fabricDark); aL.position.set(-len/2+0.1, 0.6, 0);
-  const aR = aL.clone(); aR.position.x = len/2-0.1;
-  const n = Math.max(1, Math.round(len/1.2));
-  for (let i=0;i<n;i++){ const cu = new THREE.Mesh(new RoundedBoxGeometry(len/n-0.1, 0.16, 0.9, 3, 0.06), fabric); cu.position.set(-len/2 + (i+0.5)*(len/n), 0.6, 0.02); g.add(cu); }
-  g.add(base, back, aL, aR, contactShadow(len+1.2, 0.5)); g.position.copy(groundAt(sx, sy)); g.rotation.y = rot; scene.add(g); return g;
+  g.add(contactShadow(len+1.2, 0.5)); g.position.copy(groundAt(sx, sy)); g.rotation.y = rot;
+  g.userData = { len, asset: len < 1.6 ? "armchair" : "sofa", baseLen: len < 1.6 ? 1.1 : 2.4 };
+  sofaHolders.push(g); scene.add(g); return g;
 }
 sofaAt(852, 170, -ISO, 2.6);          // against the window wall
 sofaAt(975, 432, -ISO - Math.PI/2, 2.4);
@@ -539,59 +539,57 @@ MODULES.forEach((m, i) => {
   hub.add(g); wedges.push(g);
 });
 
-/* ---------- bots (chibi: big head, big eyes, oversized headset) ---------- */
+/* ---------- bots: sculpted GLB (office-hub-assets-src/build_glb.py), tinted per module ---------- */
 const whiteMat = new THREE.MeshPhysicalMaterial({ color:0xe3e7ef, roughness:0.32, metalness:0.0, clearcoat:1, clearcoatRoughness:0.12, envMapIntensity:0.5, sheen:0.4, sheenColor:new THREE.Color(0xffffff) });
 const visorMat = new THREE.MeshPhysicalMaterial({ color:0x070b16, roughness:0.08, metalness:0.3, clearcoat:1, clearcoatRoughness:0.05, envMapIntensity:1.2 });
 function contactShadow(size, opacity=0.55) {
   const m = new THREE.Mesh(new THREE.PlaneGeometry(size, size), new THREE.MeshBasicMaterial({ map:GLOW, color:0x000000, transparent:true, opacity, depthWrite:false }));
   m.rotation.x = -Math.PI/2; m.position.y = 0.012; return m;
 }
+const BOT_SCALE = 0.78, BOT_SEAT_Y = 0.5;   // sculpted bot sits on the chair seat
 function makeBot(color) {
   const g = new THREE.Group();
-  const c = new THREE.Color(color);
-  const tint = whiteMat.clone(); tint.emissive = c.clone(); tint.emissiveIntensity = 0.06;
-  // body: soft egg
-  const body = new THREE.Mesh(new THREE.SphereGeometry(0.34, 32, 24), tint); body.scale.set(1, 1.05, 0.88); body.position.y = 0.6; body.castShadow = true;
-  const chestMat = new THREE.MeshBasicMaterial({ color:c.clone().multiplyScalar(1.8) });
-  const chest = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.018, 8, 32), chestMat); chest.position.set(0, 0.64, 0.3); chest.rotation.x = 0.2;
-  const collar = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.035, 10, 32), new THREE.MeshStandardMaterial({ color, emissive:color, emissiveIntensity:0.5, roughness:0.4 })); collar.rotation.x = Math.PI/2; collar.position.y = 0.96;
-  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.14, 16), visorMat); neck.position.y = 0.97;
-  // head: big sphere with wrap-around glossy visor
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.43, 36, 28), tint); head.position.y = 1.38; head.castShadow = true;
-  const visor = new THREE.Mesh(new THREE.SphereGeometry(0.405, 32, 24, 0, Math.PI*2, 0, Math.PI), visorMat);
-  visor.scale.set(1.0, 0.6, 0.98); visor.position.set(0, 1.36, 0.15);
-  // keep only the front of the visor: clip the back with a second white cap
-  const visorCap = new THREE.Mesh(new THREE.SphereGeometry(0.415, 32, 24), tint); visorCap.scale.set(1, 1, 0.72); visorCap.position.set(0, 1.38, -0.16);
-  const eyeMat = new THREE.MeshBasicMaterial({ color:c.clone().multiplyScalar(2.6) });
-  const e1 = new THREE.Mesh(new THREE.CapsuleGeometry(0.055, 0.1, 4, 12), eyeMat); e1.position.set(-0.14, 1.37, 0.53); e1.rotation.z = 0.12;
-  const e2 = e1.clone(); e2.position.x = 0.14; e2.rotation.z = -0.12;
-  const eyeGlowMat = new THREE.MeshBasicMaterial({ map:GLOW, color, transparent:true, opacity:0.55, blending:THREE.AdditiveBlending, depthWrite:false });
-  const eg = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.4), eyeGlowMat); eg.position.set(0, 1.36, 0.57);
-  const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.012, 6, 16, Math.PI), eyeMat); mouth.position.set(0, 1.26, 0.54); mouth.rotation.z = Math.PI; mouth.scale.set(1,0.6,1);
-  // headset: chunky cans with glowing rings, padded band
-  const canMat = new THREE.MeshPhysicalMaterial({ color, roughness:0.3, metalness:0.1, clearcoat:0.8, emissive:color, emissiveIntensity:0.2 });
-  const ringMat = new THREE.MeshBasicMaterial({ color:c.clone().multiplyScalar(2.3) });
-  const canGeo = new THREE.CylinderGeometry(0.19, 0.19, 0.13, 28);
-  const canL = new THREE.Mesh(canGeo, canMat); canL.rotation.z = Math.PI/2; canL.position.set(-0.45, 1.34, 0.04);
-  const canR = canL.clone(); canR.position.x = 0.45;
-  const capL = new THREE.Mesh(new THREE.SphereGeometry(0.17, 24, 16, 0, Math.PI*2, 0, Math.PI/2), canMat); capL.rotation.z = Math.PI/2; capL.position.set(-0.51, 1.34, 0.04);
-  const capR = capL.clone(); capR.rotation.z = -Math.PI/2; capR.position.x = 0.51;
-  const rL = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.024, 8, 32), ringMat); rL.rotation.y = Math.PI/2; rL.position.set(-0.53, 1.34, 0.04);
-  const rR = rL.clone(); rR.position.x = 0.53;
-  const band = new THREE.Mesh(new THREE.TorusGeometry(0.46, 0.05, 10, 36, Math.PI), canMat); band.position.y = 1.36; band.position.z = 0.04;
-  const bandPad = new THREE.Mesh(new THREE.TorusGeometry(0.46, 0.065, 10, 20, Math.PI*0.5), visorMat); bandPad.position.y = 1.36; bandPad.position.z = 0.04; bandPad.rotation.z = Math.PI*0.25;
-  // arms + hands
-  const armGeo = new THREE.CapsuleGeometry(0.075, 0.3, 4, 12);
-  const aL = new THREE.Mesh(armGeo, tint); aL.position.set(-0.37, 0.7, 0.22); aL.rotation.x = -1.2; aL.rotation.z = 0.25;
-  const aR = aL.clone(); aR.position.x = 0.37; aR.rotation.z = -0.25;
-  const hL = new THREE.Mesh(new THREE.SphereGeometry(0.075, 12, 10), visorMat); hL.position.set(-0.42, 0.6, 0.44);
-  const hR = hL.clone(); hR.position.x = 0.42;
   const glow = new THREE.PointLight(color, 0.14, 2.0, 2); glow.position.set(0, 1.0, 0.7);
-  const shadow = contactShadow(1.6, 0.5);
-  g.add(shadow, body, chest, collar, neck, head, visorCap, visor, e1, e2, eg, mouth, canL, canR, capL, capR, rL, rR, band, bandPad, aL, aR, hL, hR, glow);
-  g.userData = { head, arms:[aL,aR], phase:Math.random()*Math.PI*2 };
+  g.add(glow);
+  g.userData = { color, head:null, arms:[], phase:Math.random()*Math.PI*2 };
   return g;
 }
+// material swap table: GLB material name -> live material for this module colour
+function botMaterials(color) {
+  const c = new THREE.Color(color);
+  const deep = c.clone().lerp(new THREE.Color(0x000000), 0.18);
+  return {
+    BotShell: new THREE.MeshPhysicalMaterial({ color:deep, emissive:c, emissiveIntensity:0.1, roughness:0.42, metalness:0.0, clearcoat:0.45, clearcoatRoughness:0.3, envMapIntensity:0.3 }),
+    BotCan:   new THREE.MeshPhysicalMaterial({ color:deep.clone().multiplyScalar(0.8), emissive:c, emissiveIntensity:0.08, roughness:0.4, clearcoat:0.4, clearcoatRoughness:0.3, envMapIntensity:0.3 }),
+    BotEyes:  new THREE.MeshBasicMaterial({ color:new THREE.Color(0xffffff).multiplyScalar(1.25) }),
+    BotGlow:  new THREE.MeshBasicMaterial({ color:c.clone().lerp(new THREE.Color(0xffffff), 0.45).multiplyScalar(1.9) }),
+    BotDark:  new THREE.MeshStandardMaterial({ color:0x120a28, roughness:0.4 }),
+  };
+}
+const sharedAssetMats = {
+  ChairFabric: () => chairMat, ChairMetal: () => visorMat,
+  Fabric: () => fabric, FabricDark: () => fabricDark, Wood: () => shelfMat,
+};
+function installAsset(holder, gltf, { scale=1, scaleX=null, mats={}, id=null, position=null } = {}) {
+  const inst = gltf.scene.clone(true);
+  inst.traverse(o => {
+    if (!o.isMesh) return;
+    const name = o.material?.name;
+    const live = mats[name] || sharedAssetMats[name]?.();
+    if (live) o.material = live;
+    o.castShadow = true; o.receiveShadow = false;
+    if (id) o.userData.id = id;
+  });
+  inst.scale.setScalar(scale); if (scaleX !== null) inst.scale.x = scaleX;
+  if (position) inst.position.copy(position);
+  holder.add(inst);
+  return inst;
+}
+const ASSETS = {};
+const gltfLoader = new GLTFLoader();
+// the same file is also served as ../office-hub-mockup.html, where the assets live one folder deeper
+const ASSET_BASE = /office-hub-mockup\.html$/.test(location.pathname) ? "office-hub-pages/assets/" : "assets/";
+const loadGLB = name => new Promise((res, rej) => gltfLoader.load(`${ASSET_BASE}${name}.glb`, g => { ASSETS[name] = g; res(g); }, undefined, rej));
 
 /* ---------- workstations (square tiles on the iso grid) ---------- */
 function screenTexture(mod, variant=0) {
@@ -673,21 +671,33 @@ function makeStation(mod) {
   const lampArm = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.3, 6), visorMat); lampArm.position.set(side*1.05, 0.9, -0.65);
   const screenLight = new THREE.PointLight(mod.color, 0.3, 2.4, 2); screenLight.position.set(0, 1.2, -0.2);
 
-  // rounded office chair
-  const chairSeat = new THREE.Mesh(new RoundedBoxGeometry(0.66, 0.12, 0.62, 3, 0.06), chairMat); chairSeat.position.set(0, 0.5, -0.58);
-  const chairBack = new THREE.Mesh(new RoundedBoxGeometry(0.66, 0.78, 0.12, 3, 0.06), chairMat); chairBack.position.set(0, 0.95, -0.9); chairBack.rotation.x = -0.1;
-  const headrest = new THREE.Mesh(new RoundedBoxGeometry(0.4, 0.18, 0.1, 3, 0.05), chairMat); headrest.position.set(0, 1.45, -0.95);
-  const chairPost = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.4, 8), visorMat); chairPost.position.set(0, 0.28, -0.58);
-  const chairBase = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.34, 0.04, 20), visorMat); chairBase.position.set(0, 0.04, -0.58);
+  // sculpted office chair (GLB holder, filled on load)
+  const chair = new THREE.Group(); chair.position.set(0, 0, -0.62); chair.add(contactShadow(1.6, 0.5));
 
-  const bot = makeBot(mod.color); bot.position.set(0, 0.2, -0.62); bot.scale.setScalar(1.15);
-  g.add(pad, deskShadow, desk, deskRet, skirt, legA, legB, legC, curve, curveBack, stand, foot, frame2, stand2, kb, kbGlow, mug, lamp, lampArm, screenLight, chairSeat, chairBack, headrest, chairPost, chairBase, bot);
+  const bot = makeBot(mod.color); bot.position.set(0, BOT_SEAT_Y, -0.56); bot.scale.setScalar(BOT_SCALE);
+  g.add(pad, deskShadow, desk, deskRet, skirt, legA, legB, legC, curve, curveBack, stand, foot, frame2, stand2, kb, kbGlow, mug, lamp, lampArm, screenLight, chair, bot);
   g.traverse(o => { if (o.isMesh) o.userData.id = mod.id; });
-  g.userData = { mod, bot, pad, monitors, id:mod.id };
+  g.userData = { mod, bot, chair, pad, monitors, id:mod.id };
   scene.add(g);
   return g;
 }
 const stations = MODULES.map(makeStation);
+
+/* ---------- drop the sculpted assets into their holders ---------- */
+Promise.all(["bot", "chair", "sofa", "armchair"].map(loadGLB)).then(() => {
+  stations.forEach(s => {
+    const { mod, bot, chair } = s.userData;
+    const inst = installAsset(bot, ASSETS.bot, { mats: botMaterials(mod.color), id: mod.id });
+    bot.userData.head = inst.getObjectByName("Head");
+    bot.userData.arms = ["ArmL", "ArmR"].map(n => { const a = inst.getObjectByName(n); a.userData.baseY = a.position.y; return a; });
+    installAsset(chair, ASSETS.chair, { id: mod.id });
+    inst.traverse(o => { if (o.isMesh) pickables.push(o); });
+    chair.traverse(o => { if (o.isMesh) pickables.push(o); });
+  });
+  sofaHolders.forEach(h => installAsset(h, ASSETS[h.userData.asset], { scaleX: h.userData.len / h.userData.baseLen }));
+  document.body.classList.add("assets-ready");
+}).catch(err => console.error("asset load failed", err));
+
 function orientForCamera() {
   stations.forEach(s => {
     const mod = s.userData.mod;
@@ -815,10 +825,12 @@ function animate() {
     const { bot, pad, monitors, mod } = s.userData;
     const ph = bot.userData.phase;
     const busy = mod.status !== "idle";
-    bot.position.y = 0.2 + Math.sin(t*2.1 + ph) * 0.03;
-    bot.userData.head.rotation.y = Math.sin(t*0.9 + ph) * 0.35;
-    bot.userData.head.rotation.x = Math.sin(t*1.7 + ph) * 0.06;
-    bot.userData.arms.forEach((a, k) => { a.position.y = 0.7 + (busy ? Math.sin(t*9 + ph + k*1.6) * 0.03 : 0); });
+    bot.position.y = BOT_SEAT_Y + Math.sin(t*2.1 + ph) * 0.02;
+    if (bot.userData.head) {
+      bot.userData.head.rotation.y = Math.sin(t*0.9 + ph) * 0.35;
+      bot.userData.head.rotation.x = 0.08 + Math.sin(t*1.7 + ph) * 0.06;
+      bot.userData.arms.forEach((a, k) => { a.position.y = a.userData.baseY + (busy ? Math.sin(t*9 + ph + k*1.6) * 0.03 : 0); a.rotation.x = busy ? Math.sin(t*9 + ph + k*1.6) * 0.12 : 0; });
+    }
     const pulse = 0.85 + Math.sin(t*2.4 + i) * 0.15;
     pad.userData.light.intensity = (busy ? 0.7 : 0.45) * pulse;
     pad.userData.glow.material.opacity = 0.42 + Math.sin(t*2.4 + i) * 0.08;
