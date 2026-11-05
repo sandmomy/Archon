@@ -57,26 +57,75 @@
   .toast{position:fixed;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);opacity:0;z-index:6;padding:8px 14px;border-radius:999px;font-size:12px;color:#e2e8f0;background:rgba(10,13,20,.8);border:1px solid rgba(255,255,255,.1);pointer-events:none;transition:all .4s}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-  /* ---- first-person (bot's desk) mode ---- */
-  .bar{position:fixed;left:0;right:0;height:0;background:#000;z-index:4;transition:height .9s cubic-bezier(.2,.8,.2,1);pointer-events:none}
-  .bar.top{top:0}.bar.bottom{bottom:0}
-  body.focus .bar{height:7vh}
+  /* ---- module console: the bot's screen, managed face to face ---- */
   #labels{transition:opacity .35s}
   body.focus #labels{opacity:0}
-  body.focus .vignette{background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 45%,rgba(0,0,0,.6) 100%)}
-  .focusbar{position:fixed;left:50%;bottom:calc(7vh + 14px);transform:translate(-50%,30px);opacity:0;pointer-events:none;z-index:6;display:flex;align-items:center;gap:12px;padding:8px 10px 8px 8px;border-radius:999px;background:rgba(12,15,24,.82);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(10px);box-shadow:0 20px 50px rgba(0,0,0,.5);transition:all .5s cubic-bezier(.2,.8,.2,1) .4s}
-  body.focus .focusbar{opacity:1;transform:translate(-50%,0);pointer-events:auto}
-  .focusbar .ico{width:34px;height:34px;border-radius:50%;background:var(--c);display:grid;place-items:center;flex:0 0 34px;box-shadow:0 0 16px color-mix(in srgb,var(--c) 70%,transparent)}
-  .focusbar .ico svg{width:18px;height:18px;fill:#fff}
-  .focusbar strong{display:block;font-family:"Outfit",sans-serif;font-size:14px;font-weight:700;line-height:1.1}
-  .focusbar em{display:block;font-style:normal;font-size:11px;color:#b8c4d6;margin-top:2px;white-space:nowrap}
-  .focusbar .st{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.06)}
-  .focusbar .st i{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
-  .focusbar .st.working{color:#2ee56a}.focusbar .st.needs{color:#ff4d5e}.focusbar .st.idle{color:#94a3b8}
-  .focusbar button{border:0;border-radius:999px;padding:9px 14px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;background:#fff;color:#0b1220}
-  .focusbar button:hover{background:#e6ecf5}
-  .hint{position:fixed;top:calc(7vh + 14px);left:50%;transform:translateX(-50%);z-index:6;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#cbd5e1;opacity:0;transition:opacity .5s .6s;pointer-events:none}
-  body.focus .hint{opacity:.8}
+  body.focus .vignette{background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 50%,rgba(0,0,0,.55) 100%)}
+  .console{position:fixed;z-index:8;display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateY(14px) scale(.96);transition:opacity .45s,transform .45s cubic-bezier(.2,.8,.2,1);
+    background:linear-gradient(170deg,rgba(14,19,32,.94),rgba(7,10,18,.96));border:1px solid color-mix(in srgb,var(--c) 45%,rgba(255,255,255,.12));border-radius:14px;
+    box-shadow:0 0 0 1px rgba(0,0,0,.6),0 30px 70px rgba(0,0,0,.65),0 0 60px color-mix(in srgb,var(--c) 28%,transparent);overflow:hidden;color:#eef3fb;font-size:12px}
+  .console::before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.015) 0 1px,transparent 1px 3px);mix-blend-mode:screen}
+  .console.show{opacity:1;pointer-events:auto;transform:none}
+  .console header{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08);background:linear-gradient(90deg,color-mix(in srgb,var(--c) 30%,transparent),transparent 70%)}
+  .console header .ico{width:32px;height:32px;border-radius:50%;background:var(--c);display:grid;place-items:center;flex:0 0 32px;box-shadow:0 0 14px color-mix(in srgb,var(--c) 70%,transparent)}
+  .console header .ico svg{width:17px;height:17px;fill:#fff}
+  .console header strong{display:block;font-family:"Outfit",sans-serif;font-size:15px;font-weight:700;line-height:1.1}
+  .console header em{display:block;font-style:normal;font-size:10.5px;color:#b8c4d6;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .console .ttl{min-width:0;flex:1}
+  .console .st{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 9px;border-radius:999px;background:rgba(255,255,255,.06);white-space:nowrap}
+  .console .st i{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
+  .console .st.working{color:#2ee56a}.console .st.needs{color:#ff4d5e}.console .st.idle{color:#94a3b8}
+  .console .clock{font-family:"Outfit",sans-serif;font-size:14px;font-weight:600;color:#cbd5e1;font-variant-numeric:tabular-nums}
+  .console .back{border:0;border-radius:999px;padding:7px 11px;font:inherit;font-size:11px;font-weight:700;cursor:pointer;background:#fff;color:#0b1220;white-space:nowrap}
+  .console .back:hover{background:#e6ecf5}
+  .console .tabs{display:flex;gap:2px;padding:6px 10px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+  .console .tabs button{border:0;background:transparent;color:#9fb0c6;font:inherit;font-size:11.5px;font-weight:700;padding:7px 11px;border-radius:9px 9px 0 0;cursor:pointer;position:relative}
+  .console .tabs button.on{color:#fff}
+  .console .tabs button.on::after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:2px;background:var(--c);box-shadow:0 0 8px var(--c)}
+  .console .tabs button .n{margin-left:6px;background:var(--c);color:#fff;font-size:9px;padding:1px 5px;border-radius:7px}
+  .console .body{flex:1;min-height:0;overflow:auto;padding:10px 12px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.15) transparent}
+  .console .tab{display:none}.console .tab.on{display:block}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .card{padding:9px 11px;border-radius:10px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);border-top:2px solid var(--c)}
+  .card span{display:block;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#9fb0c6;font-weight:700}
+  .card b{display:block;font-family:"Outfit",sans-serif;font-size:22px;font-weight:700;margin-top:3px}
+  .two{display:grid;grid-template-columns:1.25fr 1fr;gap:8px;margin-top:8px}
+  .box{padding:9px 11px;border-radius:10px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07)}
+  .box h4{margin:0 0 6px;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#9fb0c6;font-weight:700;display:flex;align-items:center;gap:6px}
+  .box h4 i{width:6px;height:6px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c)}
+  .box canvas{width:100%;height:84px;display:block}
+  .task{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:10px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);margin-bottom:6px}
+  .task .chk{width:18px;height:18px;border-radius:6px;border:1.5px solid rgba(255,255,255,.25);display:grid;place-items:center;flex:0 0 18px;cursor:pointer;background:transparent}
+  .task.done .chk{background:var(--c);border-color:var(--c)}
+  .task .chk svg{width:12px;height:12px;fill:#fff;opacity:0}.task.done .chk svg{opacity:1}
+  .task .tx{flex:1;min-width:0}.task .tx b{display:block;font-size:12px;font-weight:700}.task.done .tx b{text-decoration:line-through;color:#8a9bb3}
+  .task .tx small{display:block;color:#9fb0c6;font-size:10.5px;margin-top:1px}
+  .task .mini{border:1px solid rgba(255,255,255,.14);background:transparent;color:#dbe4f3;font:inherit;font-size:10.5px;font-weight:700;padding:5px 8px;border-radius:8px;cursor:pointer;white-space:nowrap}
+  .task .mini:hover{background:rgba(255,255,255,.08)}
+  .acts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .act{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:11px;border-radius:11px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#fff;font:inherit;cursor:pointer;text-align:left;position:relative;overflow:hidden}
+  .act:hover{background:rgba(255,255,255,.08);border-color:color-mix(in srgb,var(--c) 60%,transparent)}
+  .act .ai{width:28px;height:28px;border-radius:8px;background:color-mix(in srgb,var(--c) 25%,transparent);display:grid;place-items:center}
+  .act .ai svg{width:15px;height:15px;fill:var(--c)}
+  .act b{font-size:12px;font-weight:700;line-height:1.15}.act small{color:#9fb0c6;font-size:10.5px;line-height:1.3}
+  .act.run::after{content:"";position:absolute;left:0;bottom:0;height:2px;background:var(--c);box-shadow:0 0 8px var(--c);animation:run 1.4s linear forwards}
+  @keyframes run{from{width:0}to{width:100%}}
+  .act.primary{background:linear-gradient(135deg,color-mix(in srgb,var(--c) 55%,transparent),rgba(255,255,255,.04))}
+  .log{margin:0;padding:0;list-style:none;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
+  .log li{display:flex;gap:10px;padding:5px 0;border-bottom:1px dashed rgba(255,255,255,.06);color:#dbe4f3}
+  .log li time{color:#8a9bb3;flex:0 0 46px}.log li.new{color:#fff;animation:fadein .4s}
+  .log li.new::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c);margin-top:5px;flex:0 0 6px}
+  @keyframes fadein{from{opacity:0;transform:translateY(-4px)}to{opacity:1}}
+  .prog{height:6px;border-radius:3px;background:rgba(255,255,255,.1);overflow:hidden;margin-top:6px}
+  .prog i{display:block;height:100%;width:40%;background:var(--c);box-shadow:0 0 10px var(--c);border-radius:3px;transition:width .6s}
+  .console footer{display:flex;align-items:center;gap:10px;padding:8px 12px;border-top:1px solid rgba(255,255,255,.08);font-size:11px;color:#b8c4d6}
+  .switch{position:relative;width:34px;height:20px;flex:0 0 34px}
+  .switch input{opacity:0;width:0;height:0;position:absolute}
+  .switch span{position:absolute;inset:0;border-radius:10px;background:rgba(255,255,255,.14);transition:.25s;cursor:pointer}
+  .switch span::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.25s}
+  .switch input:checked+span{background:var(--c);box-shadow:0 0 10px color-mix(in srgb,var(--c) 60%,transparent)}
+  .switch input:checked+span::after{transform:translateX(14px)}
+  .console footer .sp{margin-left:auto;color:#8a9bb3;font-size:10.5px}
 
   @media (max-width:820px){
     .side button{width:auto}.side button span.t{display:none}.side{left:8px;padding:6px}
@@ -84,7 +133,7 @@
     .pill .avs{display:none}
   }
   @media (max-width:720px) and (orientation:portrait){
-    .focusbar{bottom:calc(7vh + 70px);max-width:94vw}.focusbar em{display:none}
+    .console header em{display:none}.console .clock{display:none}.cards{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}.acts{grid-template-columns:1fr 1fr}
     .side{top:auto;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);flex-direction:row;border-radius:999px}
     .side .n{position:absolute;margin:0;top:-4px;right:-4px}
     .side button{position:relative;padding:6px}
@@ -111,14 +160,32 @@
 <nav class="side" id="side"></nav>
 <div class="toast" id="toast"></div>
 
-<div class="bar top"></div><div class="bar bottom"></div>
-<div class="hint">Puesto del bot · vista en primera persona</div>
-<div class="focusbar" id="focusbar">
-  <span class="ico" id="f-ico"></span>
-  <div><strong id="f-title">—</strong><em id="f-sub"></em></div>
-  <span class="st working" id="f-status"><i></i><span>Working</span></span>
-  <button type="button" id="f-back">Volver a la oficina</button>
-</div>
+<section class="console" id="console" aria-live="polite">
+  <header>
+    <span class="ico" id="c-ico"></span>
+    <div class="ttl"><strong id="c-title">—</strong><em id="c-sub"></em></div>
+    <span class="st working" id="c-status"><i></i><span>Working</span></span>
+    <span class="clock" id="c-clock">--:--</span>
+    <button type="button" class="back" id="c-back">Volver a la oficina</button>
+  </header>
+  <nav class="tabs" id="c-tabs">
+    <button data-tab="resumen" class="on">Resumen</button>
+    <button data-tab="tareas">Tareas<span class="n" id="c-ntasks">0</span></button>
+    <button data-tab="acciones">Acciones</button>
+    <button data-tab="registro">Registro</button>
+  </nav>
+  <div class="body">
+    <div class="tab on" data-tab="resumen" id="c-resumen"></div>
+    <div class="tab" data-tab="tareas" id="c-tareas"></div>
+    <div class="tab" data-tab="acciones" id="c-acciones"></div>
+    <div class="tab" data-tab="registro"><ul class="log" id="c-log"></ul></div>
+  </div>
+  <footer>
+    <label class="switch"><input type="checkbox" id="c-active"><span></span></label>
+    <span id="c-foot">Bot activo</span>
+    <span class="sp" id="c-id"></span>
+  </footer>
+</section>
 
 <script type="importmap">
 {"imports":{
@@ -766,106 +833,130 @@ const pickables = [];
 stations.forEach(s => s.traverse(o => { if (o.isMesh && !o.material.map?.image?.width) pickables.push(o); }));
 wedges.forEach(w => pickables.push(w.userData.mesh));
 
-/* ---------- the bot's own screen: a live dashboard drawn on canvas ---------- */
-function iconPath(k, x, y, size) { const p = new Path2D(ICON[k]); const m = new DOMMatrix().translate(x, y).scale(size/24); const out = new Path2D(); out.addPath(p, m); return out; }
-function rrect(g, x, y, w, h, r) { g.beginPath(); g.roundRect(x, y, w, h, r); }
-function makeDashboard(mod) {
-  const c = document.createElement("canvas"); c.width = 1024; c.height = 544;
-  const g = c.getContext("2d");
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
-  const col = hex(mod.color);
-  const series = Array.from({ length:48 }, (_, i) => 0.35 + Math.sin(i*0.5)*0.15 + Math.random()*0.3);
-  const feed = mod.bubbles.map((b, i) => ({ text:b, min:3 + i*7 }));
-  const STATUS_COL = { working:"#2ee56a", needs:"#ff4d5e", idle:"#94a3b8" };
-  let last = -1;
-  function draw(t) {
-    if (t - last < 0.08) return; last = t;
-    g.fillStyle = "#0a0f1c"; g.fillRect(0, 0, 1024, 544);
-    // faint grid
-    g.strokeStyle = "rgba(255,255,255,.035)"; g.lineWidth = 1;
-    for (let x = 0; x < 1024; x += 64) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 544); g.stroke(); }
-    for (let y = 0; y < 544; y += 64) { g.beginPath(); g.moveTo(0, y); g.lineTo(1024, y); g.stroke(); }
-    // header
-    const hg = g.createLinearGradient(0, 0, 1024, 0); hg.addColorStop(0, col); hg.addColorStop(1, "rgba(10,15,28,0)");
-    g.fillStyle = hg; g.globalAlpha = 0.35; g.fillRect(0, 0, 1024, 78); g.globalAlpha = 1;
-    g.fillStyle = col; g.beginPath(); g.arc(58, 39, 24, 0, Math.PI*2); g.fill();
-    g.fillStyle = "#fff"; g.fill(iconPath(mod.icon, 44, 25, 28));
-    g.font = "700 34px Outfit, Figtree, sans-serif"; g.fillStyle = "#fff"; g.fillText(mod.name, 98, 52);
-    g.font = "600 15px Figtree, sans-serif"; g.fillStyle = "rgba(255,255,255,.55)"; g.fillText("INMOBILIARIA IBIZA · OFFICE HUB", 98, 70);
-    // status + clock
-    const sc = STATUS_COL[mod.status];
-    g.fillStyle = "rgba(255,255,255,.08)"; rrect(g, 790, 22, 150, 34, 17); g.fill();
-    g.fillStyle = sc; g.shadowColor = sc; g.shadowBlur = 10; g.beginPath(); g.arc(812, 39, 5 + Math.sin(t*4)*1, 0, Math.PI*2); g.fill(); g.shadowBlur = 0;
-    g.font = "700 14px Figtree, sans-serif"; g.fillStyle = "#fff"; g.fillText(STATUS[mod.status].toUpperCase(), 828, 44);
-    const d = new Date(); g.font = "600 20px Outfit, sans-serif"; g.textAlign = "right"; g.fillText(d.toTimeString().slice(0,5), 992, 47); g.textAlign = "left";
-    // metric cards
-    mod.metrics.forEach(([k, v], i) => {
-      const x = 32 + i*172;
-      g.fillStyle = "rgba(255,255,255,.05)"; rrect(g, x, 100, 156, 104, 14); g.fill();
-      g.strokeStyle = "rgba(255,255,255,.08)"; g.stroke();
-      g.fillStyle = col; g.fillRect(x, 100, 156, 3);
-      g.font = "600 14px Figtree, sans-serif"; g.fillStyle = "rgba(255,255,255,.6)"; g.fillText(k.toUpperCase(), x+16, 132);
-      g.font = "700 46px Outfit, sans-serif"; g.fillStyle = "#fff"; g.fillText(v, x+16, 184);
-    });
-    // chart
-    g.fillStyle = "rgba(255,255,255,.04)"; rrect(g, 32, 228, 500, 272, 14); g.fill();
-    g.font = "600 14px Figtree, sans-serif"; g.fillStyle = "rgba(255,255,255,.6)"; g.fillText("ACTIVIDAD · ÚLTIMAS 24 H", 48, 256);
-    const cx0 = 48, cy0 = 480, cw = 468, ch = 190;
-    g.strokeStyle = "rgba(255,255,255,.08)"; for (let i=0;i<=4;i++){ const y = cy0 - ch*i/4; g.beginPath(); g.moveTo(cx0, y); g.lineTo(cx0+cw, y); g.stroke(); }
-    const pts = series.map((v, i) => [cx0 + cw*i/(series.length-1), cy0 - ch*(v + Math.sin(t*1.3 + i*0.4)*0.04)]);
-    g.beginPath(); g.moveTo(cx0, cy0); pts.forEach(p => g.lineTo(p[0], p[1])); g.lineTo(cx0+cw, cy0); g.closePath();
-    const ag = g.createLinearGradient(0, cy0-ch, 0, cy0); ag.addColorStop(0, col); ag.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = ag; g.globalAlpha = 0.35; g.fill(); g.globalAlpha = 1;
-    g.strokeStyle = col; g.lineWidth = 3; g.lineJoin = "round"; g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke();
-    const lp = pts[pts.length-1]; g.fillStyle = "#fff"; g.shadowColor = col; g.shadowBlur = 14; g.beginPath(); g.arc(lp[0], lp[1], 5, 0, Math.PI*2); g.fill(); g.shadowBlur = 0;
-    // live feed
-    g.fillStyle = "rgba(255,255,255,.04)"; rrect(g, 556, 100, 436, 300, 14); g.fill();
-    g.font = "600 14px Figtree, sans-serif"; g.fillStyle = "rgba(255,255,255,.6)"; g.fillText("FEED EN VIVO", 572, 128);
-    g.fillStyle = sc; g.beginPath(); g.arc(680, 123, 4, 0, Math.PI*2); g.fill();
-    feed.forEach((f, i) => {
-      const y = 160 + i*70;
-      g.fillStyle = i === 0 ? "rgba(255,255,255,.08)" : "rgba(255,255,255,.03)"; rrect(g, 572, y - 26, 404, 56, 10); g.fill();
-      g.fillStyle = i === 0 ? col : "rgba(255,255,255,.35)"; g.beginPath(); g.arc(594, y + 2, 6, 0, Math.PI*2); g.fill();
-      g.font = "700 21px Figtree, sans-serif"; g.fillStyle = "#fff"; g.fillText(f.text, 612, y);
-      g.font = "600 14px Figtree, sans-serif"; g.fillStyle = "rgba(255,255,255,.5)"; g.fillText(`hace ${f.min} min · ${mod.sub.split(" · ")[i % 2]}`, 612, y + 18);
-    });
-    // current task progress
-    g.fillStyle = "rgba(255,255,255,.04)"; rrect(g, 556, 420, 436, 80, 14); g.fill();
-    g.font = "600 14px Figtree, sans-serif"; g.fillStyle = "rgba(255,255,255,.6)"; g.fillText("TAREA ACTUAL", 572, 446);
-    g.font = "700 19px Figtree, sans-serif"; g.fillStyle = "#fff"; g.fillText(mod.note, 572, 471);
-    const prog = (t*0.07 + mod.id.length*0.13) % 1;
-    g.fillStyle = "rgba(255,255,255,.1)"; rrect(g, 572, 480, 404, 8, 4); g.fill();
-    g.fillStyle = col; rrect(g, 572, 480, 404*prog, 8, 4); g.fill();
-    // footer
-    g.font = "600 13px Figtree, sans-serif"; g.fillStyle = "rgba(255,255,255,.4)";
-    g.fillText(`BOT-${mod.id.toUpperCase()} · ${mod.sub}`, 32, 528);
-    g.textAlign = "right"; g.fillText(Math.floor(t) % 2 ? "▮" : " ", 992, 528); g.textAlign = "left";
-    tex.needsUpdate = true;
+/* ---------- module console: manage the module face to face with the bot ---------- */
+const MODULE_OPS = {
+  scraping: {
+    tasks:[["Revisar 2 propiedades nuevas en Ibiza","Idealista · hoy"],["Validar anuncio nuevo de Facebook","Facebook · hoy"],["Programar escaneo de IG y YouTube","Cola"]],
+    actions:[["search","Escanear portales","Idealista, Facebook, IG y YouTube"],["doc","Exportar listado","CSV con las novedades de hoy"],["check","Marcar revisadas","Cierra las propiedades nuevas"]] },
+  props: {
+    tasks:[["Publicar la ficha lista","Web · hoy"],["Subir 4 fotos que faltan","Galería"],["Programar post de RRSS","Instagram · hoy"]],
+    actions:[["doc","Generar ficha","PDF en español de la propiedad"],["home","Publicar en la web","Sube la ficha y las fotos"],["spark","Preparar post","Texto + fotos para redes"]] },
+  leads: {
+    tasks:[["Revisar 3 leads cualificados","Matching IA · hoy"],["Responder al lead que escribió","WhatsApp"],["Asignar seguimiento (14)","Cola"]],
+    actions:[["people","Cualificar lead","Pasa el match IA a revisión"],["target","Enviar seguimiento","WhatsApp a los cualificados"],["check","Asignar agente","Reparte los 14 en seguimiento"]] },
+  finance: {
+    tasks:[["Emitir 2 facturas pendientes","Hoy"],["Revisar el contrato abierto","Legal"],["Registrar el pago recibido","Banco"]],
+    actions:[["bill","Emitir factura","Genera la factura pendiente"],["doc","Revisar contrato","Abre el contrato en revisión"],["check","Registrar pago","Marca el pago como cobrado"]] },
+  agenda: {
+    tasks:[["Confirmar la visita de mañana","Calendario"],["Reservar el hueco de las 17:00","Hoy"],["Preparar expediente de notaría","Pendiente"]],
+    actions:[["calendar","Confirmar visita","Envía el recordatorio de mañana"],["check","Reservar hueco","Bloquea las 17:00"],["doc","Preparar notaría","Checklist del expediente"]] },
+  ai: {
+    tasks:[["Revisar el workflow actualizado","Flujos"],["Sincronizar el flujo de WhatsApp","Integraciones"],["Comprobar los 5 bots","Estado"]],
+    actions:[["spark","Lanzar flujo","Ejecuta el workflow actualizado"],["gear","Sincronizar WhatsApp","Reconecta la integración"],["check","Informe de errores","0 errores · resumen"]] }
+};
+const modState = {};
+function stateFor(mod) {
+  if (!modState[mod.id]) {
+    const ops = MODULE_OPS[mod.id];
+    modState[mod.id] = {
+      tasks: ops.tasks.map(([title, sub], i) => ({ title, sub, done: i === ops.tasks.length - 1 })),
+      log: mod.bubbles.map((text, i) => ({ time: `${String(9+i).padStart(2,"0")}:${String(10+i*17).padStart(2,"0")}`, text })),
+      active: mod.status !== "idle", tab: "resumen",
+      series: Array.from({ length: 32 }, (_, i) => 0.35 + Math.sin(i*0.55)*0.16 + ((i*37)%10)/40),
+    };
   }
-  draw(0);
-  return { tex, draw };
+  return modState[mod.id];
 }
-stations.forEach(s => {
-  const dash = makeDashboard(s.userData.mod); s.userData.dash = dash;
-  const m = s.userData.screen.material; m.map = dash.tex; m.emissiveMap = dash.tex; m.needsUpdate = true;
+const nowHM = () => new Date().toTimeString().slice(0,5);
+function logEvent(mod, text) { stateFor(mod).log.unshift({ time: nowHM(), text, fresh: true }); }
+function pendingCount(st) { return st.tasks.filter(t => !t.done).length; }
+
+const consoleEl = document.getElementById("console");
+let focusMod = null;
+function renderConsole(mod) {
+  const st = stateFor(mod);
+  consoleEl.style.setProperty("--c", hex(mod.color));
+  document.getElementById("c-ico").innerHTML = svg(mod.icon);
+  document.getElementById("c-title").textContent = mod.name;
+  document.getElementById("c-sub").textContent = mod.sub;
+  const stEl = document.getElementById("c-status"); stEl.className = "st " + mod.status; stEl.querySelector("span").textContent = STATUS[mod.status];
+  document.getElementById("c-ntasks").textContent = pendingCount(st);
+  document.getElementById("c-id").textContent = `BOT-${mod.id.toUpperCase()}`;
+  const sw = document.getElementById("c-active"); sw.checked = st.active;
+  document.getElementById("c-foot").textContent = st.active ? "Bot activo en este módulo" : "Bot en pausa";
+  consoleEl.querySelectorAll("#c-tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === st.tab));
+  consoleEl.querySelectorAll(".body .tab").forEach(t => t.classList.toggle("on", t.dataset.tab === st.tab));
+  document.getElementById("c-resumen").innerHTML =
+    `<div class="cards">${mod.metrics.map(([k,v]) => `<div class="card"><span>${k}</span><b>${v}</b></div>`).join("")}</div>` +
+    `<div class="two"><div class="box"><h4><i></i>Actividad · últimas 24 h</h4><canvas id="c-chart" width="420" height="150"></canvas></div>` +
+    `<div class="box"><h4><i></i>Feed en vivo</h4>${mod.bubbles.map((b,i) => `<div class="task"><div class="tx"><b>${b}</b><small>hace ${3+i*7} min · ${mod.sub.split(" · ")[i%2]}</small></div></div>`).join("")}</div></div>`;
+  document.getElementById("c-tareas").innerHTML = st.tasks.map((t,i) =>
+    `<div class="task${t.done?" done":""}" data-i="${i}"><button class="chk" aria-label="Completar">${svg("check")}</button><div class="tx"><b>${t.title}</b><small>${t.sub}</small></div><button class="mini">${t.done?"Reabrir":"Hecho"}</button></div>`).join("");
+  document.getElementById("c-acciones").innerHTML = `<div class="acts">${MODULE_OPS[mod.id].actions.map(([ic,title,sub],i) =>
+    `<button class="act${i===0?" primary":""}" data-i="${i}"><span class="ai">${svg(ic)}</span><b>${title}</b><small>${sub}</small></button>`).join("")}</div>`;
+  renderLog(mod);
+  drawChart(0);
+}
+function renderLog(mod) {
+  document.getElementById("c-log").innerHTML = stateFor(mod).log.slice(0,14).map(l =>
+    `<li class="${l.fresh?"new":""}"><time>${l.time}</time><span>${l.text}</span></li>`).join("");
+}
+function drawChart(t) {
+  const cv = document.getElementById("c-chart"); if (!cv || !focusMod) return;
+  const g = cv.getContext("2d"); const w = cv.width, h = cv.height;
+  const series = stateFor(focusMod).series;
+  g.clearRect(0,0,w,h);
+  g.strokeStyle = "rgba(255,255,255,.08)"; g.lineWidth = 1;
+  for (let i=1;i<=3;i++){ g.beginPath(); g.moveTo(0, h*i/4); g.lineTo(w, h*i/4); g.stroke(); }
+  const pts = series.map((v,i) => [w*i/(series.length-1), h*0.88 - (h*0.72)*(v + Math.sin(t*1.3+i*0.4)*0.035)]);
+  g.beginPath(); g.moveTo(0,h); pts.forEach(p => g.lineTo(p[0], p[1])); g.lineTo(w,h); g.closePath();
+  const ag = g.createLinearGradient(0,0,0,h); ag.addColorStop(0, hex(focusMod.color)); ag.addColorStop(1,"rgba(0,0,0,0)");
+  g.fillStyle = ag; g.globalAlpha = 0.35; g.fill(); g.globalAlpha = 1;
+  g.strokeStyle = hex(focusMod.color); g.lineWidth = 2.5; g.lineJoin = "round";
+  g.beginPath(); pts.forEach((p,i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke();
+  const lp = pts[pts.length-1]; g.fillStyle = "#fff"; g.beginPath(); g.arc(lp[0], lp[1], 3.5, 0, Math.PI*2); g.fill();
+}
+consoleEl.addEventListener("click", e => {
+  if (!focusMod) return;
+  const st = stateFor(focusMod);
+  const tab = e.target.closest("#c-tabs button");
+  if (tab) { st.tab = tab.dataset.tab; renderConsole(focusMod); return; }
+  const task = e.target.closest("#c-tareas .task");
+  if (task && (e.target.closest(".chk") || e.target.closest(".mini"))) {
+    const t = st.tasks[+task.dataset.i]; t.done = !t.done;
+    logEvent(focusMod, (t.done ? "Tarea completada: " : "Tarea reabierta: ") + t.title);
+    toast(t.done ? "Tarea completada" : "Tarea reabierta"); renderConsole(focusMod); return;
+  }
+  const act = e.target.closest("#c-acciones .act");
+  if (act && !act.classList.contains("run")) {
+    const mod = focusMod; const [,,sub] = MODULE_OPS[mod.id].actions[+act.dataset.i]; const title = act.querySelector("b").textContent;
+    act.classList.add("run"); logEvent(mod, "Acción lanzada: " + title); renderLog(mod); toast(title + "…");
+    setTimeout(() => { if (act.isConnected) act.classList.remove("run"); logEvent(mod, "Hecho · " + title + " — " + sub); if (focusMod === mod) renderLog(mod); toast("Listo: " + title); }, 1400);
+  }
+});
+document.getElementById("c-active").addEventListener("change", e => {
+  if (!focusMod) return; const st = stateFor(focusMod); st.active = e.target.checked;
+  document.getElementById("c-foot").textContent = st.active ? "Bot activo en este módulo" : "Bot en pausa";
+  logEvent(focusMod, st.active ? "Bot reactivado" : "Bot puesto en pausa"); renderLog(focusMod);
+  toast(st.active ? "Bot activo" : "Bot en pausa");
 });
 
-/* ---------- cinematic camera: office overview <-> first person at the bot's desk ---------- */
+/* ---------- camera: office overview <-> face to face, behind the bot's screen ---------- */
 let focusSt = null;
 const camFrom = { pos:new THREE.Vector3(), look:new THREE.Vector3(), fov:10 };
 const camNow = { pos:new THREE.Vector3(), look:new THREE.Vector3(), fov:10 };
 const camWant = { pos:new THREE.Vector3(), look:new THREE.Vector3(), fov:10 };
-let camBlend = 1; const CAM_DUR = 1.7;
+let camBlend = 1; const CAM_DUR = 1.6;
 const easeInOut = k => k < 0.5 ? 4*k*k*k : 1 - Math.pow(-2*k + 2, 3) / 2;
 function officePose(t, out) {
   out.pos.set(camBase.x + Math.sin(t*0.18)*0.12, camBase.y + Math.sin(t*0.23)*0.06, camBase.z + Math.cos(t*0.15)*0.1);
   out.look.copy(portrait ? portraitTarget : camTarget); out.fov = officeFov;
 }
 function stationPose(st, t, out) {
-  // over the bot's shoulder (the side away from the desk return), looking at its main screen
-  const side = st.userData.mod.face;
-  out.pos.set(side * (1.7 + Math.sin(t*0.5)*0.02), 3.05 + Math.sin(t*0.7)*0.015, -2.1); st.localToWorld(out.pos);
-  out.look.set(side * -0.22, 1.0, 0.42); st.localToWorld(out.look);
-  out.fov = portrait ? 50 : 26;
+  // behind the monitor, looking straight at the bot: its screen sits between us and the bot
+  out.pos.set(Math.sin(t*0.4)*0.02, 1.62 + Math.sin(t*0.6)*0.012, 3.15); st.localToWorld(out.pos);
+  out.look.set(0, 1.22, 0.3); st.localToWorld(out.look);
+  out.fov = portrait ? 46 : 20;
 }
 function startCamMove() { camFrom.pos.copy(camNow.pos); camFrom.look.copy(camNow.look); camFrom.fov = camNow.fov; camBlend = 0; }
 const _dirA = new THREE.Vector3(), _dirB = new THREE.Vector3(), _qa = new THREE.Quaternion(), _qb = new THREE.Quaternion(), _up = new THREE.Vector3(0,1,0);
@@ -875,7 +966,6 @@ function updateCamera(t, dt) {
     camBlend = Math.min(1, camBlend + dt / CAM_DUR);
     const k = easeInOut(camBlend);
     camNow.look.lerpVectors(camFrom.look, camWant.look, k);
-    // distance and apparent target size are interpolated geometrically (smooth dolly-zoom), direction is slerped
     _dirA.subVectors(camFrom.pos, camFrom.look); const dA = _dirA.length(); _dirA.normalize();
     _dirB.subVectors(camWant.pos, camWant.look); const dB = _dirB.length(); _dirB.normalize();
     _qa.setFromUnitVectors(_up, _dirA); _qb.setFromUnitVectors(_up, _dirB); _qa.slerp(_qb, k);
@@ -888,21 +978,35 @@ function updateCamera(t, dt) {
   camera.position.copy(camNow.pos); camera.lookAt(camNow.look);
   if (Math.abs(camera.fov - camNow.fov) > 1e-3) { camera.fov = camNow.fov; camera.updateProjectionMatrix(); }
 }
+// the console panel is pinned to the monitor's surface, so it reads as the screen itself
+const _corner = new THREE.Vector3();
+const SCREEN_CORNERS = [[-0.60,0.86,0.55],[0.60,0.86,0.55],[-0.60,1.40,0.55],[0.60,1.40,0.55]];
+function placeConsole() {
+  if (!focusSt) return;
+  camera.updateMatrixWorld(true); camera.updateProjectionMatrix();
+  let minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+  for (const [x,y,z] of SCREEN_CORNERS) {
+    _corner.set(x,y,z); focusSt.localToWorld(_corner); _corner.project(camera);
+    const px = (_corner.x*0.5+0.5)*innerWidth, py = (-_corner.y*0.5+0.5)*innerHeight;
+    minX=Math.min(minX,px); maxX=Math.max(maxX,px); minY=Math.min(minY,py); maxY=Math.max(maxY,py);
+  }
+  consoleEl.style.left = minX+"px"; consoleEl.style.top = minY+"px";
+  consoleEl.style.width = (maxX-minX)+"px"; consoleEl.style.height = (maxY-minY)+"px";
+  // fade in only while the camera is still travelling; a settled camera (deep link) shows it at once
+  consoleEl.style.transition = camBlend >= 1 ? "none" : "";
+  consoleEl.classList.toggle("show", camBlend > 0.9);
+}
 
 function enterFocus(mod) {
   const st = stations.find(s => s.userData.id === mod.id); if (!st || st === focusSt) return;
-  activeId = mod.id; startCamMove(); focusSt = st;
-  document.body.classList.add("focus");
-  const fb = document.getElementById("focusbar"); fb.style.setProperty("--c", hex(mod.color));
-  document.getElementById("f-ico").innerHTML = svg(mod.icon);
-  document.getElementById("f-title").textContent = mod.name;
-  document.getElementById("f-sub").textContent = mod.sub;
-  const stEl = document.getElementById("f-status"); stEl.className = "st " + mod.status; stEl.querySelector("span").textContent = STATUS[mod.status];
+  activeId = mod.id; focusMod = mod; startCamMove(); focusSt = st;
+  document.body.classList.add("focus"); consoleEl.classList.remove("show");
+  renderConsole(mod);
 }
 function exitFocus() {
   if (!focusSt) return;
-  activeId = null; startCamMove(); focusSt = null;
-  document.body.classList.remove("focus");
+  activeId = null; focusMod = null; startCamMove(); focusSt = null;
+  document.body.classList.remove("focus"); consoleEl.classList.remove("show");
 }
 function hitId(cx, cy) {
   pointer.x = (cx / innerWidth) * 2 - 1; pointer.y = -(cy / innerHeight) * 2 + 1;
@@ -917,7 +1021,7 @@ canvas.addEventListener("pointerup", e => {
   const id = hitId(e.clientX, e.clientY); const mod = MODULES.find(m => m.id === id);
   if (mod) enterFocus(mod); else if (focusSt) exitFocus();
 });
-document.getElementById("f-back").onclick = exitFocus;
+document.getElementById("c-back").onclick = exitFocus;
 window.addEventListener("keydown", e => { if (e.key === "Escape") exitFocus(); });
 canvas.addEventListener("pointermove", e => { if (e.pointerType === "mouse") { hoverId = hitId(e.clientX, e.clientY); canvas.style.cursor = hoverId ? "pointer" : "default"; } });
 
@@ -944,16 +1048,15 @@ function animate() {
   });
 
   stations.forEach((s, i) => {
-    const { bot, pad, monitors, mod, dash } = s.userData;
+    const { bot, pad, monitors, mod } = s.userData;
     const ph = bot.userData.phase;
     const focused = s === focusSt;
-    const busy = mod.status !== "idle" || focused;
-    if (focused) dash.draw(t);
+    const busy = stateFor(mod).active;
     bot.position.y = BOT_SEAT_Y + Math.sin(t*2.1 + ph) * 0.02;
     if (bot.userData.head) {
-      // in first person the bot keeps its eyes on the screen
-      bot.userData.head.rotation.y = Math.sin(t*0.9 + ph) * (focused ? 0.08 : 0.35);
-      bot.userData.head.rotation.x = (focused ? 0.16 : 0.08) + Math.sin(t*1.7 + ph) * 0.06;
+      // face to face, the bot looks up at us over its screen
+      bot.userData.head.rotation.y = Math.sin(t*0.9 + ph) * (focused ? 0.05 : 0.35);
+      bot.userData.head.rotation.x = (focused ? -0.12 : 0.08) + Math.sin(t*1.7 + ph) * 0.05;
       bot.userData.arms.forEach((a, k) => { a.position.y = a.userData.baseY + (busy ? Math.sin(t*9 + ph + k*1.6) * 0.03 : 0); a.rotation.x = busy ? Math.sin(t*9 + ph + k*1.6) * 0.12 : 0; });
     }
     const pulse = 0.85 + Math.sin(t*2.4 + i) * 0.15;
@@ -972,7 +1075,8 @@ function animate() {
   }
 
   updateCamera(t, dt);
-  if (!focusSt || camBlend < 1) layoutLabels();
+  if (focusSt) { placeConsole(); if (Math.floor(t*5) !== Math.floor((t-dt)*5)) { document.getElementById("c-clock").textContent = nowHM(); drawChart(t); } }
+  else layoutLabels();
   composer.render();
 }
 window.addEventListener("resize", () => {
@@ -992,8 +1096,9 @@ setInterval(() => {
 
 if (innerHeight > innerWidth) setTimeout(() => toast("Gira el móvil para ver la oficina completa"), 1200);
 // deep link: ?focus=<module id> opens straight at that bot's desk
-const deep = MODULES.find(m => m.id === new URLSearchParams(location.search).get("focus"));
-if (deep) { enterFocus(deep); camBlend = 1; }
+const deepParams = new URLSearchParams(location.search);
+const deep = MODULES.find(m => m.id === deepParams.get("focus"));
+if (deep) { const tab = deepParams.get("tab"); if (tab) stateFor(deep).tab = tab; enterFocus(deep); camBlend = 1; }
 animate();
 </script>
 </body>
