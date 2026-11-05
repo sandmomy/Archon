@@ -61,12 +61,11 @@
   #labels{transition:opacity .35s}
   body.focus #labels{opacity:0}
   body.focus .vignette{background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 50%,rgba(0,0,0,.55) 100%)}
-  .console{position:fixed;z-index:8;display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateY(14px) scale(.96);transition:opacity .45s,transform .45s cubic-bezier(.2,.8,.2,1);
-    background:linear-gradient(170deg,rgba(14,19,32,.94),rgba(7,10,18,.96));border:1px solid color-mix(in srgb,var(--c) 45%,rgba(255,255,255,.12));border-radius:14px;
-    box-shadow:0 0 0 1px rgba(0,0,0,.6),0 30px 70px rgba(0,0,0,.65),0 0 60px color-mix(in srgb,var(--c) 28%,transparent);overflow:hidden;color:#eef3fb;font-size:12px}
-  .console::before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.015) 0 1px,transparent 1px 3px);mix-blend-mode:screen}
+  .console{position:fixed;z-index:8;display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .4s,transform .4s cubic-bezier(.2,.8,.2,1);
+    background:rgba(16,20,30,.94);border:1px solid rgba(255,255,255,.14);border-radius:8px;
+    box-shadow:0 18px 50px rgba(0,0,0,.45);overflow:hidden;color:#f4f7fb;font-size:13px}
   .console.show{opacity:1;pointer-events:auto;transform:none}
-  .console header{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08);background:linear-gradient(90deg,color-mix(in srgb,var(--c) 30%,transparent),transparent 70%)}
+  .console header{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.08);background:linear-gradient(90deg,color-mix(in srgb,var(--c) 22%,transparent),transparent 70%)}
   .console header .ico{width:32px;height:32px;border-radius:50%;background:var(--c);display:grid;place-items:center;flex:0 0 32px;box-shadow:0 0 14px color-mix(in srgb,var(--c) 70%,transparent)}
   .console header .ico svg{width:17px;height:17px;fill:#fff}
   .console header strong{display:block;font-family:"Outfit",sans-serif;font-size:15px;font-weight:700;line-height:1.1}
@@ -85,16 +84,14 @@
   .console .tabs button .n{margin-left:6px;background:var(--c);color:#fff;font-size:9px;padding:1px 5px;border-radius:7px}
   .console .body{flex:1;min-height:0;overflow:auto;padding:10px 12px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.15) transparent}
   .console .tab{display:none}.console .tab.on{display:block}
-  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-  .card{padding:9px 11px;border-radius:10px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);border-top:2px solid var(--c)}
-  .card span{display:block;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#9fb0c6;font-weight:700}
-  .card b{display:block;font-family:"Outfit",sans-serif;font-size:22px;font-weight:700;margin-top:3px}
-  .two{display:grid;grid-template-columns:1.25fr 1fr;gap:8px;margin-top:8px}
-  .box{padding:9px 11px;border-radius:10px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07)}
-  .box h4{margin:0 0 6px;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#9fb0c6;font-weight:700;display:flex;align-items:center;gap:6px}
-  .box h4 i{width:6px;height:6px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c)}
-  .box canvas{width:100%;height:84px;display:block}
-  .task{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:10px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);margin-bottom:6px}
+  .hintline{margin:0 0 4px;color:#a9b6c9;font-size:12px}
+  .line{display:flex;align-items:center;gap:12px;padding:6px 2px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .line .tx{flex:1;min-width:0}.line .tx b{display:block;font-size:13.5px;font-weight:700;line-height:1.2}
+  .line .tx small{display:block;color:#a9b6c9;font-size:11.5px;margin-top:2px}
+  .line.done .tx b{color:#8a9bb3;text-decoration:line-through}
+  .line .go{border:0;background:transparent;color:var(--c);font:inherit;font-size:12.5px;font-weight:800;cursor:pointer;padding:6px 0;white-space:nowrap}
+  .line .go:hover{text-decoration:underline}
+  .task{display:flex;align-items:center;gap:9px;padding:9px 2px;border-bottom:1px solid rgba(255,255,255,.08)}
   .task .chk{width:18px;height:18px;border-radius:6px;border:1.5px solid rgba(255,255,255,.25);display:grid;place-items:center;flex:0 0 18px;cursor:pointer;background:transparent}
   .task.done .chk{background:var(--c);border-color:var(--c)}
   .task .chk svg{width:12px;height:12px;fill:#fff;opacity:0}.task.done .chk svg{opacity:1}
@@ -102,16 +99,7 @@
   .task .tx small{display:block;color:#9fb0c6;font-size:10.5px;margin-top:1px}
   .task .mini{border:1px solid rgba(255,255,255,.14);background:transparent;color:#dbe4f3;font:inherit;font-size:10.5px;font-weight:700;padding:5px 8px;border-radius:8px;cursor:pointer;white-space:nowrap}
   .task .mini:hover{background:rgba(255,255,255,.08)}
-  .acts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-  .act{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:11px;border-radius:11px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#fff;font:inherit;cursor:pointer;text-align:left;position:relative;overflow:hidden}
-  .act:hover{background:rgba(255,255,255,.08);border-color:color-mix(in srgb,var(--c) 60%,transparent)}
-  .act .ai{width:28px;height:28px;border-radius:8px;background:color-mix(in srgb,var(--c) 25%,transparent);display:grid;place-items:center}
-  .act .ai svg{width:15px;height:15px;fill:var(--c)}
-  .act b{font-size:12px;font-weight:700;line-height:1.15}.act small{color:#9fb0c6;font-size:10.5px;line-height:1.3}
-  .act.run::after{content:"";position:absolute;left:0;bottom:0;height:2px;background:var(--c);box-shadow:0 0 8px var(--c);animation:run 1.4s linear forwards}
-  @keyframes run{from{width:0}to{width:100%}}
-  .act.primary{background:linear-gradient(135deg,color-mix(in srgb,var(--c) 55%,transparent),rgba(255,255,255,.04))}
-  .log{margin:0;padding:0;list-style:none;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
+  .log{margin:0;padding:0;list-style:none;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
   .log li{display:flex;gap:10px;padding:5px 0;border-bottom:1px dashed rgba(255,255,255,.06);color:#dbe4f3}
   .log li time{color:#8a9bb3;flex:0 0 46px}.log li.new{color:#fff;animation:fadein .4s}
   .log li.new::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c);margin-top:5px;flex:0 0 6px}
@@ -132,8 +120,24 @@
     .brand strong{font-size:15px}.brand .logo{width:32px;height:32px}
     .pill .avs{display:none}
   }
+  @media (orientation:landscape) and (max-height:480px) and (max-width:940px){
+    .side{top:auto;bottom:max(6px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);flex-direction:row;border-radius:999px;padding:4px}
+    .side button{position:relative;width:auto;padding:6px}
+    .side button span.t{display:none}
+    .side .n{position:absolute;margin:0;top:-4px;right:-4px}
+    .brand span,.pill .avs,.console .clock,.console header em{display:none}
+    .brand strong{font-size:14px}
+    .console header{padding:6px 8px}
+    .console header .ico{width:26px;height:26px;flex-basis:26px}
+    .console .body{padding:2px 10px 4px}
+    .line,.task{padding:3px 2px}
+    .line .tx small,.task .tx small{margin-top:0}
+    .hintline{margin:0;font-size:11px}
+    .console footer{display:none}
+    .toast{bottom:62px}
+  }
   @media (max-width:720px) and (orientation:portrait){
-    .console header em{display:none}.console .clock{display:none}.cards{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}.acts{grid-template-columns:1fr 1fr}
+    .console header em,.console .clock{display:none}
     .side{top:auto;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);flex-direction:row;border-radius:999px}
     .side .n{position:absolute;margin:0;top:-4px;right:-4px}
     .side button{position:relative;padding:6px}
@@ -169,15 +173,13 @@
     <button type="button" class="back" id="c-back">Volver a la oficina</button>
   </header>
   <nav class="tabs" id="c-tabs">
-    <button data-tab="resumen" class="on">Resumen</button>
+    <button data-tab="resumen" class="on">Trabajo</button>
     <button data-tab="tareas">Tareas<span class="n" id="c-ntasks">0</span></button>
-    <button data-tab="acciones">Acciones</button>
     <button data-tab="registro">Registro</button>
   </nav>
   <div class="body">
     <div class="tab on" data-tab="resumen" id="c-resumen"></div>
     <div class="tab" data-tab="tareas" id="c-tareas"></div>
-    <div class="tab" data-tab="acciones" id="c-acciones"></div>
     <div class="tab" data-tab="registro"><ul class="log" id="c-log"></ul></div>
   </div>
   <footer>
@@ -284,7 +286,8 @@ const hex = c => "#" + c.toString(16).padStart(6,"0");
 const canvas = document.getElementById("canvas");
 const labelsEl = document.getElementById("labels");
 const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, powerPreference:"high-performance" });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+const LOW = Math.min(innerWidth, innerHeight) < 740;
+renderer.setPixelRatio(Math.min(devicePixelRatio, LOW ? 1.15 : 1.5));
 renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -334,6 +337,7 @@ function groundAt(sx, sy, y = 0) {
 function placeCamera() {
   const aspect = innerWidth / innerHeight;
   portrait = aspect < 0.9;
+  document.body.classList.toggle("land", !portrait && innerHeight < 480 && innerWidth < 940);
   if (!portrait) {
     officeFov = fovFor(aspect, VIS_HALF_W, CAM_DIST);
     camBase.set(camTarget.x, camTarget.y + Math.sin(PITCH) * CAM_DIST, camTarget.z + Math.cos(PITCH) * CAM_DIST);
@@ -346,7 +350,8 @@ function placeCamera() {
   camera.aspect = aspect;
   camera.lookAt(portrait ? portraitTarget : camTarget);
   camera.updateProjectionMatrix();
-  document.documentElement.style.setProperty("--ui-scale", String(portrait ? Math.max(0.6, Math.min(1, innerWidth / 700)) : Math.max(0.6, Math.min(1.25, innerWidth / REF_W))));
+  const land = document.body.classList.contains("land");
+  document.documentElement.style.setProperty("--ui-scale", String(land ? 0.72 : portrait ? Math.max(0.6, Math.min(1, innerWidth / 700)) : Math.max(0.6, Math.min(1.25, innerWidth / REF_W))));
 }
 placeCamera();
 
@@ -356,7 +361,8 @@ scene.add(new THREE.AmbientLight(0x9aa8c4, 0.3));
 const sun = new THREE.DirectionalLight(0xffa565, 1.45);
 sun.position.set(16, 10, -12);
 sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.mapSize.set(LOW ? 512 : 1024, LOW ? 512 : 1024);
+if (LOW) { renderer.shadowMap.enabled = false; sun.castShadow = false; }
 sun.shadow.camera.near = 1; sun.shadow.camera.far = 80;
 sun.shadow.camera.left = -22; sun.shadow.camera.right = 22;
 sun.shadow.camera.top = 22; sun.shadow.camera.bottom = -22;
@@ -543,7 +549,7 @@ function plantAt(sx, sy, s=1) {
     const pa = leafGeo.attributes.position; for (let i=0;i<pa.count;i++){ const px = pa.getX(i); pa.setY(i, pa.getY(i) - (px/(1.3*s))*(px/(1.3*s))*0.5*s); pa.setZ(i, Math.abs(pa.getY(i))*0.1); }
     leafGeo.computeVertexNormals(); leafGeoCache[s] = leafGeo;
   }
-  for (let i=0;i<13;i++){ const leaf = new THREE.Mesh(leafGeo, leafMat); const a = i/13*Math.PI*2 + (i%2)*0.2; leaf.position.set(0, 1.7*s + (i%3)*0.08*s, 0); leaf.rotation.y = a; leaf.rotation.z = -0.25 - (i%3)*0.22; leaf.translateX(0.58*s); leaf.castShadow = true; g.add(leaf); }
+  for (let i=0;i<8;i++){ const leaf = new THREE.Mesh(leafGeo, leafMat); const a = i/8*Math.PI*2 + (i%2)*0.2; leaf.position.set(0, 1.7*s + (i%3)*0.08*s, 0); leaf.rotation.y = a; leaf.rotation.z = -0.25 - (i%3)*0.22; leaf.translateX(0.58*s); g.add(leaf); }
   for (let i=0;i<5;i++){ const ringR = new THREE.Mesh(new THREE.TorusGeometry(0.07*s, 0.015*s, 6, 12), new THREE.MeshStandardMaterial({ color:0x4e3620 })); ringR.rotation.x = Math.PI/2; ringR.position.y = (0.6 + i*0.25)*s; g.add(ringR); }
   g.add(contactShadow(1.2*s, 0.4));
   g.position.copy(groundAt(sx, sy)); scene.add(g); return g;
@@ -710,13 +716,15 @@ function makeStation(mod) {
   const monitors = [];
   // big curved main monitor
   // big curved main monitor: the panel faces the bot (-z); the office camera sees its dark back, like the concept
-  const SCREEN_Z = 0.42, SCREEN_R = 1.3;
-  const curve = new THREE.Mesh(new THREE.CylinderGeometry(SCREEN_R, SCREEN_R, 0.65, 36, 1, true, -0.52, 1.04),
-    new THREE.MeshStandardMaterial({ map:tex, emissive:0xffffff, emissiveMap:tex, emissiveIntensity:1.0, roughness:0.35, side:THREE.FrontSide }));
-  curve.position.set(0, 1.12, SCREEN_Z + SCREEN_R); curve.rotation.y = Math.PI;
-  const curveBack = new THREE.Mesh(new THREE.CylinderGeometry(SCREEN_R+0.025, SCREEN_R+0.025, 0.69, 36, 1, true, -0.53, 1.06), new THREE.MeshPhysicalMaterial({ color:0x0b0f1a, roughness:0.35, metalness:0.2, clearcoat:0.6, side:THREE.BackSide })); curveBack.position.copy(curve.position); curveBack.rotation.y = Math.PI; curveBack.castShadow = true;
-  const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.05, 0.3, 10), visorMat); stand.position.set(0, 0.88, SCREEN_Z + 0.08);
-  const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.22, 0.03, 20), visorMat); foot.position.set(0, 0.77, SCREEN_Z + 0.08);
+  // wide, almost flat panel: a long radius and a short arc, so the console can cover the whole glass
+  const SCREEN_R = 8, ARC = 0.28, SCREEN_H = 0.68, SCREEN_Y = 1.14;
+  const curve = new THREE.Mesh(new THREE.CylinderGeometry(SCREEN_R, SCREEN_R, SCREEN_H, 18, 1, true, -ARC/2, ARC),
+    new THREE.MeshStandardMaterial({ map:tex, emissive:0xffffff, emissiveMap:tex, emissiveIntensity:1.0, roughness:0.45, side:THREE.FrontSide }));
+  curve.position.set(0, SCREEN_Y, 0.5 + SCREEN_R); curve.rotation.y = Math.PI;
+  const curveBack = new THREE.Mesh(new THREE.CylinderGeometry(SCREEN_R+0.02, SCREEN_R+0.02, SCREEN_H+0.045, 18, 1, true, -ARC/2-0.012, ARC+0.024), new THREE.MeshStandardMaterial({ color:0x0c1018, roughness:0.55, metalness:0.12, side:THREE.BackSide }));
+  curveBack.position.copy(curve.position); curveBack.rotation.y = Math.PI;
+  const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.05, 0.28, 10), visorMat); stand.position.set(0, 0.78, 0.42);
+  const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.22, 0.03, 16), visorMat); foot.position.set(0, 0.66, 0.42);
   monitors.push(curve);
   // second, smaller monitor on the return
   const frame2 = new THREE.Mesh(new RoundedBoxGeometry(0.62, 0.42, 0.04, 2, 0.015), visorMat); frame2.position.set(side*0.95, 1.08, -0.3); frame2.rotation.y = -side*1.1; frame2.castShadow = true;
@@ -830,35 +838,46 @@ stations.forEach(s => s.traverse(o => { if (o.isMesh && !o.material.map?.image?.
 wedges.forEach(w => pickables.push(w.userData.mesh));
 
 /* ---------- module console: manage the module face to face with the bot ---------- */
-const MODULE_OPS = {
-  scraping: {
-    tasks:[["Revisar 2 propiedades nuevas en Ibiza","Idealista · hoy"],["Validar anuncio nuevo de Facebook","Facebook · hoy"],["Programar escaneo de IG y YouTube","Cola"]],
-    actions:[["search","Escanear portales","Idealista, Facebook, IG y YouTube"],["doc","Exportar listado","CSV con las novedades de hoy"],["check","Marcar revisadas","Cierra las propiedades nuevas"]] },
-  props: {
-    tasks:[["Publicar la ficha lista","Web · hoy"],["Subir 4 fotos que faltan","Galería"],["Programar post de RRSS","Instagram · hoy"]],
-    actions:[["doc","Generar ficha","PDF en español de la propiedad"],["home","Publicar en la web","Sube la ficha y las fotos"],["spark","Preparar post","Texto + fotos para redes"]] },
-  leads: {
-    tasks:[["Revisar 3 leads cualificados","Matching IA · hoy"],["Responder al lead que escribió","WhatsApp"],["Asignar seguimiento (14)","Cola"]],
-    actions:[["people","Cualificar lead","Pasa el match IA a revisión"],["target","Enviar seguimiento","WhatsApp a los cualificados"],["check","Asignar agente","Reparte los 14 en seguimiento"]] },
-  finance: {
-    tasks:[["Emitir 2 facturas pendientes","Hoy"],["Revisar el contrato abierto","Legal"],["Registrar el pago recibido","Banco"]],
-    actions:[["bill","Emitir factura","Genera la factura pendiente"],["doc","Revisar contrato","Abre el contrato en revisión"],["check","Registrar pago","Marca el pago como cobrado"]] },
-  agenda: {
-    tasks:[["Confirmar la visita de mañana","Calendario"],["Reservar el hueco de las 17:00","Hoy"],["Preparar expediente de notaría","Pendiente"]],
-    actions:[["calendar","Confirmar visita","Envía el recordatorio de mañana"],["check","Reservar hueco","Bloquea las 17:00"],["doc","Preparar notaría","Checklist del expediente"]] },
-  ai: {
-    tasks:[["Revisar el workflow actualizado","Flujos"],["Sincronizar el flujo de WhatsApp","Integraciones"],["Comprobar los 5 bots","Estado"]],
-    actions:[["spark","Lanzar flujo","Ejecuta el workflow actualizado"],["gear","Sincronizar WhatsApp","Reconecta la integración"],["check","Informe de errores","0 errores · resumen"]] }
+const CRM = {
+  scraping: { hint:"Portales · lo nuevo entra en Por aprobar", rows:[
+    ["Idealista","2 nuevas en Ibiza · hoy","Importar"],
+    ["Fotocasa","1 anuncio en Santa Eulalia","Importar"],
+    ["Habitaclia","Sin novedades desde ayer","Escanear"],
+    ["Facebook","1 anuncio por validar","Revisar"]] },
+  props: { hint:"Catálogo · fichas de la casa", rows:[
+    ["Villa Porroig","Venta · 2.400.000 € · 5 hab","Ficha"],
+    ["Ático Santa Eulalia","Venta · 890.000 € · 3 hab","PDF ES"],
+    ["Casa Es Cubells","Venta · 1.650.000 € · falta PDF EN","Avisar"],
+    ["Piso Talamanca","Alquiler · 3.200 €/mes · 2 hab","Ficha"]] },
+  leads: { hint:"Contactos · compradores y seguimiento", rows:[
+    ["Ana R.","Villa · Santa Eulalia · hasta 1,2 M","WhatsApp"],
+    ["Marco B.","Ático · Ibiza ciudad · 3 hab","Seguimiento"],
+    ["Familia Soler","Alquiler anual · Talamanca","Ficha"],
+    ["Lucía P.","Coincide con Villa Porroig","Enviar"]] },
+  finance: { hint:"Documentos · contratos y facturas", rows:[
+    ["Nota de encargo","Villa Porroig · pendiente de firma","Abrir"],
+    ["Contrato de arras","Ático Santa Eulalia · en revisión","Abrir"],
+    ["Factura 2026-014","2.400 € · por cobrar","Cobrada"],
+    ["Factura 2026-015","890 € · emitida hoy","PDF"]] },
+  agenda: { hint:"Agenda · visitas y notaría", rows:[
+    ["09:30 · Visita","Villa Porroig · Ana R.","Confirmar"],
+    ["17:00 · Hueco","Libre","Reservar"],
+    ["Jueves · Notaría","Ático Santa Eulalia · arras","Checklist"],
+    ["Mañana · Aviso","Enviado a Marco B.","Reenviar"]] },
+  ai: { hint:"Por aprobar · bandeja, avisos y WhatsApp", rows:[
+    ["Cambio de precio","Es Cubells · 1,7 M → 1,65 M","Aprobar"],
+    ["3 fotos nuevas","Piso Talamanca · sin casa asignada","Aprobar"],
+    ["Aviso","Falta el PDF EN de Es Cubells","Ver"],
+    ["WhatsApp","Borrador para Ana R. sin enviar","Enviar"]] }
 };
 const modState = {};
 function stateFor(mod) {
   if (!modState[mod.id]) {
-    const ops = MODULE_OPS[mod.id];
     modState[mod.id] = {
-      tasks: ops.tasks.map(([title, sub], i) => ({ title, sub, done: i === ops.tasks.length - 1 })),
+      tasks: CRM[mod.id].rows.slice(0,3).map(([title, sub]) => ({ title, sub, done:false })),
+      rowsDone: {},
       log: mod.bubbles.map((text, i) => ({ time: `${String(9+i).padStart(2,"0")}:${String(10+i*17).padStart(2,"0")}`, text })),
       active: mod.status !== "idle", tab: "resumen",
-      series: Array.from({ length: 32 }, (_, i) => 0.35 + Math.sin(i*0.55)*0.16 + ((i*37)%10)/40),
     };
   }
   return modState[mod.id];
@@ -882,35 +901,16 @@ function renderConsole(mod) {
   document.getElementById("c-foot").textContent = st.active ? "Bot activo en este módulo" : "Bot en pausa";
   consoleEl.querySelectorAll("#c-tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === st.tab));
   consoleEl.querySelectorAll(".body .tab").forEach(t => t.classList.toggle("on", t.dataset.tab === st.tab));
-  document.getElementById("c-resumen").innerHTML =
-    `<div class="cards">${mod.metrics.map(([k,v]) => `<div class="card"><span>${k}</span><b>${v}</b></div>`).join("")}</div>` +
-    `<div class="two"><div class="box"><h4><i></i>Actividad · últimas 24 h</h4><canvas id="c-chart" width="420" height="150"></canvas></div>` +
-    `<div class="box"><h4><i></i>Feed en vivo</h4>${mod.bubbles.map((b,i) => `<div class="task"><div class="tx"><b>${b}</b><small>hace ${3+i*7} min · ${mod.sub.split(" · ")[i%2]}</small></div></div>`).join("")}</div></div>`;
+  const crm = CRM[mod.id];
+  document.getElementById("c-resumen").innerHTML = `<p class="hintline">${crm.hint}</p>` +
+    crm.rows.map((r,i) => `<div class="line${st.rowsDone[i]?" done":""}"><div class="tx"><b>${r[0]}</b><small>${r[1]}</small></div><button class="go" data-i="${i}">${st.rowsDone[i]?"Hecho":r[2]}</button></div>`).join("");
   document.getElementById("c-tareas").innerHTML = st.tasks.map((t,i) =>
     `<div class="task${t.done?" done":""}" data-i="${i}"><button class="chk" aria-label="Completar">${svg("check")}</button><div class="tx"><b>${t.title}</b><small>${t.sub}</small></div><button class="mini">${t.done?"Reabrir":"Hecho"}</button></div>`).join("");
-  document.getElementById("c-acciones").innerHTML = `<div class="acts">${MODULE_OPS[mod.id].actions.map(([ic,title,sub],i) =>
-    `<button class="act${i===0?" primary":""}" data-i="${i}"><span class="ai">${svg(ic)}</span><b>${title}</b><small>${sub}</small></button>`).join("")}</div>`;
   renderLog(mod);
-  drawChart(0);
 }
 function renderLog(mod) {
   document.getElementById("c-log").innerHTML = stateFor(mod).log.slice(0,14).map(l =>
     `<li class="${l.fresh?"new":""}"><time>${l.time}</time><span>${l.text}</span></li>`).join("");
-}
-function drawChart(t) {
-  const cv = document.getElementById("c-chart"); if (!cv || !focusMod) return;
-  const g = cv.getContext("2d"); const w = cv.width, h = cv.height;
-  const series = stateFor(focusMod).series;
-  g.clearRect(0,0,w,h);
-  g.strokeStyle = "rgba(255,255,255,.08)"; g.lineWidth = 1;
-  for (let i=1;i<=3;i++){ g.beginPath(); g.moveTo(0, h*i/4); g.lineTo(w, h*i/4); g.stroke(); }
-  const pts = series.map((v,i) => [w*i/(series.length-1), h*0.88 - (h*0.72)*(v + Math.sin(t*1.3+i*0.4)*0.035)]);
-  g.beginPath(); g.moveTo(0,h); pts.forEach(p => g.lineTo(p[0], p[1])); g.lineTo(w,h); g.closePath();
-  const ag = g.createLinearGradient(0,0,0,h); ag.addColorStop(0, hex(focusMod.color)); ag.addColorStop(1,"rgba(0,0,0,0)");
-  g.fillStyle = ag; g.globalAlpha = 0.35; g.fill(); g.globalAlpha = 1;
-  g.strokeStyle = hex(focusMod.color); g.lineWidth = 2.5; g.lineJoin = "round";
-  g.beginPath(); pts.forEach((p,i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke();
-  const lp = pts[pts.length-1]; g.fillStyle = "#fff"; g.beginPath(); g.arc(lp[0], lp[1], 3.5, 0, Math.PI*2); g.fill();
 }
 consoleEl.addEventListener("click", e => {
   if (!focusMod) return;
@@ -923,11 +923,13 @@ consoleEl.addEventListener("click", e => {
     logEvent(focusMod, (t.done ? "Tarea completada: " : "Tarea reabierta: ") + t.title);
     toast(t.done ? "Tarea completada" : "Tarea reabierta"); renderConsole(focusMod); return;
   }
-  const act = e.target.closest("#c-acciones .act");
-  if (act && !act.classList.contains("run")) {
-    const mod = focusMod; const [,,sub] = MODULE_OPS[mod.id].actions[+act.dataset.i]; const title = act.querySelector("b").textContent;
-    act.classList.add("run"); logEvent(mod, "Acción lanzada: " + title); renderLog(mod); toast(title + "…");
-    setTimeout(() => { if (act.isConnected) act.classList.remove("run"); logEvent(mod, "Hecho · " + title + " — " + sub); if (focusMod === mod) renderLog(mod); toast("Listo: " + title); }, 1400);
+  const go = e.target.closest(".go");
+  if (go) {
+    const mod = focusMod, i = +go.dataset.i, row = CRM[mod.id].rows[i];
+    st.rowsDone[i] = !st.rowsDone[i];
+    logEvent(mod, (st.rowsDone[i] ? row[2] + " · " : "Deshecho · ") + row[0]);
+    toast(st.rowsDone[i] ? row[2] + ": " + row[0] : "Deshecho");
+    renderConsole(mod);
   }
 });
 document.getElementById("c-active").addEventListener("change", e => {
@@ -950,9 +952,9 @@ function officePose(t, out) {
 }
 function stationPose(st, t, out) {
   // behind the monitor, looking straight at the bot: its screen sits between us and the bot
-  out.pos.set(Math.sin(t*0.4)*0.02, 1.62 + Math.sin(t*0.6)*0.012, 3.15); st.localToWorld(out.pos);
-  out.look.set(0, 1.22, 0.3); st.localToWorld(out.look);
-  out.fov = portrait ? 46 : 20;
+  out.pos.set(Math.sin(t*0.4)*0.01, portrait ? 1.55 : 1.5, portrait ? 4.6 : 2.85); st.localToWorld(out.pos);
+  out.look.set(0, 1.14, 0.42); st.localToWorld(out.look);
+  out.fov = portrait ? 34 : 29;
 }
 function startCamMove() { camFrom.pos.copy(camNow.pos); camFrom.look.copy(camNow.look); camFrom.fov = camNow.fov; camBlend = 0; }
 const _dirA = new THREE.Vector3(), _dirB = new THREE.Vector3(), _qa = new THREE.Quaternion(), _qb = new THREE.Quaternion(), _up = new THREE.Vector3(0,1,0);
@@ -976,7 +978,7 @@ function updateCamera(t, dt) {
 }
 // the console panel is pinned to the monitor's surface, so it reads as the screen itself
 const _corner = new THREE.Vector3();
-const SCREEN_CORNERS = [[-0.60,0.86,0.55],[0.60,0.86,0.55],[-0.60,1.40,0.55],[0.60,1.40,0.55]];
+const SCREEN_CORNERS = [[-1.08,0.70,0.57],[1.08,0.70,0.57],[-1.08,1.46,0.57],[1.08,1.46,0.57]];
 function placeConsole() {
   if (!focusSt) return;
   camera.updateMatrixWorld(true); camera.updateProjectionMatrix();
@@ -986,8 +988,29 @@ function placeConsole() {
     const px = (_corner.x*0.5+0.5)*innerWidth, py = (-_corner.y*0.5+0.5)*innerHeight;
     minX=Math.min(minX,px); maxX=Math.max(maxX,px); minY=Math.min(minY,py); maxY=Math.max(maxY,py);
   }
-  consoleEl.style.left = minX+"px"; consoleEl.style.top = minY+"px";
-  consoleEl.style.width = (maxX-minX)+"px"; consoleEl.style.height = (maxY-minY)+"px";
+  const pad = 8, maxW = innerWidth - pad*2, maxH = innerHeight - pad*2;
+  let w = Math.max(1, maxX - minX), h = Math.max(1, maxY - minY);
+  const cx = (minX+maxX)/2, cy = (minY+maxY)/2;
+  const fit = Math.min(1, maxW / w, maxH / h);
+  w *= fit; h *= fit;
+  const land = document.body.classList.contains("land");
+  // keep the top of the glass fixed so the bot stays visible, and grow downward until the four rows fit
+  const need = portrait ? Math.min(maxH * 0.72, Math.max(h, 420))
+    : (innerHeight >= 480 ? Math.min(maxH, Math.max(h, 372)) : h);
+  let top = cy - (portrait ? h * 0.42 : h / 2);
+  let left = portrait ? pad : cx - w / 2;
+  if (portrait) w = maxW;
+  if (need > h) h = need;
+  const side = (!portrait && !land) ? 136 : pad;
+  left = Math.max(side, Math.min(left, innerWidth - pad - w));
+  if (left + w > innerWidth - pad) w = innerWidth - pad - left;
+  top = Math.max(pad, top);
+  // phone landscape: fill down to the bottom bar so the four rows fit, and stop above it
+  const limit = innerHeight - (land ? 62 : pad);
+  if (land) h = Math.max(h, Math.min(320, limit - top));
+  if (top + h > limit) h = Math.max(160, limit - top);
+  consoleEl.style.left = left+"px"; consoleEl.style.top = top+"px";
+  consoleEl.style.width = w+"px"; consoleEl.style.height = h+"px";
   // fade in only while the camera is still travelling; a settled camera (deep link) shows it at once
   consoleEl.style.transition = camBlend >= 1 ? "none" : "";
   consoleEl.classList.toggle("show", camBlend > 0.9);
@@ -1024,15 +1047,18 @@ canvas.addEventListener("pointermove", e => { if (e.pointerType === "mouse") { h
 /* ---------- post-processing: bloom for the neon ---------- */
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
-const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.5, 0.6, 0.92);
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), LOW ? 0.22 : 0.45, 0.55, 0.94);
 composer.addPass(bloom);
 composer.addPass(new OutputPass());
+if (LOW) composer.setPixelRatio(0.85);
 
 /* ---------- live loop ---------- */
 const clock = new THREE.Clock();
-let lastPulse = 0;
+let lastPulse = 0, pageOn = true;
+document.addEventListener("visibilitychange", () => { pageOn = !document.hidden; if (pageOn) clock.start(); else clock.stop(); });
 function animate() {
   requestAnimationFrame(animate);
+  if (!pageOn) return;
   const t = clock.getElapsedTime(), dt = Math.min(clock.getDelta(), 0.05) || 0.016;
 
   hubLight.intensity = 1.3;
@@ -1070,7 +1096,7 @@ function animate() {
   }
 
   updateCamera(t, dt);
-  if (focusSt) { placeConsole(); if (Math.floor(t*5) !== Math.floor((t-dt)*5)) { document.getElementById("c-clock").textContent = nowHM(); drawChart(t); } }
+  if (focusSt) { placeConsole(); if (Math.floor(t*5) !== Math.floor((t-dt)*5)) { document.getElementById("c-clock").textContent = nowHM(); } }
   else layoutLabels();
   composer.render();
 }
