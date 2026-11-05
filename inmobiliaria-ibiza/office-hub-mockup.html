@@ -401,25 +401,27 @@ function iconTexture(key, bg=null) {
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t;
 }
 
-/* ---------- floor: glossy dark with real reflections ---------- */
+/* ---------- the room, rotated to the isometric axes ---------- */
+const room = new THREE.Group(); room.rotation.y = ISO; room.updateMatrixWorld(); scene.add(room);
+
+/* floor: the mirror lives in the room, so its edges follow the floor instead of
+   cutting across it. The grid is a separate plane just above it (polygonOffset
+   keeps the two from fighting), and its lines sit inside the tile so repeats join cleanly. */
 const mirror = new Reflector(new THREE.PlaneGeometry(70, 70), {
-  clipBias:0.003, textureWidth: 1024, textureHeight: 1024, color: 0x6a717c
+  clipBias:0.003, textureWidth: 1024, textureHeight: 1024, color: 0x3a4150
 });
-mirror.rotation.x = -Math.PI/2; mirror.position.y = -0.002; scene.add(mirror);
+mirror.rotation.x = -Math.PI/2; mirror.position.y = -0.04; room.add(mirror);
 function floorTexture() {
   const c = document.createElement("canvas"); c.width = c.height = 512;
   const g = c.getContext("2d");
-  g.fillStyle = "#30333f"; g.fillRect(0,0,512,512);
-  g.strokeStyle = "rgba(255,255,255,.085)"; g.lineWidth = 2;
-  for (let i=0;i<=512;i+=128){ g.beginPath(); g.moveTo(i,0); g.lineTo(i,512); g.stroke(); g.beginPath(); g.moveTo(0,i); g.lineTo(512,i); g.stroke(); }
-  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(17.5, 17.5); t.colorSpace = THREE.SRGBColorSpace; return t;
+  g.fillStyle = "#2a2e3a"; g.fillRect(0,0,512,512);
+  g.strokeStyle = "rgba(255,255,255,.09)"; g.lineWidth = 2;
+  for (let i=64;i<512;i+=128){ g.beginPath(); g.moveTo(i,0); g.lineTo(i,512); g.stroke(); g.beginPath(); g.moveTo(0,i); g.lineTo(512,i); g.stroke(); }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(16, 16); t.anisotropy = 8; t.colorSpace = THREE.SRGBColorSpace; return t;
 }
-
-/* ---------- the room, rotated to the isometric axes ---------- */
-const room = new THREE.Group(); room.rotation.y = ISO; room.updateMatrixWorld(); scene.add(room);
 const floor = new THREE.Mesh(new THREE.PlaneGeometry(70, 70),
-  new THREE.MeshStandardMaterial({ map:floorTexture(), color:0xc9c0bc, transparent:true, opacity:0.8, roughness:0.32, metalness:0.25, envMapIntensity:0.35 }));
-floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; room.add(floor);
+  new THREE.MeshStandardMaterial({ map:floorTexture(), color:0xffffff, transparent:true, opacity:0.92, roughness:0.55, metalness:0.05, envMapIntensity:0.2, polygonOffset:true, polygonOffsetFactor:-2, polygonOffsetUnits:-2 }));
+floor.rotation.x = -Math.PI/2; floor.position.y = 0.005; floor.receiveShadow = true; room.add(floor);
 
 // room corner measured top-centre of the concept → local wall positions
 const cornerL = room.worldToLocal(groundAt(560, -14));
