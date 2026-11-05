@@ -36,6 +36,18 @@ Chat (inicio del CRM) no tiene módulo propio: es la puerta de las mismas casas,
 - La ventana es una lista (Trabajo / Tareas / Registro), sin tarjetas ni gráfico. Cada fila es una función del CRM y el botón de la derecha la ejecuta en local: registro, aviso y tachado.
 - Móvil: menos píxeles y sin sombras por debajo de 740 px; la oficina se pausa si la pestaña está oculta. En horizontal la barra baja a una pastilla y la ventana cabe en la pantalla. En vertical la ventana crece para que la lista se pueda usar, porque el cristal es muy apaisado.
 
+## Cuaderno local (esta noche)
+
+Las seis mesas leen y escriben el mismo cuaderno en el navegador, con la forma del CRM y sin red:
+
+- Importar un portal crea una fila en Por aprobar.
+- Aprobar un cambio de precio actualiza la ficha. Rechazar la quita de la bandeja.
+- Avisar un PDF que falta abre un aviso en la bandeja, sin duplicarlo.
+- WhatsApp marca el contacto como enviado. Confirmar, reservar o la checklist mueven la agenda. Cobrada cierra la factura.
+- Abrir una nota de encargo o unas arras solo enseña el borrador y recuerda que falta el abogado.
+
+La burbuja del bot se queda con el último resultado. Si se recarga la página, vuelve la demostración. El paso siguiente sigue siendo el de abajo: lectura real, luego una escritura.
+
 ## Cómo se integra, poco a poco
 
 1. **Lectura.** Un endpoint de solo lectura en el Worker (conteos y listas: casas, contactos, citas de hoy, pendientes de la bandeja, avisos). El hub lo pide con la ruta acordada, nunca con un token dentro del repo de Pages. Si falla, se quedan las filas de demostración.
