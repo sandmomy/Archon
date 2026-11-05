@@ -65,12 +65,12 @@
     background:rgba(16,20,30,.94);border:1px solid rgba(255,255,255,.14);border-radius:8px;
     box-shadow:0 18px 50px rgba(0,0,0,.45);overflow:hidden;color:#f4f7fb;font-size:13px}
   .console.show{opacity:1;pointer-events:auto;transform:none}
-  .console header{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.08);background:linear-gradient(90deg,color-mix(in srgb,var(--c) 22%,transparent),transparent 70%)}
-  .console header .ico{width:32px;height:32px;border-radius:50%;background:var(--c);display:grid;place-items:center;flex:0 0 32px;box-shadow:0 0 14px color-mix(in srgb,var(--c) 70%,transparent)}
-  .console header .ico svg{width:17px;height:17px;fill:#fff}
-  .console header strong{display:block;font-family:"Outfit",sans-serif;font-size:15px;font-weight:700;line-height:1.1}
-  .console header em{display:block;font-style:normal;font-size:10.5px;color:#b8c4d6;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .console .ttl{min-width:0;flex:1}
+  .console header{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,.08);background:linear-gradient(90deg,color-mix(in srgb,var(--c) 18%,transparent),transparent 62%)}
+  .console header .ico{width:28px;height:28px;border-radius:50%;background:var(--c);display:grid;place-items:center;flex:0 0 28px}
+  .console header .ico svg{width:15px;height:15px;fill:#fff}
+  .console header strong{font-family:"Outfit",sans-serif;font-size:15px;font-weight:700;line-height:1;white-space:nowrap}
+  .console header em{font-style:normal;font-size:12px;font-weight:500;color:#a9b6c9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .console .ttl{min-width:0;flex:1;display:flex;align-items:baseline;gap:10px}
   .console .st{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 9px;border-radius:999px;background:rgba(255,255,255,.06);white-space:nowrap}
   .console .st i{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
   .console .st.working{color:#2ee56a}.console .st.needs{color:#ff4d5e}.console .st.idle{color:#94a3b8}
@@ -85,11 +85,13 @@
   .console .body{flex:1;min-height:0;overflow:auto;padding:10px 12px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.15) transparent}
   .console .tab{display:none}.console .tab.on{display:block}
   .hintline{margin:0 0 4px;color:#a9b6c9;font-size:12px}
-  .line{display:flex;align-items:center;gap:12px;padding:6px 2px;border-bottom:1px solid rgba(255,255,255,.08)}
-  .line .tx{flex:1;min-width:0}.line .tx b{display:block;font-size:13.5px;font-weight:700;line-height:1.2}
-  .line .tx small{display:block;color:#a9b6c9;font-size:11.5px;margin-top:2px}
-  .line.done .tx b{color:#8a9bb3;text-decoration:line-through}
-  .line .acts{display:flex;gap:12px;align-items:center;flex:0 0 auto}
+  .glabel{margin:12px 0 2px;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#8ea0b8}
+  .glabel:first-child{margin-top:2px}
+  .line{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1.45fr) auto;column-gap:16px;align-items:center;padding:8px 2px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .line b{font-size:13.5px;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .line .sub{color:#a9b6c9;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .line.done b{color:#8a9bb3;text-decoration:line-through}
+  .line .acts{display:flex;gap:14px;align-items:center;justify-content:flex-end}
   .console .go{border:0;background:transparent;color:var(--c);font:inherit;font-size:12.5px;font-weight:800;cursor:pointer;padding:6px 0;white-space:nowrap}
   .console .go:hover{text-decoration:underline}
   .console .go.ghost{color:#c5d0e0;font-weight:700}
@@ -127,19 +129,24 @@
     .side button{position:relative;width:auto;padding:6px}
     .side button span.t{display:none}
     .side .n{position:absolute;margin:0;top:-4px;right:-4px}
-    .brand span,.pill .avs,.console .clock,.console header em{display:none}
+    .brand span,.pill .avs,.console header em{display:none}
     .brand strong{font-size:14px}
     .console header{padding:6px 8px}
     .console header .ico{width:26px;height:26px;flex-basis:26px}
     .console .body{padding:2px 10px 4px}
-    .line,.task{padding:3px 2px}
-    .line .tx small,.task .tx small{margin-top:0}
-    .hintline{margin:0;font-size:11px}
+    .line{padding:3px 2px;column-gap:10px}
+    .line b{font-size:13px}
+    .line .sub{font-size:12px}
+    .glabel{margin:6px 0 0}
+    .console .body{padding:2px 10px 6px}
     .console footer{display:none}
     .toast{bottom:62px}
   }
   @media (max-width:720px) and (orientation:portrait){
-    .console header em,.console .clock{display:none}
+    .console header em{display:none}
+    .line{grid-template-columns:minmax(0,1fr) auto;row-gap:1px;padding:7px 2px}
+    .line .sub{grid-column:1;grid-row:2}
+    .line .acts{grid-row:1 / span 2;align-self:center}
     .side{top:auto;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);flex-direction:row;border-radius:999px}
     .side .n{position:absolute;margin:0;top:-4px;right:-4px}
     .side button{position:relative;padding:6px}
@@ -170,19 +177,15 @@
   <header>
     <span class="ico" id="c-ico"></span>
     <div class="ttl"><strong id="c-title">—</strong><em id="c-sub"></em></div>
-    <label class="switch" title="Pausar el bot"><input type="checkbox" id="c-active"><span></span></label>
-    <span class="st working" id="c-status"><i></i><span>Working</span></span>
-    <span class="clock" id="c-clock">--:--</span>
-    <button type="button" class="back" id="c-back">Volver a la oficina</button>
+    <label class="switch" title="Pausar la IA de este módulo"><input type="checkbox" id="c-active"><span></span></label>
+    <button type="button" class="back" id="c-back">Oficina</button>
   </header>
   <nav class="tabs" id="c-tabs">
-    <button data-tab="resumen" class="on">Trabajo</button>
-    <button data-tab="tareas">Tareas<span class="n" id="c-ntasks">0</span></button>
+    <button data-tab="resumen" class="on">Cola<span class="n" id="c-ntasks">0</span></button>
     <button data-tab="registro">Registro</button>
   </nav>
   <div class="body">
     <div class="tab on" data-tab="resumen" id="c-resumen"></div>
-    <div class="tab" data-tab="tareas" id="c-tareas"></div>
     <div class="tab" data-tab="registro"><ul class="log" id="c-log"></ul></div>
   </div>
   <footer>
@@ -895,28 +898,29 @@ const HINT = {
 };
 function rowsOf(modId) {
   if (modId === "scraping") return office.portals.map(p => ({
-    id:p.id, title:p.name, sub: p.imported ? "Enviado a Por aprobar" : p.meta, done:!!p.imported, needs: p.n > 0 && !p.imported,
+    id:p.id, title:p.name, sub: p.imported ? "Enviado a Por aprobar" : p.meta, done:!!p.imported, needs:false, lane: p.imported ? "listo" : "ia",
     actions:[{ act: p.imported ? "desimportar" : (p.n ? "importar" : "escanear"), label: p.imported ? "Hecho" : (p.n ? "Importar" : "Escanear") }],
   }));
   if (modId === "props") return office.houses.map(h => {
     const falta = faltaPdf(h);
-    return { id:h.id, title:h.title, sub:`${h.op} · ${h.price} · ${h.beds}` + (falta.length ? " · falta PDF " + falta.join("/") : ""), done:false, needs: falta.length > 0,
-      actions:[{ act:"ficha", label:"Ficha" }, ...(falta.length ? [{ act:"avisar", label:"Avisar", ghost:true }] : [])] };
+    return { id:h.id, title:h.title, sub:`${h.op} · ${h.price} · ${h.beds}` + (falta.length ? " · falta PDF " + falta.join("/") : ""), done:false, needs: falta.length > 0, lane: falta.length ? "tuya" : "listo",
+      actions:[...(falta.length ? [{ act:"avisar", label:"Avisar" }] : []), { act:"ficha", label:"Ficha", ghost: falta.length > 0 }] };
   });
   if (modId === "leads") return office.contacts.map(c => ({
-    id:c.id, title:c.name, sub:c.meta, done:!!c.sent, needs:!c.sent,
+    id:c.id, title:c.name, sub:c.meta, done:!!c.sent, needs:!c.sent, lane: c.sent ? "listo" : "tuya",
     actions:[{ act:"whatsapp", label: c.sent ? "Enviado" : "WhatsApp" }],
   }));
   if (modId === "finance") return office.docs.map(d => ({
     id:d.id, title:d.title,
     sub: d.kind === "factura" ? `${d.amount} · ${d.state === "cobrada" ? "cobrada" : "por cobrar"}` : d.meta,
-    done: d.kind === "factura" && d.state === "cobrada", needs: d.kind === "factura" && d.state !== "cobrada",
+    done: d.kind === "factura" && d.state === "cobrada", needs: d.state !== "cobrada", lane: (d.kind === "factura" && d.state === "cobrada") ? "listo" : "tuya",
     actions:[ d.kind === "factura" ? { act:"cobrar", label: d.state === "cobrada" ? "Reabrir" : "Cobrada" } : { act:"abrir", label:"Abrir" } ],
   }));
   if (modId === "agenda") return office.citas.map(c => ({
     id:c.id, title:`${c.when} · ${c.title}`, sub: c.state === "confirmada" ? "Confirmada · " + c.meta : c.meta,
     done: c.state === "confirmada" || c.state === "reservada" || c.state === "hecha",
     needs: c.state === "propuesta" || c.state === "libre" || c.state === "pendiente",
+    lane: (c.state === "confirmada" || c.state === "reservada" || c.state === "hecha" || c.state === "enviado") ? "listo" : "tuya",
     actions:[{
       act: c.state === "libre" ? "reservar" : c.state === "pendiente" ? "checklist" : c.state === "enviado" ? "reenviar" : "confirmar",
       label: c.state === "libre" ? "Reservar" : c.state === "pendiente" ? "Checklist" : c.state === "enviado" ? "Reenviar" : c.state === "confirmada" ? "Confirmada" : "Confirmar",
@@ -928,7 +932,7 @@ function rowsOf(modId) {
       : b.state === "borrador" ? [{ act:"enviar", label:"Enviar" }]
       : b.state === "aviso" ? [{ act:"ver", label:"Ver" }]
       : [{ act:"reabrir", label:"Hecho" }];
-    return { id:b.id, title:b.title, sub: done ? (b.state === "aprobado" ? "Aprobado · " : b.state === "enviado" ? "Enviado · " : "Visto · ") + b.meta : b.meta, done, needs: !done, actions };
+    return { id:b.id, title:b.title, sub: done ? (b.state === "aprobado" ? "Aprobado · " : b.state === "enviado" ? "Enviado · " : "Visto · ") + b.meta : b.meta, done, needs: !done, lane: done ? "listo" : "tuya", actions };
   });
 }
 const modState = {};
@@ -955,11 +959,11 @@ function pendingCount(mod) { return rowsOf(mod.id).filter(r => r.needs).length; 
 const consoleEl = document.getElementById("console");
 let focusMod = null;
 function lineHTML(r) {
-  const acts = r.actions.map(a => `<button class="go${a.ghost?" ghost":""}" data-act="${a.act}" data-id="${esc(r.id)}">${esc(a.label)}</button>`).join("");
-  return `<div class="line${r.done?" done":""}" data-id="${esc(r.id)}"><div class="tx"><b>${esc(r.title)}</b><small>${esc(r.sub)}</small></div><span class="acts">${acts}</span></div>`;
+  const acts = (r.actions || []).map(a => `<button class="go${a.ghost?" ghost":""}" data-act="${a.act}" data-id="${esc(r.id)}">${esc(a.label)}</button>`).join("");
+  return `<div class="line${r.done?" done":""}" data-id="${esc(r.id)}"><b>${esc(r.title)}</b><span class="sub">${esc(r.sub || "")}</span><span class="acts">${acts}</span></div>`;
 }
 function sheetHTML(mod, sheet) {
-  const back = `<button class="go" data-act="cerrar">← Lista</button>`;
+  const back = `<button class="go" data-act="cerrar">← Cola</button>`;
   if (sheet.kind === "house") {
     const h = houseBy(sheet.id); if (!h) return back;
     const falta = faltaPdf(h);
@@ -984,21 +988,17 @@ function renderConsole(mod) {
   consoleEl.style.setProperty("--c", hex(mod.color));
   document.getElementById("c-ico").innerHTML = svg(mod.icon);
   document.getElementById("c-title").textContent = mod.name;
-  document.getElementById("c-sub").textContent = mod.sub;
-  const stEl = document.getElementById("c-status"); stEl.className = "st " + mod.status; stEl.querySelector("span").textContent = STATUS[mod.status];
-  document.getElementById("c-ntasks").textContent = pendingCount(mod);
-  document.getElementById("c-id").textContent = `BOT-${mod.id.toUpperCase()}`;
+  document.getElementById("c-sub").textContent = HINT[mod.id];
+  const nTodo = pendingCount(mod); const nEl = document.getElementById("c-ntasks"); nEl.textContent = nTodo; nEl.hidden = !nTodo;
+  document.getElementById("c-id").textContent = st.active ? "IA activa" : "IA en pausa";
   const sw = document.getElementById("c-active"); sw.checked = st.active;
-  document.getElementById("c-foot").textContent = st.active ? "Bot activo en este módulo" : "Bot en pausa";
+  const last = st.log[0];
+  document.getElementById("c-foot").textContent = last ? last.time + "  " + last.text : "Sin movimientos";
   consoleEl.querySelectorAll("#c-tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === st.tab));
   consoleEl.querySelectorAll(".body .tab").forEach(t => t.classList.toggle("on", t.dataset.tab === st.tab));
   const rows = rowsOf(mod.id);
-  document.getElementById("c-resumen").innerHTML = st.sheet ? sheetHTML(mod, st.sheet) : (`<p class="hintline">${HINT[mod.id]}</p>` + rows.map(lineHTML).join(""));
-  const todo = rows.filter(r => r.needs);
-  document.getElementById("c-tareas").innerHTML = todo.length ? todo.map(r => {
-    const a = r.actions.find(x => x.act !== "ficha" && x.act !== "abrir") || r.actions[0];
-    return `<div class="task" data-id="${esc(r.id)}"><button class="chk" aria-label="Hacer">${svg("check")}</button><div class="tx"><b>${esc(r.title)}</b><small>${esc(r.sub)}</small></div><button class="mini" data-act="${a.act}" data-id="${esc(r.id)}">${esc(a.label)}</button></div>`;
-  }).join("") : `<p class="hintline">Nada pendiente en este módulo</p>`;
+  const lane = (key, label) => { const g = rows.filter(r => r.lane === key); return g.length ? `<p class="glabel">${label}</p>` + g.map(lineHTML).join("") : ""; };
+  document.getElementById("c-resumen").innerHTML = st.sheet ? sheetHTML(mod, st.sheet) : (lane("tuya","Te toca") + lane("ia","La IA puede") + lane("listo","Listo") || `<p class="hintline">Nada en esta cola</p>`);
   renderLog(mod);
 }
 function renderLog(mod) {
@@ -1063,15 +1063,12 @@ consoleEl.addEventListener("click", e => {
   const st = stateFor(focusMod);
   const tab = e.target.closest("#c-tabs button");
   if (tab) { st.tab = tab.dataset.tab; st.sheet = null; renderConsole(focusMod); return; }
-  const task = e.target.closest("#c-tareas .task");
-  if (task && e.target.closest(".chk, .mini")) { run(focusMod, task.querySelector(".mini").dataset.act, task.dataset.id); return; }
   const go = e.target.closest(".go");
   if (go) run(focusMod, go.dataset.act, go.dataset.id);
 });
 document.getElementById("c-active").addEventListener("change", e => {
   if (!focusMod) return; const st = stateFor(focusMod); st.active = e.target.checked;
-  document.getElementById("c-foot").textContent = st.active ? "Bot activo en este módulo" : "Bot en pausa";
-  logEvent(focusMod, st.active ? "Bot reactivado" : "Bot puesto en pausa"); renderLog(focusMod);
+  logEvent(focusMod, st.active ? "IA reactivada" : "IA en pausa"); renderConsole(focusMod);
   toast(st.active ? "Bot activo" : "Bot en pausa");
 });
 
@@ -1232,7 +1229,7 @@ function animate() {
   }
 
   updateCamera(t, dt);
-  if (focusSt) { placeConsole(); if (Math.floor(t*5) !== Math.floor((t-dt)*5)) { document.getElementById("c-clock").textContent = nowHM(); } }
+  if (focusSt) placeConsole();
   else layoutLabels();
   composer.render();
 }
@@ -1257,7 +1254,7 @@ if (innerHeight > innerWidth) setTimeout(() => toast("Gira el móvil para ver la
 const deepParams = new URLSearchParams(location.search);
 const deep = MODULES.find(m => m.id === deepParams.get("focus"));
 if (deep) {
-  const tab = deepParams.get("tab"); if (tab) stateFor(deep).tab = tab;
+  const tab = deepParams.get("tab"); if (tab) stateFor(deep).tab = tab === "tareas" ? "resumen" : tab;
   const act = deepParams.get("act"); if (act) run(deep, act, deepParams.get("id") || "");
   enterFocus(deep); camBlend = 1;
 }

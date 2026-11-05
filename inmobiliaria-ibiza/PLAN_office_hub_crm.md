@@ -33,7 +33,7 @@ Chat (inicio del CRM) no tiene módulo propio: es la puerta de las mismas casas,
 ## Esta pasada (fase 0, hecha en el hub)
 
 - El monitor es más ancho y casi plano. La ventana cubre el cristal, no un recuadro en el centro.
-- La ventana es una lista (Trabajo / Tareas / Registro), sin tarjetas ni gráfico. Cada fila es una función del CRM y el botón de la derecha la ejecuta en local: registro, aviso y tachado.
+- La ventana es una cola (Cola / Registro), sin tarjetas. Arriba lo que te toca aprobar, luego lo que la IA puede hacer sola, y al final lo que ya está listo. La acción va en la misma fila.
 - Móvil: menos píxeles y sin sombras por debajo de 740 px; la oficina se pausa si la pestaña está oculta. En horizontal la barra baja a una pastilla y la ventana cabe en la pantalla. En vertical la ventana crece para que la lista se pueda usar, porque el cristal es muy apaisado.
 
 ## Cuaderno local (esta noche)
