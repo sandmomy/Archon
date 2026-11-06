@@ -6,13 +6,20 @@ site/resales-import.xml. That file is the feed for the automated import:
 only the client's own sales, never the Balearics search dump. lasboas-top
 stays out: that apartment is already in Resales. Resales collects the file
 from a URL once a day. This script does not call Resales and does not
-invent cadastral references, commission, image size, floor counts, or
-feature labels. A layout line the catalog sync drops can still supply
-one bedroom count. Those sentences are in PUBLIC_PAGE_TEXT. A range
-stays empty, and Rooms is never copied. Spanish text is read from
-sync/descriptions_es.json, a translation of the English catalog copy.
-The website sync does not rewrite that file. The translation should be
-reviewed with the client.
+invent cadastral references, commission, image size, floor counts,
+feature labels, or bedroom and bathroom counts. A layout line the
+catalog sync drops can still supply one bedroom count. Those sentences
+are in PUBLIC_PAGE_TEXT. A range stays empty, and Rooms is never copied.
+bedrooms and bathrooms are Numeric in schema 1.5. That definition
+documents no N/A token. add() omits a node when the text is empty, and
+that omission is how a commercial property or a plot is marked not
+applicable. Website types Hotel, Restaurant, Commercial space, and
+Building land (Resales types Commercial and Plot) omit both nodes even
+when the catalog stores a number. The feed does not write 0 and does
+not write "N/A". A dwelling keeps the verified count. Spanish text is
+read from sync/descriptions_es.json, a translation of the English
+catalog copy. The website sync does not rewrite that file. The
+translation should be reviewed with the client.
 saleType is Freehold and shared is 0 on every sale. Both are provisional
 defaults and must be checked listing by listing with the client.
 Commission stays in the feed setup.
@@ -141,6 +148,20 @@ TYPE_MAP = {
     "Restaurant": ("Commercial", "Restaurant"),
     "Commercial space": ("Commercial", "Commercial Premises"),
 }
+
+# Not a dwelling. The catalog calls a plot "Building land". The cafe is
+# "Commercial space". A bar is not a separate type here; one filed as
+# Restaurant or Commercial space follows the same rule. Resales types
+# Commercial and Plot are included so the feed type, not only the
+# website label, decides.
+NOT_APPLICABLE_WEBSITE_TYPES = frozenset({
+    "Hotel",
+    "Restaurant",
+    "Commercial space",
+    "Building land",
+    "Plot",
+})
+NOT_APPLICABLE_RESALES_TYPES = frozenset({"Commercial", "Plot"})
 
 FEATURE_MAP = {
     "Swimming pool": ("Pool", "Private"),
@@ -295,11 +316,42 @@ def bedrooms(item: dict) -> str:
 
 
 def bathrooms(item: dict) -> str:
+    # The fact wins over a conflicting sentence. whiteangel lists
+    # Bathrooms 2 and one sentence says "3-bathroom"; the feed keeps 2.
     direct = whole(fact(item, "Bathrooms"))
     if direct:
         return direct
     text = f"{item.get('title') or ''}\n{description_text(item)}"
     return _single_count(text, "bathroom")
+
+
+def counts_not_applicable(item: dict) -> bool:
+    """Commercial properties and plots omit bedrooms and bathrooms.
+
+    Resales XML 1.5 defines both fields as Numeric and documents no N/A
+    token. add() already omits a node when the text is empty, so that
+    omission is how these listings are marked not applicable. Do not
+    write 0 and do not write "N/A". A catalog number is still omitted:
+    it is not a dwelling count for this feed.
+    """
+    website_type = str(item.get("type") or "").strip()
+    if website_type in NOT_APPLICABLE_WEBSITE_TYPES:
+        return True
+    mapped = TYPE_MAP.get(website_type)
+    resales_type = mapped[0] if mapped else ""
+    return resales_type in NOT_APPLICABLE_RESALES_TYPES
+
+
+def bedroom_text(item: dict) -> str:
+    if counts_not_applicable(item):
+        return ""
+    return bedrooms(item)
+
+
+def bathroom_text(item: dict) -> str:
+    if counts_not_applicable(item):
+        return ""
+    return bathrooms(item)
 
 
 def reference_id(item: dict) -> str:
@@ -441,8 +493,10 @@ def property_element(item: dict, spanish: dict[str, str] | None = None) -> ET.El
     add(sizes, "plot", whole(fact(item, "Plot area")))
     add(sizes, "garden", whole(fact(item, "Garden area")))
 
-    add(prop, "bedrooms", bedrooms(item))
-    add(prop, "bathrooms", bathrooms(item))
+    # Empty text makes add() skip the node. For commercial properties and
+    # plots that skip is the not-applicable mark: the schema has no other value.
+    add(prop, "bedrooms", bedroom_text(item))
+    add(prop, "bathrooms", bathroom_text(item))
     add(prop, "floor", whole(fact(item, "Floor")))
     add(prop, "floorsInBuilding", whole(fact(item, "Number of floors")))
     add(prop, "builtYear", whole(fact(item, "Year built")))
@@ -508,8 +562,6 @@ def missing_report(sales: list[dict], spanish: dict[str, str] | None = None) -> 
             "no hay traducción en descriptions_es.json",
         ),
         ("descriptions/en", lacks(lambda item: not description_text(item)), "la ficha no trae texto"),
-        ("bedrooms", lacks(lambda item: not bedrooms(item)), "ni el catálogo ni el texto dan un solo número de dormitorios"),
-        ("bathrooms", lacks(lambda item: not bathrooms(item)), "ni el catálogo ni el texto dan un solo número de baños"),
         ("built or plot", lacks(lambda item: not (
             fact(item, "Net living area") or fact(item, "Usable area") or fact(item, "Plot area")
         )), "sin superficie"),
@@ -536,6 +588,33 @@ def missing_report(sales: list[dict], spanish: dict[str, str] | None = None) -> 
             lines.append(f"- {label}: falta en las {len(slugs)}. {reason}.")
         elif slugs:
             lines.append(f"- {label}: falta en {len(slugs)} ({', '.join(slugs)}). {reason}.")
+    # Commercial and plot omissions are not missing data. Schema 1.5
+    # types both fields as Numeric and documents no N/A token, so the
+    # empty text passed to add() is the not-applicable mark.
+    not_applicable = lacks(counts_not_applicable)
+    pending_beds = lacks(lambda item: not counts_not_applicable(item) and not bedrooms(item))
+    pending_baths = lacks(lambda item: not counts_not_applicable(item) and not bathrooms(item))
+    if not_applicable:
+        lines.append(
+            f"- bedrooms y bathrooms: no aplicables en {len(not_applicable)} "
+            f"({', '.join(not_applicable)}). Comercial o parcela. "
+            "El esquema 1.5 los define como Numeric y no documenta N/A. "
+            "Se omiten los dos nodos aunque el catálogo traiga un número. "
+            "No se escribe 0 ni N/A."
+        )
+    if pending_beds:
+        lines.append(
+            f"- bedrooms: pendiente en {len(pending_beds)} "
+            f"({', '.join(pending_beds)}). "
+            "Vivienda sin un solo número de dormitorios. "
+            "Rooms no se copia y un rango no se convierte en un número."
+        )
+    if pending_baths:
+        lines.append(
+            f"- bathrooms: pendiente en {len(pending_baths)} "
+            f"({', '.join(pending_baths)}). "
+            "Vivienda sin un solo número de baños."
+        )
     return lines
 
 

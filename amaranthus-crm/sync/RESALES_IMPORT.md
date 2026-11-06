@@ -47,7 +47,7 @@ esa ficha dice que la propiedad está ahí. No se copia al resto.
 | `status` | no existe | `off_market` | Listo: Available u Off Market |
 | `town` | `town` | `zone` | Listo |
 | provincia y país | `province`, `country` | isla Ibiza o Formentera | Deducido, no viene escrito en el JSON |
-| dormitorios, baños, superficies, planta, año | `beds`, `baths`, `surface_area` | `facts`; si no hay hecho, un solo número en el título o la descripción. Si el sync se dejó una lista de la ficha pública, esa línea entra con la misma regla | `Rooms` no se copia. Un rango (1 y 2 dormitorios) no se convierte en un número. No se rellena un 1 por defecto en plantas |
+| dormitorios, baños, superficies, planta, año | `beds`, `baths`, `surface_area` | en una vivienda, `facts`; si no hay hecho, un solo número en el título o la descripción. Si el sync se dejó una lista de la ficha pública, esa línea entra con la misma regla. En comercial y parcela el número del catálogo no se copia | 24 fichas escriben `bedrooms` y 28 escriben `bathrooms`. Hotel, Restaurant, Commercial space y Building land (en Resales, Commercial y Plot) omiten los dos nodos aunque el catálogo traiga un número: el esquema 1.5 los define como Numeric y no documenta N/A, así que omitir el nodo es la marca de no aplicable. No se escribe 0 ni «N/A». `Rooms` no se copia. Un rango no se convierte en un número. Siguen pendientes, sin dormitorios, `anahata-ibz`, `saserra`, `thenr` y `vistalegre`. No se rellena un 1 por defecto en plantas |
 | características | `pool`, `new_build` | `features`, y si la lista está vacía, una etiqueta del apéndice 2 que el texto de esa ficha sí dice | Las seis que estaban vacías llevan al menos una. No se escribe "Not specified" |
 | `descriptions/en` | `desc/en` | `description` | Las 35 tienen texto. Las cuatro que el catálogo dejaba vacías salen de la ficha pública |
 | `descriptions/es` | `desc/es` | `sync/descriptions_es.json`, traducción del inglés del catálogo | Las 35 lo tienen. Traducido del texto en inglés. Hay que revisarlo con el cliente. Hace falta para compartir en la red |
@@ -85,26 +85,28 @@ El catálogo no trae estos datos. El XML los deja vacíos:
 - `levels` no se rellena con un 1. La planta y las plantas del edificio solo se escriben cuando el catálogo las trae
 - La parcela de `casmut-plot` y la superficie de `restaurant-marina` y `restaurant-varaderey` no están en la ficha
 
-Doce fichas no traían el hecho Bedrooms.
+`bedrooms` y `bathrooms` son Numeric en el esquema 1.5. Esa definición no documenta un valor N/A. `add()` ya omite el nodo cuando el texto está vacío, y esa omisión es la marca de no aplicable. No se escribe 0 y no se escribe «N/A».
+
+No aplican en comercial ni en parcela, aunque el catálogo traiga un número. En la web son Hotel, Restaurant, Commercial space y Building land. En Resales son Commercial y Plot. Entran el hotel, los restaurantes, el café y las parcelas. En estas 35 no hay un bar con otro tipo; si la web lo clasificara como Restaurant o Commercial space, también se omitirían los dos nodos. Son 7 fichas, y el informe las llama no aplicables, no datos que faltan: `boutiquehotel`, `cafe-bistro`, `casmut-plot`, `plazaparque`, `plot-benimussa`, `restaurant-marina`, `restaurant-varaderey`.
+
+`plot-benimussa` trae Bedrooms 2 y Bathrooms 3. `boutiquehotel` trae Bathrooms 26 (habitaciones de hotel, no dormitorios de una vivienda). `cafe-bistro` trae Bathrooms 3. `plazaparque` trae Bathrooms 2. Esos números no se copian. `casmut-plot`, `restaurant-marina` y `restaurant-varaderey` tampoco escriben baños: no aplica, no es un dato pendiente.
+
+Las viviendas (Apartment, y House/Villa para las villas) conservan el número que ya salía de `bedrooms()` y `bathrooms()`.
 
 `vedella-27` dice un número único en la descripción del catálogo: «The apartment offers 2 comfortable bedrooms and 2 bathrooms». El XML escribe 2.
 
 `patioblanco` tampoco trae el hecho. Los párrafos del catálogo no dan número, porque el sync guarda las etiquetas `<p>` y se deja la lista. En la ficha pública, antes de «More properties», la distribución de este apartamento dice «2 bedrooms». Es un solo número. El XML escribe 2. La frase está en `PUBLIC_PAGE_TEXT`, con la URL de la ficha. El hecho Rooms también vale 2 y no se usa. El hecho Bathrooms ya es 2. La misma lista dice «1 full bathroom with bathtub and shower» y «1 separate guest toilet»; eso no se suma ni sustituye al hecho.
 
-Las otras diez siguen pendientes. No hay un solo número de dormitorios:
+`whiteangel` lista Bathrooms 2. Una frase de la descripción dice «3-bathroom». El XML escribe 2, el hecho. No se cambia a 3.
+
+Sobre las 35 ventas, 24 escriben el nodo `bedrooms` y 28 escriben el nodo `bathrooms`. Las 7 de comercial y parcela omiten los dos. Cuatro viviendas siguen pendientes, sin un solo número de dormitorios. El nodo no se escribe y el informe las marca como pendiente:
 
 - `anahata-ibz`: «2- and 3-bedroom layouts». Es un rango. Rooms es 2 y no se copia.
-- `boutiquehotel`: habitaciones de hotel («22 double rooms and 4 rooms with private bathrooms»), no dormitorios de una vivienda. Rooms es 26 y no se copia.
-- `cafe-bistro`: café en traspaso. El texto no da dormitorios. Rooms es 1 y no se copia.
-- `casmut-plot`: parcela. Ni la ficha ni el texto dan dormitorios.
-- `plazaparque`: restaurante. El texto no da dormitorios. Rooms es 2 y no se copia.
-- `restaurant-marina`: ni la ficha ni el texto dan dormitorios.
-- `restaurant-varaderey`: ni la ficha ni el texto dan dormitorios.
 - `saserra`: «30 apartments with 1 and 2 bedrooms». Es un rango. Rooms es 1 y no se copia.
 - `thenr`: «one- and two-bedroom» y, en la lista, 18 viviendas de un dormitorio y 27 de dos. Es un rango. Rooms es 1 y no se copia.
 - `vistalegre`: «24 exceptional suites», sin número de dormitorios. Rooms es 2 y no se copia.
 
-Tres fichas no traen baños y el texto tampoco da un número. Siguen pendientes: `casmut-plot`, `restaurant-marina`, `restaurant-varaderey`.
+Ninguna vivienda deja `bathrooms` vacío. Esas cuatro escriben 1.
 
 `restaurant-varaderey` nombra Passeig de Vara de Rey en el texto que ahora
 sí entra en el XML. La calle de esa ficha sale de ese texto.
