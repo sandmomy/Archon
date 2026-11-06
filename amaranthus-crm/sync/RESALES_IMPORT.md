@@ -27,13 +27,14 @@ solo para saber qué venta ya existe en Resales antes del primer enlace.
 La web cubre la ficha pública. El volcado no añade comisión, captador, calle ni
 catastro: la API de búsqueda no los devuelve. La web no trae una calle postal.
 `address1` es la zona del catálogo cuando nombra un lugar (Sant Josep, Sant
-Antoni, Santa Eulària, Formentera). La ficha `vedella-27` es la excepción:
-el lugar es `Cala Vedella`, no Sant Josep de sa Talaia. Si el campo
-está vacío o solo dice Ibiza,
-se toma el primer lugar que nombra la descripción en inglés y, si ahí no hay
-ninguno, el del título (Figueretes, Playa d'en Bossa, Cala Tarida). No hay
-calle por defecto. Marina Botafoch solo se escribe cuando el texto de esa
-ficha dice que la propiedad está ahí. No se copia al resto.
+Antoni, Santa Eulària, Formentera). La ficha `vedella-27` usa `Cala Vedella`,
+no Sant Josep de sa Talaia. Si la descripción nombra una calle, se junta con
+la zona. En esa ficha queda `Calle Calvià 27, Cala Vedella`. Si no hay calle,
+queda solo la zona. Si el campo está vacío o solo dice Ibiza, se toma el
+primer lugar de la descripción en inglés y, si ahí no hay ninguno, el del
+título (Figueretes, Playa d'en Bossa, Cala Tarida). No hay calle por defecto.
+Marina Botafoch solo se escribe cuando el texto de esa ficha dice que la
+propiedad está ahí. No se copia al resto.
 
 | Campo Resales 1.5 | Kyero 3 | De dónde sale | Estado |
 | --- | --- | --- | --- |

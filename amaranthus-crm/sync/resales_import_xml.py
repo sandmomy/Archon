@@ -207,14 +207,36 @@ def area_from_copy(item: dict) -> str:
     return area_from_text(description_text(item)) or area_from_text(str(item.get("title") or ""))
 
 
-def street_line(item: dict) -> str:
-    explicit = real_street(item)
-    if explicit:
-        return explicit
+STREET_RE = re.compile(
+    r"\b(?:Calle|Carrer)\s+[A-ZÀ-ÿ][\wÀ-ÿ'’.\-]*(?:\s+[A-ZÀ-ÿ][\wÀ-ÿ'’.\-]*)*\s+\d+\b"
+    r"|\bPasseig(?:\s+(?:de\s+)?[A-ZÀ-ÿ][\wÀ-ÿ'’.\-]+){1,4}",
+)
+
+
+def concrete_street(item: dict) -> str:
+    """A postal street named in the English description, such as Calle Calvià 27."""
+    match = STREET_RE.search(description_text(item))
+    if not match:
+        return ""
+    return re.sub(r"\s+", " ", match.group(0)).strip(" ,.;")
+
+
+def zone_name(item: dict) -> str:
     chosen = CLIENT_ZONES.get(str(item.get("slug") or "").strip())
     if chosen:
         return chosen
     return specific_zone(item) or area_from_copy(item)
+
+
+def street_line(item: dict) -> str:
+    explicit = real_street(item)
+    if explicit:
+        return explicit
+    zone = zone_name(item)
+    street = concrete_street(item)
+    if street and zone and street.casefold() not in zone.casefold():
+        return f"{street}, {zone}"
+    return street or zone
 
 
 def property_element(item: dict) -> ET.Element:
