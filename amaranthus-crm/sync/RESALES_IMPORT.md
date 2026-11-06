@@ -50,7 +50,7 @@ esa ficha dice que la propiedad está ahí. No se copia al resto.
 | dormitorios, baños, superficies, planta, año | `beds`, `baths`, `surface_area` | `facts` | Solo si el hecho existe. `Rooms` no se escribe como dormitorios. No se rellena un 1 por defecto en plantas |
 | características | `pool`, `new_build` | `features` | Parcial. Si la ficha no trae ninguna, el nodo queda vacío. No se escribe "Not specified" |
 | `descriptions/en` | `desc/en` | `description` | Listo en inglés cuando hay texto. Vacío en `boutiquehotel`, `cafe-bistro`, `restaurant-marina` y `restaurant-varaderey` |
-| `propertyImages` | `images` | `image` y `gallery` | Hay URL. No se sabe si el lado largo mide 800 px |
+| `propertyImages` | `images` | `image` y `gallery` | Las 35 ventas se midieron. 73 fotos distintas quedaban por debajo de 800 px y ahora están en `site/photos/` con el lado largo en 800. El resto ya llegaba |
 | `address1` | primera línea de `location_detail` | zona del catálogo; si es un municipio y el título nombra un lugar, ese lugar; si la zona es solo Ibiza, el lugar de la descripción | No hay valor por defecto. Si no hay lugar, el nodo no se escribe |
 | `address2`, `postCode` | resto de `location_detail` | no está | Sigue faltando en las 35 |
 | `cadastralRef` | `catastral` | no está | Falta en las 35. Hace falta para compartir en la red |
@@ -73,7 +73,7 @@ El catálogo no trae estos datos. El XML los deja vacíos en las 35 ventas:
 - Texto en español (`descriptions/es`)
 - Código postal (`postCode`)
 - Segunda línea de dirección (`address2`)
-- Tamaño de las fotos: hay URL, y no consta si el lado largo mide 800 px
+- El lado largo de las fotos de las 35 ventas ya mide al menos 800 px. Las que no llegaban se ampliaron en `site/photos/`, con el original en `site/photos-backup/`
 
 Doce fichas no traen el hecho Bedrooms (`anahata-ibz`, `boutiquehotel`,
 `cafe-bistro`, `casmut-plot`, `patioblanco`, `plazaparque`, `restaurant-marina`,

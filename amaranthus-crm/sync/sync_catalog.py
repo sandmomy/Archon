@@ -389,6 +389,37 @@ def make_thumb(image_url: str, dest: Path, size: int = 480) -> bool:
         return False
 
 
+def reapply_resized_photos(site_dir: Path) -> None:
+    """Point catalog URLs back at local photos enlarged to 800 px."""
+    manifest_path = site_dir / "photos-backup" / "manifest.json"
+    data_path = site_dir / "data.json"
+    if not manifest_path.is_file() or not data_path.is_file():
+        return
+    mapping = {
+        row["source"]: row["resized"]
+        for row in json.loads(manifest_path.read_text(encoding="utf-8"))
+        if row.get("source") and row.get("resized")
+    }
+    if not mapping:
+        return
+    catalog = json.loads(data_path.read_text(encoding="utf-8"))
+    changed = False
+    for item in catalog:
+        image = item.get("image")
+        if isinstance(image, str) and image in mapping:
+            item["image"] = mapping[image]
+            changed = True
+        gallery = item.get("gallery")
+        if isinstance(gallery, list):
+            updated = [mapping[url] if isinstance(url, str) and url in mapping else url for url in gallery]
+            if updated != gallery:
+                item["gallery"] = updated
+                changed = True
+    if changed:
+        data_path.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(f"Restored {len(mapping)} enlarged photo URLs", flush=True)
+
+
 def sync(site_dir: Path, refresh_thumbs: bool = False) -> dict[str, Any]:
     cards, by_filter = collect_listings()
     slugs = sorted(cards)
@@ -425,6 +456,8 @@ def sync(site_dir: Path, refresh_thumbs: bool = False) -> dict[str, Any]:
         if p.get("image"):
             ok = make_thumb(p["image"], dest)
             print(f"thumb {p['slug']}: {'ok' if ok else 'fail'}", flush=True)
+
+    reapply_resized_photos(site_dir)
 
     meta = {
         "synced_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),

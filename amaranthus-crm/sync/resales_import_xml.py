@@ -377,7 +377,6 @@ def missing_report(sales: list[dict]) -> list[str]:
         ("shared", lacks(lambda item: True), "no dice si se comparte con otras agencias"),
         ("commissionPct", lacks(lambda item: True), "no hay comisión"),
         ("commissionOwnPct", lacks(lambda item: True), "no hay porcentaje del listing agent"),
-        ("image pixel size", lacks(lambda item: True), "las URLs no dicen si el lado largo mide 800 px"),
         ("bedrooms", lacks(lambda item: not bedrooms(item)), "el catálogo no trae Bedrooms; Rooms no se copia"),
         ("bathrooms", lacks(lambda item: not fact(item, "Bathrooms")), "sin Bathrooms"),
         ("built or plot", lacks(lambda item: not (
