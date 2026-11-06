@@ -7,9 +7,12 @@ only the client's own sales, never the Balearics search dump. lasboas-top
 stays out: that apartment is already in Resales. Resales collects the file
 from a URL once a day. This script does not call Resales and does not
 invent cadastral references, commission, image size, floor counts, or
-feature labels. Spanish text is read from sync/descriptions_es.json, a
-translation of the English catalog copy. The website sync does not
-rewrite that file. The translation should be reviewed with the client.
+feature labels. A layout line the catalog sync drops can still supply
+one bedroom count. Those sentences are in PUBLIC_PAGE_TEXT. A range
+stays empty, and Rooms is never copied. Spanish text is read from
+sync/descriptions_es.json, a translation of the English catalog copy.
+The website sync does not rewrite that file. The translation should be
+reviewed with the client.
 saleType is Freehold and shared is 0 on every sale. Both are provisional
 defaults and must be checked listing by listing with the client.
 Commission stays in the feed setup.
@@ -163,6 +166,17 @@ TEXT_FEATURES = {
     "vedella-27": [("Features", "Private Terrace"), ("Setting", "Close To Sea")],
 }
 
+# Layout lines the public page shows and the catalog sync drops. It keeps
+# paragraphs and skips the list. Read only when the Bedrooms fact and the
+# catalog title and description do not already give one count. The same
+# single-count rule applies, so a range stays empty. This is not the Rooms fact.
+# patioblanco, layout list of this apartment (not a related card), checked
+# 2026-11-06 at https://www.amaranthus-realestate.com/real-estate/patioblanco :
+# "2 bedrooms".
+PUBLIC_PAGE_TEXT = {
+    "patioblanco": "2 bedrooms",
+}
+
 
 def load_sales(path: Path) -> list[dict]:
     catalog = json.loads(path.read_text(encoding="utf-8"))
@@ -273,7 +287,11 @@ def bedrooms(item: dict) -> str:
     if direct:
         return direct
     text = f"{item.get('title') or ''}\n{description_text(item)}"
-    return _single_count(text, "bedroom")
+    found = _single_count(text, "bedroom")
+    if found:
+        return found
+    extra = PUBLIC_PAGE_TEXT.get(str(item.get("slug") or "").strip(), "")
+    return _single_count(extra, "bedroom")
 
 
 def bathrooms(item: dict) -> str:

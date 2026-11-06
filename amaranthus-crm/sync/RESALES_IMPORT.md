@@ -47,7 +47,7 @@ esa ficha dice que la propiedad está ahí. No se copia al resto.
 | `status` | no existe | `off_market` | Listo: Available u Off Market |
 | `town` | `town` | `zone` | Listo |
 | provincia y país | `province`, `country` | isla Ibiza o Formentera | Deducido, no viene escrito en el JSON |
-| dormitorios, baños, superficies, planta, año | `beds`, `baths`, `surface_area` | `facts`; si no hay hecho, un solo número en el título o la descripción | `Rooms` no se copia. Un rango (1 y 2 dormitorios) no se convierte en un número. No se rellena un 1 por defecto en plantas |
+| dormitorios, baños, superficies, planta, año | `beds`, `baths`, `surface_area` | `facts`; si no hay hecho, un solo número en el título o la descripción. Si el sync se dejó una lista de la ficha pública, esa línea entra con la misma regla | `Rooms` no se copia. Un rango (1 y 2 dormitorios) no se convierte en un número. No se rellena un 1 por defecto en plantas |
 | características | `pool`, `new_build` | `features`, y si la lista está vacía, una etiqueta del apéndice 2 que el texto de esa ficha sí dice | Las seis que estaban vacías llevan al menos una. No se escribe "Not specified" |
 | `descriptions/en` | `desc/en` | `description` | Las 35 tienen texto. Las cuatro que el catálogo dejaba vacías salen de la ficha pública |
 | `descriptions/es` | `desc/es` | `sync/descriptions_es.json`, traducción del inglés del catálogo | Las 35 lo tienen. Traducido del texto en inglés. Hay que revisarlo con el cliente. Hace falta para compartir en la red |
@@ -85,9 +85,26 @@ El catálogo no trae estos datos. El XML los deja vacíos:
 - `levels` no se rellena con un 1. La planta y las plantas del edificio solo se escriben cuando el catálogo las trae
 - La parcela de `casmut-plot` y la superficie de `restaurant-marina` y `restaurant-varaderey` no están en la ficha
 
-Doce fichas no traían el hecho Bedrooms. Solo `vedella-27` dice un número único en el texto (2). El resto se deja vacío porque el texto da un rango, habla de habitaciones de hotel, o no da número: `anahata-ibz`, `boutiquehotel`, `cafe-bistro`, `casmut-plot`, `patioblanco`, `plazaparque`, `restaurant-marina`, `restaurant-varaderey`, `saserra`, `thenr`, `vistalegre`.
+Doce fichas no traían el hecho Bedrooms.
 
-Tres fichas no traen baños y el texto tampoco da un número: `casmut-plot`, `restaurant-marina`, `restaurant-varaderey`.
+`vedella-27` dice un número único en la descripción del catálogo: «The apartment offers 2 comfortable bedrooms and 2 bathrooms». El XML escribe 2.
+
+`patioblanco` tampoco trae el hecho. Los párrafos del catálogo no dan número, porque el sync guarda las etiquetas `<p>` y se deja la lista. En la ficha pública, antes de «More properties», la distribución de este apartamento dice «2 bedrooms». Es un solo número. El XML escribe 2. La frase está en `PUBLIC_PAGE_TEXT`, con la URL de la ficha. El hecho Rooms también vale 2 y no se usa. El hecho Bathrooms ya es 2. La misma lista dice «1 full bathroom with bathtub and shower» y «1 separate guest toilet»; eso no se suma ni sustituye al hecho.
+
+Las otras diez siguen pendientes. No hay un solo número de dormitorios:
+
+- `anahata-ibz`: «2- and 3-bedroom layouts». Es un rango. Rooms es 2 y no se copia.
+- `boutiquehotel`: habitaciones de hotel («22 double rooms and 4 rooms with private bathrooms»), no dormitorios de una vivienda. Rooms es 26 y no se copia.
+- `cafe-bistro`: café en traspaso. El texto no da dormitorios. Rooms es 1 y no se copia.
+- `casmut-plot`: parcela. Ni la ficha ni el texto dan dormitorios.
+- `plazaparque`: restaurante. El texto no da dormitorios. Rooms es 2 y no se copia.
+- `restaurant-marina`: ni la ficha ni el texto dan dormitorios.
+- `restaurant-varaderey`: ni la ficha ni el texto dan dormitorios.
+- `saserra`: «30 apartments with 1 and 2 bedrooms». Es un rango. Rooms es 1 y no se copia.
+- `thenr`: «one- and two-bedroom» y, en la lista, 18 viviendas de un dormitorio y 27 de dos. Es un rango. Rooms es 1 y no se copia.
+- `vistalegre`: «24 exceptional suites», sin número de dormitorios. Rooms es 2 y no se copia.
+
+Tres fichas no traen baños y el texto tampoco da un número. Siguen pendientes: `casmut-plot`, `restaurant-marina`, `restaurant-varaderey`.
 
 `restaurant-varaderey` nombra Passeig de Vara de Rey en el texto que ahora
 sí entra en el XML. La calle de esa ficha sale de ese texto.
