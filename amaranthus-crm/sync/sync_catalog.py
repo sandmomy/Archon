@@ -147,6 +147,10 @@ def parse_facts(html: str) -> dict[str, str]:
 
 
 def parse_gallery(html: str) -> list[str]:
+    # Cards under "More properties" belong to other listings.
+    cut = html.find("More properties")
+    if cut >= 0:
+        html = html[:cut]
     # Prefer the Gallery images array from Next flight data when present.
     m = re.search(r'"images":\[(.*?)\]', html)
     if m:
@@ -189,26 +193,19 @@ def parse_features(html: str) -> list[str]:
 
 
 def parse_description(html: str) -> list[str]:
+    cut = html.find("More properties")
+    page = html if cut < 0 else html[:cut]
     m = re.search(
-        r'flex max-w-\[68ch\] flex-col gap-4[\s\S]*?</header>([\s\S]*?)<section class="flex flex-col gap-5">',
-        html,
+        r'<div class="flex max-w-\[68ch\] flex-col gap-4[^"]*">([\s\S]*?)</div>',
+        page,
     )
-    # Fallback: block with whitespace-pre-line paragraphs after facts
-    block = None
-    m2 = re.search(
-        r'<div class="flex max-w-\[68ch\] flex-col gap-4[^"]*">([\s\S]*?)</div>\s*<section class="flex flex-col gap-5">',
-        html,
-    )
-    if m2:
-        block = m2.group(1)
-    if not block:
+    if not m:
         return []
     paras = []
-    for p in re.findall(r"<p[^>]*>([\s\S]*?)</p>", block):
+    for p in re.findall(r"<p[^>]*>([\s\S]*?)</p>", m.group(1)):
         t = clean_html(p)
         if t:
             paras.append(t)
-    # Drop the repeated h2 title if captured somehow
     return paras
 
 
@@ -389,6 +386,37 @@ def make_thumb(image_url: str, dest: Path, size: int = 480) -> bool:
         return False
 
 
+def reapply_resized_photos(site_dir: Path) -> None:
+    """Point catalog URLs back at local photos enlarged to 800 px."""
+    manifest_path = site_dir / "photos-backup" / "manifest.json"
+    data_path = site_dir / "data.json"
+    if not manifest_path.is_file() or not data_path.is_file():
+        return
+    mapping = {
+        row["source"]: row["resized"]
+        for row in json.loads(manifest_path.read_text(encoding="utf-8"))
+        if row.get("source") and row.get("resized")
+    }
+    if not mapping:
+        return
+    catalog = json.loads(data_path.read_text(encoding="utf-8"))
+    changed = False
+    for item in catalog:
+        image = item.get("image")
+        if isinstance(image, str) and image in mapping:
+            item["image"] = mapping[image]
+            changed = True
+        gallery = item.get("gallery")
+        if isinstance(gallery, list):
+            updated = [mapping[url] if isinstance(url, str) and url in mapping else url for url in gallery]
+            if updated != gallery:
+                item["gallery"] = updated
+                changed = True
+    if changed:
+        data_path.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(f"Restored {len(mapping)} enlarged photo URLs", flush=True)
+
+
 def sync(site_dir: Path, refresh_thumbs: bool = False) -> dict[str, Any]:
     cards, by_filter = collect_listings()
     slugs = sorted(cards)
@@ -425,6 +453,8 @@ def sync(site_dir: Path, refresh_thumbs: bool = False) -> dict[str, Any]:
         if p.get("image"):
             ok = make_thumb(p["image"], dest)
             print(f"thumb {p['slug']}: {'ok' if ok else 'fail'}", flush=True)
+
+    reapply_resized_photos(site_dir)
 
     meta = {
         "synced_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
