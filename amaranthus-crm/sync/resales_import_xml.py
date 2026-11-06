@@ -7,7 +7,10 @@ only the client's own sales, never the Balearics search dump. lasboas-top
 stays out: that apartment is already in Resales. Resales collects the file
 from a URL once a day. This script does not call Resales and does not
 invent cadastral, Spanish text, commission, image size, bedroom
-counts, floor counts, or feature labels.
+counts, floor counts, or feature labels. saleType is written as
+Freehold on every sale. That value is a provisional default, the
+usual tenure in Ibiza, and must be checked listing by listing with
+the client.
 
 address1 is the catalog zone when that zone names a place other than
 the island. A municipality yields to a finer place named in the title
@@ -55,6 +58,11 @@ CLIENT_ZONES = {
 # not the website slug, or the first import creates a duplicate.
 EXCLUDE_SLUGS = {"lasboas-top"}
 AGENCY_REFS = {"lasboas-top": "LasBoas-7.1"}
+
+# The catalog does not record tenure. Freehold is the usual default in
+# Ibiza and is written on every sale in this feed. It is provisional:
+# confirm each listing with the client before the feed is handed over.
+DEFAULT_SALE_TYPE = "Freehold"
 
 # Place names that appear in the English descriptions and titles.
 # Longer names first so "Playa d'en Bossa" wins over a shorter neighbour.
@@ -309,6 +317,7 @@ def property_element(item: dict) -> ET.Element:
 
     sale = ET.SubElement(prop, "saleDetails")
     add(sale, "saleReferenceId", ref)
+    add(sale, "saleType", DEFAULT_SALE_TYPE)
     add(sale, "price", whole(str(item.get("price") or "")))
 
     sizes = ET.SubElement(prop, "propertySizes")
@@ -373,7 +382,6 @@ def missing_report(sales: list[dict]) -> list[str]:
         ("postCode", lacks(lambda item: True), "no hay código postal"),
         ("cadastralRef", lacks(lambda item: True), "no hay referencia catastral"),
         ("descriptions/es", lacks(lambda item: True), "el texto del catálogo está en inglés"),
-        ("saleType", lacks(lambda item: True), "no dice Freehold o Leasehold"),
         ("shared", lacks(lambda item: True), "no dice si se comparte con otras agencias"),
         ("commissionPct", lacks(lambda item: True), "no hay comisión"),
         ("commissionOwnPct", lacks(lambda item: True), "no hay porcentaje del listing agent"),
@@ -384,7 +392,13 @@ def missing_report(sales: list[dict]) -> list[str]:
         )), "sin superficie"),
         ("resales_ref", lacks(lambda item: not item.get("resales_ref")), "la referencia de Resales está vacía"),
     ]
-    lines = [f"Ventas en el XML: {len(sales)}"]
+    lines = [
+        f"Ventas en el XML: {len(sales)}",
+        (
+            f"- saleType: {DEFAULT_SALE_TYPE} en las {len(sales)}. "
+            "Valor provisional por defecto. Hay que revisarlo ficha por ficha con el cliente."
+        ),
+    ]
     for label, slugs, reason in rows:
         if len(slugs) == len(sales):
             lines.append(f"- {label}: falta en las {len(slugs)}. {reason}.")

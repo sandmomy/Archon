@@ -55,7 +55,7 @@ esa ficha dice que la propiedad está ahí. No se copia al resto.
 | `address2`, `postCode` | resto de `location_detail` | no está | Sigue faltando en las 35 |
 | `cadastralRef` | `catastral` | no está | Falta en las 35. Hace falta para compartir en la red |
 | `descriptions/es` | `desc/es` | no está | Falta en las 35. Hace falta para compartir |
-| `saleType` | `leasehold` | no está | Falta. Valores: Freehold o Leasehold |
+| `saleType` | `leasehold` | valor provisional | `Freehold` en las 35. No viene en el catálogo. Es el valor habitual en Ibiza y hay que revisarlo ficha por ficha con el cliente |
 | `commissionPct` | no existe en Kyero | no está | Falta. En el alta se puede dejar un porcentaje por defecto |
 | captador (`lister`) | no existe | no está | Falta en los datos. En el alta se elige un usuario por defecto |
 | agencia | no existe | no es un campo de la ficha | La cuenta ya es la de Amaranthus |
@@ -65,10 +65,14 @@ pública y tampoco trae comisión ni captador. El script actual genera 1.5.
 
 ## Qué falta en las 35
 
+El tipo de venta se escribe como `Freehold` en las 35. Es el valor habitual
+en Ibiza y es provisional: el catálogo no lo trae y no se leyó en la ficha
+de Las Boas. Hay que confirmarlo ficha por ficha con el cliente antes de
+dar el XML a Resales.
+
 El catálogo no trae estos datos. El XML los deja vacíos en las 35 ventas:
 
 - Referencia catastral (`cadastralRef`)
-- Tipo de venta (`saleType`: Freehold o Leasehold)
 - Comisión (`commissionPct` y el porcentaje del listing agent)
 - Texto en español (`descriptions/es`)
 - Código postal (`postCode`)
