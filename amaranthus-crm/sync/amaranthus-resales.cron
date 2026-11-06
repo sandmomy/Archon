@@ -1,0 +1,5 @@
+# Daily Resales dump at 07:00 Europe/Madrid. No prompts.
+# The API key is NOT here. It lives in /root/.resales_key on the droplet.
+# Install as /etc/cron.d/amaranthus-resales (the filename must not contain a dot).
+CRON_TZ=Europe/Madrid
+0 7 * * * root RESALES_KEY_FILE=/root/.resales_key /usr/bin/python3 /root/Archon/amaranthus-crm/sync/resales_dump.py >> /var/log/amaranthus-resales.log 2>&1
