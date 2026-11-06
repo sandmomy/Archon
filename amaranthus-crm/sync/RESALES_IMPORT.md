@@ -28,7 +28,7 @@ La web cubre la ficha pública. El volcado no añade comisión, captador, calle 
 catastro: la API de búsqueda no los devuelve. La web no trae una calle postal.
 `address1` es la zona del catálogo cuando nombra un lugar (Sant Josep, Sant
 Antoni, Santa Eulària, Formentera). La ficha `vedella-27` es la excepción:
-el cliente quiere `Cala Badella`, no Sant Josep de sa Talaia. Si el campo
+el cliente quiere `Cala Bedella`, no Sant Josep de sa Talaia. Si el campo
 está vacío o solo dice Ibiza,
 se toma el primer lugar que nombra la descripción en inglés y, si ahí no hay
 ninguno, el del título (Figueretes, Playa d'en Bossa, Cala Tarida). No hay

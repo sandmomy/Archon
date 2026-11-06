@@ -35,7 +35,7 @@ GENERIC_ZONES = {"ibiza"}
 
 # The catalog only has the municipality. The client wants this zone name.
 CLIENT_ZONES = {
-    "vedella-27": "Cala Badella",
+    "vedella-27": "Cala Bedella",
 }
 
 # Place names that appear in the English descriptions and titles.
