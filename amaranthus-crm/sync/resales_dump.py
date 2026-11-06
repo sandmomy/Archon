@@ -22,7 +22,7 @@ import urllib.request
 from pathlib import Path
 
 ENDPOINT = "https://webapi.resales-online.com/V6/SearchProperties"
-P1 = "1175569"
+P1 = "1037158"
 FILTER_ID = "1"
 PAGE_SIZE = 50
 TIMEOUT = 40
