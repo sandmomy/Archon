@@ -33,6 +33,11 @@ DEFAULT_OUT = ROOT / "site" / "resales-import.xml"
 # "Ibiza" is the island, already stored as the town. It is not a street.
 GENERIC_ZONES = {"ibiza"}
 
+# The catalog only has the municipality. The client wants this zone name.
+CLIENT_ZONES = {
+    "vedella-27": "Cala Badella",
+}
+
 # Place names that appear in the English descriptions and titles.
 # Longer names first so "Playa d'en Bossa" wins over a shorter neighbour.
 PLACE_NAMES = (
@@ -206,6 +211,9 @@ def street_line(item: dict) -> str:
     explicit = real_street(item)
     if explicit:
         return explicit
+    chosen = CLIENT_ZONES.get(str(item.get("slug") or "").strip())
+    if chosen:
+        return chosen
     return specific_zone(item) or area_from_copy(item)
 
 
