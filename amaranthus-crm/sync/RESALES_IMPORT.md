@@ -47,7 +47,7 @@ esa ficha dice que la propiedad está ahí. No se copia al resto.
 | `status` | no existe | `off_market` | Listo: Available u Off Market |
 | `town` | `town` | `zone` | Listo |
 | provincia y país | `province`, `country` | isla Ibiza o Formentera | Deducido, no viene escrito en el JSON |
-| dormitorios, baños, superficies, planta, año | `beds`, `baths`, `surface_area` | en una vivienda, `facts`; si no hay hecho, un solo número en el título o la descripción. Si el sync se dejó una lista de la ficha pública, esa línea entra con la misma regla. En comercial y parcela el número del catálogo no se copia | 24 fichas escriben `bedrooms` y 28 escriben `bathrooms`. Hotel, Restaurant, Commercial space y Building land (en Resales, Commercial y Plot) omiten los dos nodos aunque el catálogo traiga un número: el esquema 1.5 los define como Numeric y no documenta N/A, así que omitir el nodo es la marca de no aplicable. No se escribe 0 ni «N/A». `Rooms` no se copia. Un rango no se convierte en un número. Siguen pendientes, sin dormitorios, `anahata-ibz`, `saserra`, `thenr` y `vistalegre`. No se rellena un 1 por defecto en plantas |
+| dormitorios, baños, superficies, planta, año | `beds`, `baths`, `surface_area` | en una vivienda, `facts`; si no hay hecho, un solo número en el título o la descripción. Si el sync se dejó una lista de la ficha pública, esa línea entra con la misma regla. En comercial y parcela el número del catálogo no se copia. `Ground floor` se escribe como `floor` 0. En una villa, `Number of floors` es `levels`. En un apartamento, `Number of floors` es `floorsInBuilding` | 24 viviendas escriben `bedrooms` y las 28 viviendas escriben `bathrooms`. Hotel, Restaurant, Commercial space y Building land (en Resales, Commercial y Plot) omiten los dos nodos aunque el catálogo traiga un número: el esquema 1.5 los define como Numeric y no documenta N/A, así que omitir el nodo es la marca de no aplicable. No se escribe 0 ni «N/A» en dormitorios ni baños. `Rooms` no se copia. Un rango no se convierte en un número. Siguen pendientes, sin dormitorios, `anahata-ibz`, `saserra`, `thenr` y `vistalegre`. `levels` no se rellena con el 1 por defecto |
 | características | `pool`, `new_build` | `features`, y si la lista está vacía, una etiqueta del apéndice 2 que el texto de esa ficha sí dice | Las seis que estaban vacías llevan al menos una. No se escribe "Not specified" |
 | `descriptions/en` | `desc/en` | `description` | Las 35 tienen texto. Las cuatro que el catálogo dejaba vacías salen de la ficha pública |
 | `descriptions/es` | `desc/es` | `sync/descriptions_es.json`, traducción del inglés del catálogo | Las 35 lo tienen. Traducido del texto en inglés. Hay que revisarlo con el cliente. Hace falta para compartir en la red |
@@ -82,7 +82,7 @@ El catálogo no trae estos datos. El XML los deja vacíos:
 - Código postal (`postCode`)
 - Segunda línea de dirección (`address2`)
 - El lado largo de las fotos ampliadas mide 800 px, que es el mínimo del XML. La pantalla de subida del panel pide 1600 px. No se han vuelto a ampliar
-- `levels` no se rellena con un 1. La planta y las plantas del edificio solo se escriben cuando el catálogo las trae
+- `levels` no se rellena con un 1. En una villa sale de `Number of floors`, o de la frase de la ficha pública si el catálogo no trae el hecho (`canfurnet`, «spread over 2 floors»). En un apartamento la ficha no dice cuántos niveles ocupa el piso, así que el nodo no se escribe. `floor` 0 es planta baja, el valor numérico de «Ground floor». `floorsInBuilding` solo se escribe cuando el catálogo trae las plantas del edificio
 - La parcela de `casmut-plot` y la superficie de `restaurant-marina` y `restaurant-varaderey` no están en la ficha
 
 `bedrooms` y `bathrooms` son Numeric en el esquema 1.5. Esa definición no documenta un valor N/A. `add()` ya omite el nodo cuando el texto está vacío, y esa omisión es la marca de no aplicable. No se escribe 0 y no se escribe «N/A».
@@ -107,6 +107,12 @@ Sobre las 35 ventas, 24 escriben el nodo `bedrooms` y 28 escriben el nodo `bathr
 - `vistalegre`: «24 exceptional suites», sin número de dormitorios. Rooms es 2 y no se copia.
 
 Ninguna vivienda deja `bathrooms` vacío. Esas cuatro escriben 1.
+
+`floor` es numérico y obligatorio en apartamentos. «Ground floor» se escribe como 0 en `calatarida-laura`, `patio-pb` y `vistalegre`. `vistalegre` pasa a subtipo `Ground Floor` porque el hecho Floor dice planta baja. Siguen sin planta, y la web tampoco la da: `belisla-penthouse` (Number of floors 4 es el edificio, no la planta del ático) y `vedella-27`.
+
+`floorsInBuilding` es obligatorio en apartamentos. Sigue pendiente, sin un número de plantas del edificio en la ficha: `atzeca-2hab` (la página dice «Second-floor apartment», que es la planta 2 que ya está en `floor`), `patioblanco`, `vedella-27` y `white-penthouse`. No se copia la planta del piso como si fuera la altura del edificio.
+
+`levels` es el número de niveles que ocupa la propiedad, obligatorio si el tipo no es Plot. No se escribe el 1 por defecto. Seis villas lo tienen: `canfurnet` 2 (la frase «spread over 2 floors»), `escubells` 3 (la ficha dice «3 Levels» y el hecho Number of floors es 3), `villajesus` 2, `villalovers` 2, `villapop` 2 y `vistaalegre-villa` 3. Siguen sin dato: las villas `espujols-villa`, `oasiibiza`, `sacaleta-marco` y `vista-alegre`, los 18 apartamentos, y el comercial que no es parcela (`boutiquehotel`, `cafe-bistro`, `plazaparque`, `restaurant-marina`, `restaurant-varaderey`). En un apartamento, Number of floors sigue siendo `floorsInBuilding`, no `levels`.
 
 `restaurant-varaderey` nombra Passeig de Vara de Rey en el texto que ahora
 sí entra en el XML. La calle de esa ficha sale de ese texto.

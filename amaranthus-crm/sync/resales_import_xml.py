@@ -6,10 +6,15 @@ site/resales-import.xml. That file is the feed for the automated import:
 only the client's own sales, never the Balearics search dump. lasboas-top
 stays out: that apartment is already in Resales. Resales collects the file
 from a URL once a day. This script does not call Resales and does not
-invent cadastral references, commission, image size, floor counts,
-feature labels, or bedroom and bathroom counts. A layout line the
-catalog sync drops can still supply one bedroom count. Those sentences
-are in PUBLIC_PAGE_TEXT. A range stays empty, and Rooms is never copied.
+invent cadastral references, commission, image size, feature labels,
+or bedroom and bathroom counts. A layout line the catalog sync drops
+can still supply one bedroom count. Those sentences are in
+PUBLIC_PAGE_TEXT. A range stays empty, and Rooms is never copied.
+Ground floor is written as floor 0 because the schema field is Numeric.
+On a house, Number of floors is levels (the storeys the house occupies),
+not floorsInBuilding. A house with no fact can still take one level
+count from PAGE_LEVELS when the public page states it. levels is not
+filled with the share-network default of 1.
 bedrooms and bathrooms are Numeric in schema 1.5. That definition
 documents no N/A token. add() omits a node when the text is empty, and
 that omission is how a commercial property or a plot is marked not
@@ -198,6 +203,14 @@ PUBLIC_PAGE_TEXT = {
     "patioblanco": "2 bedrooms",
 }
 
+# Levels the public page states when the catalog has no Number of floors.
+# canfurnet, checked 2026-11-06 at
+# https://www.amaranthus-realestate.com/real-estate/canfurnet :
+# "6 bedrooms and 5 bathrooms spread over 2 floors".
+PAGE_LEVELS = {
+    "canfurnet": "2",
+}
+
 
 def load_sales(path: Path) -> list[dict]:
     catalog = json.loads(path.read_text(encoding="utf-8"))
@@ -354,6 +367,58 @@ def bathroom_text(item: dict) -> str:
     return bathrooms(item)
 
 
+def is_house(item: dict) -> bool:
+    website_type = str(item.get("type") or "").strip()
+    if website_type == "Villa":
+        return True
+    mapped = TYPE_MAP.get(website_type)
+    return bool(mapped and mapped[0] == "House")
+
+
+def is_apartment(item: dict) -> bool:
+    website_type = str(item.get("type") or "").strip()
+    if website_type in {"Apartment", "Penthouse"}:
+        return True
+    mapped = TYPE_MAP.get(website_type)
+    return bool(mapped and mapped[0] == "Apartment")
+
+
+_GROUND = {"ground floor", "ground", "planta baja", "bajo"}
+
+
+def floor_text(item: dict) -> str:
+    """Numeric floor. 'Ground floor' is 0. The schema has no text value."""
+    raw = fact(item, "Floor").strip()
+    if raw.casefold() in _GROUND:
+        return "0"
+    return whole(raw)
+
+
+def levels_text(item: dict) -> str:
+    """Storeys the property itself occupies. Mandatory when the type is not Plot.
+
+    On a house the catalog label Number of floors is that count. escubells
+    lists Number of floors 3 and the page says "3 Levels". Apartments do
+    not get a 1: the page does not say how many levels the flat occupies.
+    """
+    if not is_house(item):
+        return ""
+    direct = whole(fact(item, "Number of floors"))
+    if direct:
+        return direct
+    return PAGE_LEVELS.get(str(item.get("slug") or "").strip(), "")
+
+
+def floors_in_building_text(item: dict) -> str:
+    """Floors in the building. Mandatory for apartments, not for a house.
+
+    A house's Number of floors is levels, so it is not copied here.
+    """
+    if is_house(item):
+        return ""
+    return whole(fact(item, "Number of floors"))
+
+
 def reference_id(item: dict) -> str:
     slug = str(item.get("slug") or "").strip()
     return AGENCY_REFS.get(slug, slug)
@@ -461,9 +526,17 @@ def property_element(item: dict, spanish: dict[str, str] | None = None) -> ET.El
     website_type = str(item.get("type") or "")
     mapped = TYPE_MAP.get(website_type)
     resales_type, subtype = mapped if mapped else ("", "")
-    if "Ground floor" in (item.get("features") or []) and resales_type == "Apartment":
-        subtype = "Ground Floor"
     features = item.get("features") or []
+    floor_label = fact(item, "Floor").casefold()
+    if (
+        resales_type == "Apartment"
+        and subtype != "Penthouse"
+        and (
+            "Ground floor" in features
+            or floor_label in _GROUND
+        )
+    ):
+        subtype = "Ground Floor"
     ref = reference_id(item)
     prop = ET.Element("property")
     add(prop, "referenceId", ref)
@@ -497,8 +570,9 @@ def property_element(item: dict, spanish: dict[str, str] | None = None) -> ET.El
     # plots that skip is the not-applicable mark: the schema has no other value.
     add(prop, "bedrooms", bedroom_text(item))
     add(prop, "bathrooms", bathroom_text(item))
-    add(prop, "floor", whole(fact(item, "Floor")))
-    add(prop, "floorsInBuilding", whole(fact(item, "Number of floors")))
+    add(prop, "floor", floor_text(item))
+    add(prop, "levels", levels_text(item))
+    add(prop, "floorsInBuilding", floors_in_building_text(item))
     add(prop, "builtYear", whole(fact(item, "Year built")))
 
     grouped: dict[str, list[str]] = {}
@@ -614,6 +688,47 @@ def missing_report(sales: list[dict], spanish: dict[str, str] | None = None) -> 
             f"- bathrooms: pendiente en {len(pending_baths)} "
             f"({', '.join(pending_baths)}). "
             "Vivienda sin un solo número de baños."
+        )
+    pending_floor = lacks(
+        lambda item: is_apartment(item) and not floor_text(item)
+    )
+    pending_building = lacks(
+        lambda item: is_apartment(item) and not floors_in_building_text(item)
+    )
+    pending_levels = lacks(
+        lambda item: not counts_not_applicable(item) and not levels_text(item)
+    )
+    # Plots are not applicable. Commercial is not a dwelling, but levels
+    # is mandatory whenever the type is not Plot. Report those too.
+    pending_levels_commercial = lacks(
+        lambda item: counts_not_applicable(item)
+        and str(item.get("type") or "") != "Building land"
+        and not levels_text(item)
+    )
+    if pending_floor:
+        lines.append(
+            f"- floor: pendiente en {len(pending_floor)} "
+            f"({', '.join(pending_floor)}). "
+            "Apartamento sin planta. Ground floor se escribe como 0."
+        )
+    if pending_building:
+        lines.append(
+            f"- floorsInBuilding: pendiente en {len(pending_building)} "
+            f"({', '.join(pending_building)}). "
+            "Apartamento sin plantas del edificio. No se copia la planta del piso."
+        )
+    if pending_levels:
+        lines.append(
+            f"- levels: pendiente en {len(pending_levels)} "
+            f"({', '.join(pending_levels)}). "
+            "Vivienda sin los niveles que ocupa. No se rellena el 1 por defecto."
+        )
+    if pending_levels_commercial:
+        lines.append(
+            f"- levels: pendiente en comercial {len(pending_levels_commercial)} "
+            f"({', '.join(pending_levels_commercial)}). "
+            "El esquema lo pide si el tipo no es Plot. "
+            "Number of floors de un local es el edificio, no los niveles que ocupa. No se inventa."
         )
     return lines
 
