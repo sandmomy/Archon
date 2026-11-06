@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """One-shot dump of the Resales Online sale catalog into site/resales.json.
 
-The API key is read from RESALES_API_KEY and is never written to disk or to
-the repo. The call only succeeds from the IP registered on that key.
+The API key is read from a file, RESALES_KEY_FILE (default /root/.resales_key).
+RESALES_API_KEY is only a fallback and is never written to the repo.
+The call only succeeds from the IP registered on that key.
+No prompts: safe for cron.
 
 Does not touch the website scraper or site/data.json.
 """
@@ -28,6 +30,25 @@ PAUSE_SEC = 1.2
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "site" / "resales.json"
+DEFAULT_KEY_FILE = Path("/root/.resales_key")
+
+
+def load_api_key() -> str:
+    path = Path(os.environ.get("RESALES_KEY_FILE", "").strip() or DEFAULT_KEY_FILE)
+    if path.is_file():
+        line = path.read_text(encoding="utf-8").strip().splitlines()
+        key = line[0].strip().strip("'\"") if line else ""
+        if key.lower().startswith("export "):
+            key = key.split("=", 1)[-1].strip().strip("'\"")
+        if key:
+            return key
+        print(f"El archivo de clave está vacío: {path}", file=sys.stderr)
+        return ""
+    env_key = os.environ.get("RESALES_API_KEY", "").strip()
+    if env_key:
+        return env_key
+    print(f"No hay clave en {path} ni en RESALES_API_KEY", file=sys.stderr)
+    return ""
 
 
 def fetch_page(api_key: str, page: int, query_id: str | None) -> tuple[int, dict]:
@@ -186,9 +207,8 @@ def to_card(prop: dict, used: set[str]) -> dict:
 
 
 def main() -> int:
-    api_key = os.environ.get("RESALES_API_KEY", "").strip()
+    api_key = load_api_key()
     if not api_key:
-        print("Falta RESALES_API_KEY", file=sys.stderr)
         return 1
 
     page = 1
@@ -225,7 +245,9 @@ def main() -> int:
 
     used: set[str] = set()
     cards = [to_card(p, used) for p in raw_props]
-    OUT.write_text(json.dumps(cards, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    tmp = OUT.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(cards, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    tmp.replace(OUT)
     print(f"Wrote {OUT} ({len(cards)} fichas)")
     return 0
 
