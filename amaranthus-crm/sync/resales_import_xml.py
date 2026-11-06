@@ -6,10 +6,13 @@ site/resales-import.xml. That file is the feed for the automated import:
 only the client's own sales, never the Balearics search dump. lasboas-top
 stays out: that apartment is already in Resales. Resales collects the file
 from a URL once a day. This script does not call Resales and does not
-invent cadastral, Spanish text, commission, image size, floor
-counts, or feature labels. saleType is Freehold and shared is 0 on
-every sale. Both are provisional defaults and must be checked listing
-by listing with the client. Commission stays in the feed setup.
+invent cadastral references, commission, image size, floor counts, or
+feature labels. Spanish text is read from sync/descriptions_es.json, a
+translation of the English catalog copy. The website sync does not
+rewrite that file. The translation should be reviewed with the client.
+saleType is Freehold and shared is 0 on every sale. Both are provisional
+defaults and must be checked listing by listing with the client.
+Commission stays in the feed setup.
 
 address1 is the catalog zone when that zone names a place other than
 the island. A municipality yields to a finer place named in the title
@@ -34,6 +37,9 @@ from xml.etree import ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CATALOG = ROOT / "site" / "data.json"
 DEFAULT_OUT = ROOT / "site" / "resales-import.xml"
+# Kept beside the generator. sync_catalog.py rewrites site/data.json from
+# the English website and would drop a Spanish field stored there.
+DEFAULT_SPANISH = Path(__file__).resolve().parent / "descriptions_es.json"
 
 # "Ibiza" is the island, already stored as the town. It is not a street.
 GENERIC_ZONES = {"ibiza"}
@@ -202,6 +208,34 @@ def description_text(item: dict) -> str:
     return "\n\n".join(part.strip() for part in parts if str(part).strip())
 
 
+def paragraphs_to_text(value: object) -> str:
+    if isinstance(value, list):
+        return "\n\n".join(str(part).strip() for part in value if str(part).strip())
+    return str(value or "").strip()
+
+
+def load_spanish(path: Path) -> dict[str, str]:
+    """Spanish by slug. Keys starting with '_' are notes, not listings."""
+    if not path.is_file():
+        return {}
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(raw, dict):
+        raise SystemExit(f"El archivo de español no es un objeto: {path}")
+    out: dict[str, str] = {}
+    for slug, value in raw.items():
+        key = str(slug).strip()
+        if not key or key.startswith("_"):
+            continue
+        text = paragraphs_to_text(value)
+        if text:
+            out[key] = text
+    return out
+
+
+def spanish_text(item: dict, spanish: dict[str, str]) -> str:
+    return spanish.get(str(item.get("slug") or "").strip(), "")
+
+
 def image_urls(item: dict) -> list[str]:
     slug = str(item.get("slug") or "")
     urls: list[str] = []
@@ -353,7 +387,7 @@ def street_line(item: dict) -> str:
     return street or zone
 
 
-def property_element(item: dict) -> ET.Element:
+def property_element(item: dict, spanish: dict[str, str] | None = None) -> ET.Element:
     website_type = str(item.get("type") or "")
     mapped = TYPE_MAP.get(website_type)
     resales_type, subtype = mapped if mapped else ("", "")
@@ -415,6 +449,7 @@ def property_element(item: dict) -> ET.Element:
 
     descriptions = ET.SubElement(prop, "descriptions")
     add(descriptions, "en", description_text(item))
+    add(descriptions, "es", spanish_text(item, spanish or {}))
 
     images = ET.SubElement(prop, "propertyImages")
     for url in image_urls(item):
@@ -423,7 +458,7 @@ def property_element(item: dict) -> ET.Element:
     return prop
 
 
-def build_tree(sales: list[dict]) -> ET.ElementTree:
+def build_tree(sales: list[dict], spanish: dict[str, str] | None = None) -> ET.ElementTree:
     root = ET.Element("properties")
     feed = ET.SubElement(root, "feed")
     add(feed, "version", "1.5")
@@ -431,12 +466,12 @@ def build_tree(sales: list[dict]) -> ET.ElementTree:
     add(feed, "generated", generated)
     add(feed, "source", "amaranthus-web")
     for item in sales:
-        root.append(property_element(item))
+        root.append(property_element(item, spanish))
     ET.indent(root, space="  ")
     return ET.ElementTree(root)
 
 
-def missing_report(sales: list[dict]) -> list[str]:
+def missing_report(sales: list[dict], spanish: dict[str, str] | None = None) -> list[str]:
     def lacks(check) -> list[str]:
         return [str(item.get("slug")) for item in sales if check(item)]
 
@@ -449,7 +484,11 @@ def missing_report(sales: list[dict]) -> list[str]:
         ("address2", lacks(lambda item: True), "el nodo es obligatorio en el XML y no hay segunda línea"),
         ("postCode", lacks(lambda item: True), "no hay código postal"),
         ("cadastralRef", lacks(lambda item: True), "no hay referencia catastral"),
-        ("descriptions/es", lacks(lambda item: True), "el texto del catálogo está en inglés"),
+        (
+            "descriptions/es",
+            lacks(lambda item: not spanish_text(item, spanish or {})),
+            "no hay traducción en descriptions_es.json",
+        ),
         ("descriptions/en", lacks(lambda item: not description_text(item)), "la ficha no trae texto"),
         ("bedrooms", lacks(lambda item: not bedrooms(item)), "ni el catálogo ni el texto dan un solo número de dormitorios"),
         ("bathrooms", lacks(lambda item: not bathrooms(item)), "ni el catálogo ni el texto dan un solo número de baños"),
@@ -485,14 +524,16 @@ def missing_report(sales: list[dict]) -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Generate a Resales import XML from the website catalog.")
     parser.add_argument("--catalog", type=Path, default=DEFAULT_CATALOG)
+    parser.add_argument("--spanish", type=Path, default=DEFAULT_SPANISH)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     args = parser.parse_args()
     sales = load_sales(args.catalog)
-    tree = build_tree(sales)
+    spanish = load_spanish(args.spanish)
+    tree = build_tree(sales, spanish)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     tree.write(args.out, encoding="UTF-8", xml_declaration=True)
     print(f"Wrote {args.out} ({len(sales)} ventas)")
-    print("\n".join(missing_report(sales)))
+    print("\n".join(missing_report(sales, spanish)))
     return 0
 
 

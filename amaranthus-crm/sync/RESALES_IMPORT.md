@@ -50,11 +50,11 @@ esa ficha dice que la propiedad está ahí. No se copia al resto.
 | dormitorios, baños, superficies, planta, año | `beds`, `baths`, `surface_area` | `facts`; si no hay hecho, un solo número en el título o la descripción | `Rooms` no se copia. Un rango (1 y 2 dormitorios) no se convierte en un número. No se rellena un 1 por defecto en plantas |
 | características | `pool`, `new_build` | `features`, y si la lista está vacía, una etiqueta del apéndice 2 que el texto de esa ficha sí dice | Las seis que estaban vacías llevan al menos una. No se escribe "Not specified" |
 | `descriptions/en` | `desc/en` | `description` | Las 35 tienen texto. Las cuatro que el catálogo dejaba vacías salen de la ficha pública |
+| `descriptions/es` | `desc/es` | `sync/descriptions_es.json`, traducción del inglés del catálogo | Las 35 lo tienen. Traducido del texto en inglés. Hay que revisarlo con el cliente. Hace falta para compartir en la red |
 | `propertyImages` | `images` | `image` y `gallery` | Las fotos ampliadas salen como URL `https://` del repositorio público. La web no publica `/photos/` |
 | `address1` | primera línea de `location_detail` | zona del catálogo; si es un municipio y el título nombra un lugar, ese lugar; si la zona es solo Ibiza, el lugar de la descripción | No hay valor por defecto. Si no hay lugar, el nodo no se escribe |
 | `address2`, `postCode` | resto de `location_detail` | no está | Sigue faltando en las 35 |
 | `cadastralRef` | `catastral` | no está | Falta en las 35. Hace falta para compartir en la red |
-| `descriptions/es` | `desc/es` | no está | Falta en las 35. Hace falta para compartir |
 | `saleType` | `leasehold` | valor provisional | `Freehold` en las 35. No viene en el catálogo. Es el valor habitual en Ibiza y hay que revisarlo ficha por ficha con el cliente |
 | `shared` | no existe | valor provisional | `0` en las 35. Las Boas no está marcada como Compartida. Hay que confirmarlo ficha por ficha |
 | `type` villa | `type` | apéndice 1 | Las villas van como `House` / `Villa`. `Villa` / `Detached` no está en el apéndice |
@@ -74,10 +74,11 @@ dar el XML a Resales.
 
 La comisión no se escribe en el XML. En el alta del feed se puede usar lo que Las Boas ya tiene en el panel: 4,52 % y un reparto del 50 %. Es el dato de esa ficha, no una confirmación de las otras 35.
 
+Las 35 fichas llevan texto en español (`descriptions/es`). Está en `sync/descriptions_es.json` y es una traducción del texto en inglés del catálogo. `sync_catalog.py` reescribe `data.json` desde la web en inglés y no toca ese archivo, así que el siguiente sync no lo borra. Hay que revisarlo con el cliente. El español hace falta para compartir la ficha en la red. En `casmut-plot` y `plot-benimussa` el inglés cierra con una nota de redacción que no describe la finca; esa frase no se ha traducido. En `atzeca-2hab` el texto de la web se corta a mitad de palabra («potential f»); el español termina en la última palabra completa.
+
 El catálogo no trae estos datos. El XML los deja vacíos:
 
 - Referencia catastral (`cadastralRef`)
-- Texto en español (`descriptions/es`)
 - Código postal (`postCode`)
 - Segunda línea de dirección (`address2`)
 - El lado largo de las fotos ampliadas mide 800 px, que es el mínimo del XML. La pantalla de subida del panel pide 1600 px. No se han vuelto a ampliar
@@ -96,7 +97,8 @@ sí entra en el XML. La calle de esa ficha sale de ese texto.
 1. El sync de la web (`sync_catalog.py`) sigue siendo la fuente. Ya copia el
    catálogo público a `data.json`.
 2. Después de cada sync, ejecutar `resales_import_xml.py`. El XML queda con
-   las ventas de ese momento y con ninguna más.
+   las ventas de ese momento y con ninguna más. El español se lee de
+   `sync/descriptions_es.json` y no se pierde al sincronizar el catálogo.
 3. Publicar ese archivo en una URL HTTPS fija del sitio. No dar esa URL a
    Resales hasta completar o aceptar los campos que faltan.
 4. Un solo alta, con el formulario de importación de Resales. La cuenta tiene
