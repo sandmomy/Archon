@@ -7,8 +7,10 @@ only the client's own sales, never the Balearics search dump. Resales
 collects it from a URL once a day. This script does not call Resales and
 does not invent cadastral, Spanish text, commission, or image size.
 
-Listings with no street get address1 "Marina Botafoc". That value is
-provisional until the client supplies a real address.
+address1 is the catalog zone when that zone names a place other than
+the island. If the zone is empty or only "Ibiza", the place is taken
+from the English description, then from the title. There is no default
+street.
 
 See sync/RESALES_IMPORT.md for the field map and the setup steps.
 Schema: https://devdocs.resales-online.com/docs/property-import-xml-definition-1-5/
@@ -28,9 +30,48 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CATALOG = ROOT / "site" / "data.json"
 DEFAULT_OUT = ROOT / "site" / "resales-import.xml"
 
-# The public website has no street field. Use this until the client
-# provides a real address for each listing.
-DEFAULT_STREET = "Marina Botafoc"
+# "Ibiza" is the island, already stored as the town. It is not a street.
+GENERIC_ZONES = {"ibiza"}
+
+# Place names that appear in the English descriptions and titles.
+# Longer names first so "Playa d'en Bossa" wins over a shorter neighbour.
+PLACE_NAMES = (
+    "Playa d'en Bossa",
+    "Platja d'en Bossa",
+    "Passeig de Vara de Rey",
+    "Marina Botafoch",
+    "Cala Vedella",
+    "Cala Tarida",
+    "Vista Alegre",
+    "Vistalegre",
+    "Figueretes",
+    "Es Cubells",
+    "Illa Plana",
+    "Plaza del Parque",
+    "Es Torrent",
+    "Cas Mut",
+    "Jesús",
+    "Jesus",
+    "Talamanca",
+    "Ibiza Town",
+    "Dalt Vila",
+    "Sa Caleta",
+    "Benimussa",
+    "San Augustin",
+    "Es Pujols",
+    "Sa Serra",
+)
+
+# The property is in this place.
+LOCATED = re.compile(
+    r"(in the heart of|located in|located near|set in|situated in|gated community of|area of|nestled within|in the centre of|in the center of)\s+$",
+    re.I,
+)
+# A neighbour or a view. Used only when no location phrase names a place.
+NEARBY = re.compile(
+    r"(toward|towards|minutes from|close to|next to|near|walk from|short walk from|views of|views over|overlooking|stretching|proximity to)\s+$",
+    re.I,
+)
 
 # Website type -> (Resales type, Resales subtype). Subtypes are the closest
 # Appendix 1 labels. The catalog does not store a Resales subtype.
@@ -119,8 +160,53 @@ def real_street(item: dict) -> str:
     return ""
 
 
+def specific_zone(item: dict) -> str:
+    zone = str(item.get("zone") or "").strip()
+    if not zone or zone.casefold() in GENERIC_ZONES:
+        return ""
+    return zone
+
+
+def area_from_text(text: str) -> str:
+    """Place the text treats as the property's zone, not a neighbour or a view."""
+    folded = text.casefold()
+    ranked: list[tuple[int, int, str]] = []
+    for name in PLACE_NAMES:
+        key = name.casefold()
+        start = 0
+        while True:
+            index = folded.find(key, start)
+            if index < 0:
+                break
+            prefix = folded[max(0, index - 48):index]
+            if LOCATED.search(prefix):
+                rank = 0
+            elif NEARBY.search(prefix):
+                rank = 2
+            else:
+                rank = 1
+            ranked.append((rank, index, name))
+            start = index + len(key)
+    if not ranked:
+        return ""
+    ranked.sort()
+    best = ranked[0][0]
+    # A view or a neighbour is not the zone when nothing better was said.
+    if best == 2:
+        return ""
+    return ranked[0][2]
+
+
+def area_from_copy(item: dict) -> str:
+    """Place named in the English description, then in the title."""
+    return area_from_text(description_text(item)) or area_from_text(str(item.get("title") or ""))
+
+
 def street_line(item: dict) -> str:
-    return real_street(item) or DEFAULT_STREET
+    explicit = real_street(item)
+    if explicit:
+        return explicit
+    return specific_zone(item) or area_from_copy(item)
 
 
 def property_element(item: dict) -> ET.Element:
@@ -209,9 +295,9 @@ def missing_report(sales: list[dict]) -> list[str]:
 
     rows = [
         (
-            "address1 real (calle)",
-            lacks(lambda item: not real_street(item)),
-            f"sin calle en el JSON; el XML usa el valor provisional {DEFAULT_STREET}",
+            "address1",
+            lacks(lambda item: not street_line(item)),
+            "la zona es solo Ibiza o está vacía, y ni la descripción ni el título nombran un lugar",
         ),
         ("address2", lacks(lambda item: True), "el nodo es obligatorio en el XML y no hay segunda línea"),
         ("postCode", lacks(lambda item: True), "no hay código postal"),

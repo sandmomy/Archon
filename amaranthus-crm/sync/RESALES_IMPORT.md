@@ -25,9 +25,13 @@ solo para saber qué venta ya existe en Resales antes del primer enlace.
 ## Qué campo rellena el XML
 
 La web cubre la ficha pública. El volcado no añade comisión, captador, calle ni
-catastro: la API de búsqueda no los devuelve. La web tampoco trae calle. Mientras
-el cliente no dé direcciones reales, el generador escribe `Marina Botafoc` en
-`address1`.
+catastro: la API de búsqueda no los devuelve. La web no trae una calle postal.
+`address1` es la zona del catálogo cuando nombra un lugar (Sant Josep, Sant
+Antoni, Santa Eulària, Formentera). Si ese campo está vacío o solo dice Ibiza,
+se toma el primer lugar que nombra la descripción en inglés y, si ahí no hay
+ninguno, el del título (Figueretes, Playa d'en Bossa, Cala Tarida). No hay
+calle por defecto. Marina Botafoch solo se escribe cuando el texto de esa
+ficha dice que la propiedad está ahí. No se copia al resto.
 
 | Campo Resales 1.5 | Kyero 3 | De dónde sale | Estado |
 | --- | --- | --- | --- |
@@ -41,7 +45,7 @@ el cliente no dé direcciones reales, el generador escribe `Marina Botafoc` en
 | características | `pool`, `new_build` | `features` | Parcial. El vocabulario de Resales es más cerrado que el de la web |
 | `descriptions/en` | `desc/en` | `description` | Listo, en inglés |
 | `propertyImages` | `images` | `image` y `gallery` | Hay URL. No se sabe si el lado largo mide 800 px |
-| `address1` | primera línea de `location_detail` | no está en la web | Provisional: `Marina Botafoc` en toda ficha sin calle, hasta que el cliente dé la dirección real |
+| `address1` | primera línea de `location_detail` | zona del catálogo, o el lugar nombrado en la descripción si la zona es solo Ibiza | No hay valor por defecto. Si no hay lugar, el nodo no se escribe |
 | `address2`, `postCode` | resto de `location_detail` | no está | Sigue faltando en las 36 |
 | `cadastralRef` | `catastral` | no está | Falta en las 36. Hace falta para compartir en la red |
 | `descriptions/es` | `desc/es` | no está | Falta en las 36. Hace falta para compartir |
