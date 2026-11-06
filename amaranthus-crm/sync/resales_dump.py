@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""One-shot dump of Resales Online rentals into site/resales.json.
+"""One-shot dump of the Resales Online sale catalog into site/resales.json.
 
 The API key is read from a file, RESALES_KEY_FILE (default /root/.resales_key).
 RESALES_API_KEY is only a fallback and is never written to the repo.
@@ -23,12 +23,7 @@ from pathlib import Path
 
 ENDPOINT = "https://webapi.resales-online.com/V6/SearchProperties"
 P1 = "1037158"
-# Preset filters from the Web API details: 2 short-term rentals, 3 long-term rentals.
-# Both presets are Islas Baleares, so Formentera is dropped after the download.
-RENTAL_FILTERS = (
-    ("2", "Alquiler vacacional", "/ week", ("rent", "holiday", "resales")),
-    ("3", "Alquiler", "/ month", ("rent", "resales")),
-)
+FILTER_ID = "1"
 PAGE_SIZE = 50
 TIMEOUT = 40
 PAUSE_SEC = 1.2
@@ -56,9 +51,9 @@ def load_api_key() -> str:
     return ""
 
 
-def fetch_page(api_key: str, filter_id: str, page: int, query_id: str | None) -> tuple[int, dict]:
+def fetch_page(api_key: str, page: int, query_id: str | None) -> tuple[int, dict]:
     params = {
-        "p_agency_filterid": filter_id,
+        "p_agency_filterid": FILTER_ID,
         "p1": P1,
         "p2": api_key,
         "P_PageSize": str(PAGE_SIZE),
@@ -116,18 +111,7 @@ def money(value) -> int | None:
     return int(digits) if digits else None
 
 
-def place_blob(prop: dict) -> str:
-    return " ".join(
-        str(prop.get(key) or "")
-        for key in ("Location", "Area", "Province", "Country")
-    ).lower()
-
-
-def is_formentera(prop: dict) -> bool:
-    return "formentera" in place_blob(prop)
-
-
-def to_card(prop: dict, used: set[str], operation: str, period: str, listings: tuple[str, ...]) -> dict:
+def to_card(prop: dict, used: set[str]) -> dict:
     ref = str(prop.get("Reference") or prop.get("AgencyRef") or "").strip()
     slug = slugify(ref or str(prop.get("AgencyRef") or "propiedad"))
     n = 2
@@ -143,7 +127,7 @@ def to_card(prop: dict, used: set[str], operation: str, period: str, listings: t
     province = str(prop.get("Province") or "").strip()
     area = str(prop.get("Area") or "").strip()
     zone = location or area or province or "Ibiza"
-    blob = place_blob(prop)
+    blob = " ".join([location, area, province]).lower()
     if "formentera" in blob:
         island = "Formentera"
     elif "ibiza" in blob or "eivissa" in blob:
@@ -169,7 +153,7 @@ def to_card(prop: dict, used: set[str], operation: str, period: str, listings: t
     if plot not in (None, "", 0, "0"):
         facts["Plot area"] = f"{plot} m²"
     if price:
-        facts["Rental price"] = f"{currency} {price}"
+        facts["Sale price"] = f"{currency} {price}"
 
     features = []
     if prop.get("Pool") not in (None, 0, "0", ""):
@@ -195,13 +179,13 @@ def to_card(prop: dict, used: set[str], operation: str, period: str, listings: t
         "zone": title_place,
         "island": island,
         "type": kind,
-        "operation": operation,
+        "operation": "Venta",
         "off_market": False,
-        "listings": list(listings),
+        "listings": ["sale", "resales"],
         "price_display": price_display,
         "currency": currency,
         "price": price or 0,
-        "period": period,
+        "period": None,
         "photos": 1 if image else 0,
         "image": image,
         "facts": facts,
@@ -222,62 +206,48 @@ def to_card(prop: dict, used: set[str], operation: str, period: str, listings: t
     }
 
 
-def collect_filter(api_key: str, filter_id: str) -> tuple[int, list[dict]] | int:
+def main() -> int:
+    api_key = load_api_key()
+    if not api_key:
+        return 1
+
     page = 1
     query_id = None
     total = None
     raw_props: list[dict] = []
+
     while True:
-        code, body = fetch_page(api_key, filter_id, page, query_id)
+        code, body = fetch_page(api_key, page, query_id)
         tx = body.get("transaction") if isinstance(body, dict) else {}
         ok = code == 200 and isinstance(tx, dict) and tx.get("status") == "success"
-        if not ok:
-            where = "página 1" if page == 1 else f"página {page}"
-            print(f"HTTP {code} filtro {filter_id} {where}")
+        if page == 1 and not ok:
+            print(f"HTTP {code}")
             print(json.dumps(public_error(body), ensure_ascii=False, indent=2))
+            print("No se escribe resales.json")
             return 1
-        if page == 1:
-            print(f"HTTP {code} filtro {filter_id}")
+        if not ok:
+            print(f"HTTP {code} en la página {page}")
+            print(json.dumps(public_error(body), ensure_ascii=False, indent=2))
+            print("No se escribe resales.json")
+            return 1
+
         info = body.get("QueryInfo") if isinstance(body.get("QueryInfo"), dict) else {}
         if page == 1:
             total = int(info.get("PropertyCount") or 0)
             query_id = info.get("QueryId")
-            print(f"PropertyCount filtro {filter_id}: {total}")
+            print(f"PropertyCount: {total}")
         batch = [p for p in as_list(body.get("Property")) if isinstance(p, dict)]
         raw_props.extend(batch)
         if total is not None and (len(raw_props) >= total or not batch):
             break
         page += 1
         time.sleep(PAUSE_SEC)
-    return code, raw_props
-
-
-def main() -> int:
-    api_key = load_api_key()
-    if not api_key:
-        return 1
-
-    kept: list[tuple[dict, str, str, tuple[str, ...]]] = []
-    skipped = 0
-    for filter_id, operation, period, listings in RENTAL_FILTERS:
-        collected = collect_filter(api_key, filter_id)
-        if isinstance(collected, int):
-            print("No se escribe resales.json")
-            return collected
-        _code, raw_props = collected
-        for prop in raw_props:
-            if is_formentera(prop):
-                skipped += 1
-                continue
-            kept.append((prop, operation, period, listings))
-        time.sleep(PAUSE_SEC)
 
     used: set[str] = set()
-    cards = [to_card(prop, used, operation, period, listings) for prop, operation, period, listings in kept]
+    cards = [to_card(p, used) for p in raw_props]
     tmp = OUT.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(cards, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     tmp.replace(OUT)
-    print(f"Formentera omitidas: {skipped}")
     print(f"Wrote {OUT} ({len(cards)} fichas)")
     return 0
 
