@@ -6,9 +6,10 @@ configuración y no envía nada a Resales.
 
 ## Qué se publica y qué no
 
-La fuente es `site/data.json`, solo las fichas con operación Venta. Hoy son 36.
-`sync/resales_import_xml.py` las escribe en `site/resales-import.xml` (esquema
-Resales 1.5). El alquiler se queda fuera.
+La fuente es `site/data.json`, solo las fichas con operación Venta. Hay 36 en
+la web. `sync/resales_import_xml.py` escribe 35 en `site/resales-import.xml`
+(esquema Resales 1.5). Deja fuera `lasboas-top`: ya está en Resales como
+`R5442232`, con referencia de agencia `LasBoas-7.1`. El alquiler se queda fuera.
 
 El volcado de la API (`resales_dump.py`, filtro de ventas de Baleares) devolvió
 84 fichas. No es el catálogo del cliente y no debe convertirse en el feed:
@@ -40,7 +41,7 @@ esa ficha dice que la propiedad está ahí. No se copia al resto.
 
 | Campo Resales 1.5 | Kyero 3 | De dónde sale | Estado |
 | --- | --- | --- | --- |
-| `referenceId` | `id` y `ref` | `slug` de la web | Listo. En Las Boas tiene que coincidir con la referencia de agencia ya creada |
+| `referenceId` | `id` y `ref` | `slug` de la web | Listo en las 35. `lasboas-top` no entra en el XML |
 | `type`, `subType` | `type` | `type` de la web, con la tabla del script | El subtipo se deduce. El volcado trae el subtipo real solo de las 84, no de las 35 que faltan |
 | `currency`, precio | `currency`, `price`, `price_freq=sale` | `currency` y `price` | Listo |
 | `status` | no existe | `off_market` | Listo: Available u Off Market |
@@ -51,9 +52,9 @@ esa ficha dice que la propiedad está ahí. No se copia al resto.
 | `descriptions/en` | `desc/en` | `description` | Listo en inglés cuando hay texto. Vacío en `boutiquehotel`, `cafe-bistro`, `restaurant-marina` y `restaurant-varaderey` |
 | `propertyImages` | `images` | `image` y `gallery` | Hay URL. No se sabe si el lado largo mide 800 px |
 | `address1` | primera línea de `location_detail` | zona del catálogo; si es un municipio y el título nombra un lugar, ese lugar; si la zona es solo Ibiza, el lugar de la descripción | No hay valor por defecto. Si no hay lugar, el nodo no se escribe |
-| `address2`, `postCode` | resto de `location_detail` | no está | Sigue faltando en las 36 |
-| `cadastralRef` | `catastral` | no está | Falta en las 36. Hace falta para compartir en la red |
-| `descriptions/es` | `desc/es` | no está | Falta en las 36. Hace falta para compartir |
+| `address2`, `postCode` | resto de `location_detail` | no está | Sigue faltando en las 35 |
+| `cadastralRef` | `catastral` | no está | Falta en las 35. Hace falta para compartir en la red |
+| `descriptions/es` | `desc/es` | no está | Falta en las 35. Hace falta para compartir |
 | `saleType` | `leasehold` | no está | Falta. Valores: Freehold o Leasehold |
 | `commissionPct` | no existe en Kyero | no está | Falta. En el alta se puede dejar un porcentaje por defecto |
 | captador (`lister`) | no existe | no está | Falta en los datos. En el alta se elige un usuario por defecto |
@@ -62,9 +63,9 @@ esa ficha dice que la propiedad está ahí. No se copia al resto.
 Kyero 3 es el formato alternativo que Resales acepta. Cubre la misma ficha
 pública y tampoco trae comisión ni captador. El script actual genera 1.5.
 
-## Qué falta en las 36
+## Qué falta en las 35
 
-El catálogo no trae estos datos. El XML los deja vacíos en las 36 ventas:
+El catálogo no trae estos datos. El XML los deja vacíos en las 35 ventas:
 
 - Referencia catastral (`cadastralRef`)
 - Tipo de venta (`saleType`: Freehold o Leasehold)
@@ -91,9 +92,9 @@ así que su XML se queda en Ibiza Town.
    que ser de red. En el formulario se indican la URL, el usuario captador por
    defecto y la comisión por defecto. Resales hace una simulación y hay que
    aprobarla. El alta puede tardar unos días laborables.
-5. Antes de esa primera ejecución, la referencia de Las Boas en Resales y el
-   `referenceId` del XML tienen que ser el mismo texto. Si no, el primer pase
-   crea un duplicado. Ese enlace solo se hace una vez.
+5. `lasboas-top` no va en el XML. Así el primer pase no crea una segunda ficha
+   junto a `LasBoas-7.1`. En la simulación hay que comprobar que Resales deja
+   esa ficha como está.
 6. A partir de ahí Resales descarga el XML solo, una vez al día a las 06:00,
    y manda un resumen por email. La documentación no ofrece un disparo manual.
    Una venta nueva en la web entra al día siguiente. Una venta que desaparece

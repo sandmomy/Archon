@@ -3,9 +3,10 @@
 
 Reads site/data.json, keeps sales (operation Venta), and writes
 site/resales-import.xml. That file is the feed for the automated import:
-only the client's own sales, never the Balearics search dump. Resales
-collects it from a URL once a day. This script does not call Resales and
-does not invent cadastral, Spanish text, commission, or image size.
+only the client's own sales, never the Balearics search dump. lasboas-top
+stays out: that apartment is already in Resales. Resales collects the file
+from a URL once a day. This script does not call Resales and does not
+invent cadastral, Spanish text, commission, or image size.
 
 address1 is the catalog zone when that zone names a place other than
 the island. A municipality yields to a finer place named in the title
@@ -47,6 +48,10 @@ COARSE_ZONES = {
 CLIENT_ZONES = {
     "vedella-27": "Cala Vedella",
 }
+
+# Already in Resales (agency ref LasBoas-7.1, internal ref R5442232).
+# Sending it again would create a second listing.
+EXCLUDE_SLUGS = {"lasboas-top"}
 
 # Place names that appear in the English descriptions and titles.
 # Longer names first so "Playa d'en Bossa" wins over a shorter neighbour.
@@ -118,7 +123,11 @@ def load_sales(path: Path) -> list[dict]:
     catalog = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(catalog, list):
         raise SystemExit(f"El catálogo no es una lista: {path}")
-    return [item for item in catalog if item.get("operation") == "Venta"]
+    return [
+        item
+        for item in catalog
+        if item.get("operation") == "Venta" and str(item.get("slug") or "") not in EXCLUDE_SLUGS
+    ]
 
 
 def fact(item: dict, name: str) -> str:
