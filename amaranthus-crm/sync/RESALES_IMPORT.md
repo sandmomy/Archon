@@ -26,15 +26,17 @@ solo para saber qué venta ya existe en Resales antes del primer enlace.
 
 La web cubre la ficha pública. El volcado no añade comisión, captador, calle ni
 catastro: la API de búsqueda no los devuelve. La web no trae una calle postal.
-`address1` es la zona del catálogo cuando nombra un lugar (Sant Josep, Sant
-Antoni, Santa Eulària, Formentera). La ficha `vedella-27` usa `Cala Vedella`,
-no Sant Josep de sa Talaia. Si la descripción nombra una calle, se junta con
-la zona. En esa ficha queda `Calle Calvià 27, Cala Vedella`. Si no hay calle,
-queda solo la zona. Si el campo está vacío o solo dice Ibiza, se toma el
-primer lugar de la descripción en inglés y, si ahí no hay ninguno, el del
-título (Figueretes, Playa d'en Bossa, Cala Tarida). No hay calle por defecto.
-Marina Botafoch solo se escribe cuando el texto de esa ficha dice que la
-propiedad está ahí. No se copia al resto.
+`address1` es la zona del catálogo cuando nombra un lugar. Si esa zona es
+solo el municipio (Sant Josep, Sant Antoni, Santa Eulària, Formentera) y el
+título nombra un lugar más fino, se usa el del título: Cala Tarida, Benimussa,
+Sa Caleta, San Augustin, Vista Alegre, Sa Serra y Es Pujols. La ficha
+`vedella-27` usa `Cala Vedella`. Si la descripción nombra una calle, se junta
+con la zona. En esa ficha queda `Calle Calvià 27, Cala Vedella`. Si no hay
+calle, queda solo la zona. Si el campo está vacío o solo dice Ibiza, se toma
+el primer lugar de la descripción en inglés y, si ahí no hay ninguno, el del
+título (Figueretes, Playa d'en Bossa). Bossa Nova queda en Playa d'en Bossa.
+No hay calle por defecto. Marina Botafoch solo se escribe cuando el texto de
+esa ficha dice que la propiedad está ahí. No se copia al resto.
 
 | Campo Resales 1.5 | Kyero 3 | De dónde sale | Estado |
 | --- | --- | --- | --- |
@@ -46,9 +48,9 @@ propiedad está ahí. No se copia al resto.
 | provincia y país | `province`, `country` | isla Ibiza o Formentera | Deducido, no viene escrito en el JSON |
 | dormitorios, baños, superficies, planta, año | `beds`, `baths`, `surface_area` | `facts` | Listo cuando el hecho existe. Algunas fichas no traen baños o superficie |
 | características | `pool`, `new_build` | `features` | Parcial. El vocabulario de Resales es más cerrado que el de la web |
-| `descriptions/en` | `desc/en` | `description` | Listo, en inglés |
+| `descriptions/en` | `desc/en` | `description` | Listo en inglés cuando hay texto. Vacío en `boutiquehotel`, `cafe-bistro`, `restaurant-marina` y `restaurant-varaderey` |
 | `propertyImages` | `images` | `image` y `gallery` | Hay URL. No se sabe si el lado largo mide 800 px |
-| `address1` | primera línea de `location_detail` | zona del catálogo, o el lugar nombrado en la descripción si la zona es solo Ibiza | No hay valor por defecto. Si no hay lugar, el nodo no se escribe |
+| `address1` | primera línea de `location_detail` | zona del catálogo; si es un municipio y el título nombra un lugar, ese lugar; si la zona es solo Ibiza, el lugar de la descripción | No hay valor por defecto. Si no hay lugar, el nodo no se escribe |
 | `address2`, `postCode` | resto de `location_detail` | no está | Sigue faltando en las 36 |
 | `cadastralRef` | `catastral` | no está | Falta en las 36. Hace falta para compartir en la red |
 | `descriptions/es` | `desc/es` | no está | Falta en las 36. Hace falta para compartir |
@@ -59,6 +61,23 @@ propiedad está ahí. No se copia al resto.
 
 Kyero 3 es el formato alternativo que Resales acepta. Cubre la misma ficha
 pública y tampoco trae comisión ni captador. El script actual genera 1.5.
+
+## Qué falta en las 36
+
+El catálogo no trae estos datos. El XML los deja vacíos en las 36 ventas:
+
+- Referencia catastral (`cadastralRef`)
+- Tipo de venta (`saleType`: Freehold o Leasehold)
+- Comisión (`commissionPct` y el porcentaje del listing agent)
+- Texto en español (`descriptions/es`)
+- Código postal (`postCode`)
+- Segunda línea de dirección (`address2`)
+- Tamaño de las fotos: hay URL, y no consta si el lado largo mide 800 px
+
+Cuatro fichas de venta no traen descripción en el catálogo: `boutiquehotel`,
+`cafe-bistro`, `restaurant-marina` y `restaurant-varaderey`. En la web, Vara
+de Rey nombra Passeig de Vara de Rey, pero ese texto no está en `data.json`,
+así que su XML se queda en Ibiza Town.
 
 ## Cómo se automatiza
 

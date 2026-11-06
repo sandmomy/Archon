@@ -8,9 +8,10 @@ collects it from a URL once a day. This script does not call Resales and
 does not invent cadastral, Spanish text, commission, or image size.
 
 address1 is the catalog zone when that zone names a place other than
-the island. If the zone is empty or only "Ibiza", the place is taken
-from the English description, then from the title. There is no default
-street.
+the island. A municipality yields to a finer place named in the title
+(Cala Tarida, Es Pujols, Sa Caleta). If the zone is empty or only
+"Ibiza", the place is taken from the English description, then from
+the title. There is no default street.
 
 See sync/RESALES_IMPORT.md for the field map and the setup steps.
 Schema: https://devdocs.resales-online.com/docs/property-import-xml-definition-1-5/
@@ -32,6 +33,15 @@ DEFAULT_OUT = ROOT / "site" / "resales-import.xml"
 
 # "Ibiza" is the island, already stored as the town. It is not a street.
 GENERIC_ZONES = {"ibiza"}
+
+# The card stores the municipality. A place in the title is more specific.
+COARSE_ZONES = {
+    "sant josep de sa talaia",
+    "sant antoni de portmany",
+    "santa eulària des riu",
+    "santa eularia des riu",
+    "formentera",
+}
 
 # The catalog only has the municipality. The client wants this zone name.
 CLIENT_ZONES = {
@@ -221,11 +231,20 @@ def concrete_street(item: dict) -> str:
     return re.sub(r"\s+", " ", match.group(0)).strip(" ,.;")
 
 
+def title_place(item: dict) -> str:
+    """Place named in the title, such as Cala Tarida or Es Pujols."""
+    return area_from_text(str(item.get("title") or ""))
+
+
 def zone_name(item: dict) -> str:
     chosen = CLIENT_ZONES.get(str(item.get("slug") or "").strip())
     if chosen:
         return chosen
-    return specific_zone(item) or area_from_copy(item)
+    zone = specific_zone(item)
+    titled = title_place(item)
+    if titled and zone.casefold() in COARSE_ZONES and titled.casefold() not in zone.casefold():
+        return titled
+    return zone or area_from_copy(item)
 
 
 def street_line(item: dict) -> str:
