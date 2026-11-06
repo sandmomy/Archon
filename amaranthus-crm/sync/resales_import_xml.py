@@ -2,10 +2,12 @@
 """Build a Resales-Online import XML (v1.5) from the website catalog.
 
 Reads site/data.json, keeps sales (operation Venta), and writes
-site/resales-import.xml. Resales collects that file from a URL. This script
-does not call Resales and does not invent address, cadastral, Spanish text,
-commission, or image size.
+site/resales-import.xml. That file is the feed for the automated import:
+only the client's own sales, never the Balearics search dump. Resales
+collects it from a URL once a day. This script does not call Resales and
+does not invent address, cadastral, Spanish text, commission, or image size.
 
+See sync/RESALES_IMPORT.md for the field map and the setup steps.
 Schema: https://devdocs.resales-online.com/docs/property-import-xml-definition-1-5/
 """
 
