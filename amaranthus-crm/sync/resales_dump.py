@@ -7,6 +7,7 @@ The call only succeeds from the IP registered on that key.
 No prompts: safe for cron.
 
 Does not touch the website scraper or site/data.json.
+Only reads SearchProperties. It does not create, update, or import listings.
 """
 
 from __future__ import annotations

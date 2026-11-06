@@ -6,7 +6,8 @@ site/resales-import.xml. That file is the feed for the automated import:
 only the client's own sales, never the Balearics search dump. lasboas-top
 stays out: that apartment is already in Resales. Resales collects the file
 from a URL once a day. This script does not call Resales and does not
-invent cadastral, Spanish text, commission, or image size.
+invent cadastral, Spanish text, commission, image size, bedroom
+counts, floor counts, or feature labels.
 
 address1 is the catalog zone when that zone names a place other than
 the island. A municipality yields to a finer place named in the title
@@ -49,9 +50,11 @@ CLIENT_ZONES = {
     "vedella-27": "Cala Vedella",
 }
 
-# Already in Resales (agency ref LasBoas-7.1, internal ref R5442232).
-# Sending it again would create a second listing.
+# Already in Resales (internal ref R5442232). Left out of the feed.
+# If that slug is ever included, the agency reference must be LasBoas-7.1,
+# not the website slug, or the first import creates a duplicate.
 EXCLUDE_SLUGS = {"lasboas-top"}
+AGENCY_REFS = {"lasboas-top": "LasBoas-7.1"}
 
 # Place names that appear in the English descriptions and titles.
 # Longer names first so "Playa d'en Bossa" wins over a shorter neighbour.
@@ -173,7 +176,20 @@ def image_urls(item: dict) -> list[str]:
 
 
 def bedrooms(item: dict) -> str:
-    return whole(fact(item, "Bedrooms") or fact(item, "Rooms"))
+    """Bedrooms only. Rooms is a different fact and is not copied across."""
+    return whole(fact(item, "Bedrooms"))
+
+
+def reference_id(item: dict) -> str:
+    slug = str(item.get("slug") or "").strip()
+    return AGENCY_REFS.get(slug, slug)
+
+
+def town_name(item: dict) -> str:
+    zone = str(item.get("zone") or "").strip()
+    if zone.casefold() == "ibiza":
+        return "Ibiza"
+    return zone
 
 
 def real_street(item: dict) -> str:
@@ -269,17 +285,17 @@ def street_line(item: dict) -> str:
 
 def property_element(item: dict) -> ET.Element:
     website_type = str(item.get("type") or "")
-    resales_type, subtype = TYPE_MAP.get(website_type, ("Apartment", "Middle Floor"))
+    mapped = TYPE_MAP.get(website_type)
+    resales_type, subtype = mapped if mapped else ("", "")
     if "Ground floor" in (item.get("features") or []) and resales_type == "Apartment":
         subtype = "Ground Floor"
     features = item.get("features") or []
-    slug = str(item.get("slug") or "").strip()
-    zone = str(item.get("zone") or "").strip()
+    ref = reference_id(item)
     prop = ET.Element("property")
-    add(prop, "referenceId", slug)
+    add(prop, "referenceId", ref)
     add(prop, "type", resales_type)
     add(prop, "subType", subtype)
-    add(prop, "currency", str(item.get("currency") or "EUR"))
+    add(prop, "currency", str(item.get("currency") or "").strip())
     add(prop, "sizeType", "1")
     add(prop, "status", "Off Market" if item.get("off_market") else "Available")
     if "New build" in features:
@@ -287,12 +303,12 @@ def property_element(item: dict) -> ET.Element:
 
     address = ET.SubElement(prop, "address")
     add(address, "address1", street_line(item))
-    add(address, "town", zone)
+    add(address, "town", town_name(item))
     add(address, "province", "Islas Baleares")
     add(address, "country", "Spain")
 
     sale = ET.SubElement(prop, "saleDetails")
-    add(sale, "saleReferenceId", slug)
+    add(sale, "saleReferenceId", ref)
     add(sale, "price", whole(str(item.get("price") or "")))
 
     sizes = ET.SubElement(prop, "propertySizes")
@@ -304,9 +320,7 @@ def property_element(item: dict) -> ET.Element:
     add(prop, "bedrooms", bedrooms(item))
     add(prop, "bathrooms", whole(fact(item, "Bathrooms")))
     add(prop, "floor", whole(fact(item, "Floor")))
-    add(prop, "levels", "1")
-    floors = whole(fact(item, "Number of floors"))
-    add(prop, "floorsInBuilding", floors or "1")
+    add(prop, "floorsInBuilding", whole(fact(item, "Number of floors")))
     add(prop, "builtYear", whole(fact(item, "Year built")))
 
     grouped: dict[str, list[str]] = {}
@@ -316,8 +330,6 @@ def property_element(item: dict) -> ET.Element:
         if value not in grouped[kind]:
             grouped[kind].append(value)
     feature_root = ET.SubElement(prop, "propertyFeatures")
-    if not grouped:
-        grouped["Features"] = ["Not specified"]
     for name, values in grouped.items():
         block = ET.SubElement(feature_root, "featureType")
         add(block, "name", name)
@@ -366,7 +378,7 @@ def missing_report(sales: list[dict]) -> list[str]:
         ("commissionPct", lacks(lambda item: True), "no hay comisión"),
         ("commissionOwnPct", lacks(lambda item: True), "no hay porcentaje del listing agent"),
         ("image pixel size", lacks(lambda item: True), "las URLs no dicen si el lado largo mide 800 px"),
-        ("bedrooms", lacks(lambda item: not bedrooms(item)), "ni Rooms ni Bedrooms"),
+        ("bedrooms", lacks(lambda item: not bedrooms(item)), "el catálogo no trae Bedrooms; Rooms no se copia"),
         ("bathrooms", lacks(lambda item: not fact(item, "Bathrooms")), "sin Bathrooms"),
         ("built or plot", lacks(lambda item: not (
             fact(item, "Net living area") or fact(item, "Usable area") or fact(item, "Plot area")

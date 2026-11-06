@@ -41,14 +41,14 @@ esa ficha dice que la propiedad está ahí. No se copia al resto.
 
 | Campo Resales 1.5 | Kyero 3 | De dónde sale | Estado |
 | --- | --- | --- | --- |
-| `referenceId` | `id` y `ref` | `slug` de la web | Listo en las 35. `lasboas-top` no entra en el XML |
+| `referenceId` | `id` y `ref` | `slug` de la web | Listo en las 35. `lasboas-top` no entra. Si entrara, la referencia sería `LasBoas-7.1` |
 | `type`, `subType` | `type` | `type` de la web, con la tabla del script | El subtipo se deduce. El volcado trae el subtipo real solo de las 84, no de las 35 que faltan |
 | `currency`, precio | `currency`, `price`, `price_freq=sale` | `currency` y `price` | Listo |
 | `status` | no existe | `off_market` | Listo: Available u Off Market |
 | `town` | `town` | `zone` | Listo |
 | provincia y país | `province`, `country` | isla Ibiza o Formentera | Deducido, no viene escrito en el JSON |
-| dormitorios, baños, superficies, planta, año | `beds`, `baths`, `surface_area` | `facts` | Listo cuando el hecho existe. Algunas fichas no traen baños o superficie |
-| características | `pool`, `new_build` | `features` | Parcial. El vocabulario de Resales es más cerrado que el de la web |
+| dormitorios, baños, superficies, planta, año | `beds`, `baths`, `surface_area` | `facts` | Solo si el hecho existe. `Rooms` no se escribe como dormitorios. No se rellena un 1 por defecto en plantas |
+| características | `pool`, `new_build` | `features` | Parcial. Si la ficha no trae ninguna, el nodo queda vacío. No se escribe "Not specified" |
 | `descriptions/en` | `desc/en` | `description` | Listo en inglés cuando hay texto. Vacío en `boutiquehotel`, `cafe-bistro`, `restaurant-marina` y `restaurant-varaderey` |
 | `propertyImages` | `images` | `image` y `gallery` | Hay URL. No se sabe si el lado largo mide 800 px |
 | `address1` | primera línea de `location_detail` | zona del catálogo; si es un municipio y el título nombra un lugar, ese lugar; si la zona es solo Ibiza, el lugar de la descripción | No hay valor por defecto. Si no hay lugar, el nodo no se escribe |
@@ -74,6 +74,11 @@ El catálogo no trae estos datos. El XML los deja vacíos en las 35 ventas:
 - Código postal (`postCode`)
 - Segunda línea de dirección (`address2`)
 - Tamaño de las fotos: hay URL, y no consta si el lado largo mide 800 px
+
+Doce fichas no traen el hecho Bedrooms (`anahata-ibz`, `boutiquehotel`,
+`cafe-bistro`, `casmut-plot`, `patioblanco`, `plazaparque`, `restaurant-marina`,
+`restaurant-varaderey`, `saserra`, `thenr`, `vedella-27`, `vistalegre`). El
+número de Rooms no se copia.
 
 Cuatro fichas de venta no traen descripción en el catálogo: `boutiquehotel`,
 `cafe-bistro`, `restaurant-marina` y `restaurant-varaderey`. En la web, Vara
