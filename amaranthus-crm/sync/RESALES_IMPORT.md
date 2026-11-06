@@ -47,16 +47,18 @@ esa ficha dice que la propiedad está ahí. No se copia al resto.
 | `status` | no existe | `off_market` | Listo: Available u Off Market |
 | `town` | `town` | `zone` | Listo |
 | provincia y país | `province`, `country` | isla Ibiza o Formentera | Deducido, no viene escrito en el JSON |
-| dormitorios, baños, superficies, planta, año | `beds`, `baths`, `surface_area` | `facts` | Solo si el hecho existe. `Rooms` no se escribe como dormitorios. No se rellena un 1 por defecto en plantas |
-| características | `pool`, `new_build` | `features` | Parcial. Si la ficha no trae ninguna, el nodo queda vacío. No se escribe "Not specified" |
-| `descriptions/en` | `desc/en` | `description` | Listo en inglés cuando hay texto. Vacío en `boutiquehotel`, `cafe-bistro`, `restaurant-marina` y `restaurant-varaderey` |
-| `propertyImages` | `images` | `image` y `gallery` | Las 35 ventas se midieron. 73 fotos distintas quedaban por debajo de 800 px y ahora están en `site/photos/` con el lado largo en 800. El resto ya llegaba |
+| dormitorios, baños, superficies, planta, año | `beds`, `baths`, `surface_area` | `facts`; si no hay hecho, un solo número en el título o la descripción | `Rooms` no se copia. Un rango (1 y 2 dormitorios) no se convierte en un número. No se rellena un 1 por defecto en plantas |
+| características | `pool`, `new_build` | `features`, y si la lista está vacía, una etiqueta del apéndice 2 que el texto de esa ficha sí dice | Las seis que estaban vacías llevan al menos una. No se escribe "Not specified" |
+| `descriptions/en` | `desc/en` | `description` | Las 35 tienen texto. Las cuatro que el catálogo dejaba vacías salen de la ficha pública |
+| `propertyImages` | `images` | `image` y `gallery` | Las fotos ampliadas salen como URL `https://` del repositorio público. La web no publica `/photos/` |
 | `address1` | primera línea de `location_detail` | zona del catálogo; si es un municipio y el título nombra un lugar, ese lugar; si la zona es solo Ibiza, el lugar de la descripción | No hay valor por defecto. Si no hay lugar, el nodo no se escribe |
 | `address2`, `postCode` | resto de `location_detail` | no está | Sigue faltando en las 35 |
 | `cadastralRef` | `catastral` | no está | Falta en las 35. Hace falta para compartir en la red |
 | `descriptions/es` | `desc/es` | no está | Falta en las 35. Hace falta para compartir |
 | `saleType` | `leasehold` | valor provisional | `Freehold` en las 35. No viene en el catálogo. Es el valor habitual en Ibiza y hay que revisarlo ficha por ficha con el cliente |
-| `commissionPct` | no existe en Kyero | no está | Falta. En el alta se puede dejar un porcentaje por defecto |
+| `shared` | no existe | valor provisional | `0` en las 35. Las Boas no está marcada como Compartida. Hay que confirmarlo ficha por ficha |
+| `type` villa | `type` | apéndice 1 | Las villas van como `House` / `Villa`. `Villa` / `Detached` no está en el apéndice |
+| `commissionPct` | no existe en Kyero | no se escribe | Se deja en el alta del feed. En Las Boas el panel muestra 4,52 % y un reparto del 50 % |
 | captador (`lister`) | no existe | no está | Falta en los datos. En el alta se elige un usuario por defecto |
 | agencia | no existe | no es un campo de la ficha | La cuenta ya es la de Amaranthus |
 
@@ -70,24 +72,24 @@ en Ibiza y es provisional: el catálogo no lo trae y no se leyó en la ficha
 de Las Boas. Hay que confirmarlo ficha por ficha con el cliente antes de
 dar el XML a Resales.
 
-El catálogo no trae estos datos. El XML los deja vacíos en las 35 ventas:
+La comisión no se escribe en el XML. En el alta del feed se puede usar lo que Las Boas ya tiene en el panel: 4,52 % y un reparto del 50 %. Es el dato de esa ficha, no una confirmación de las otras 35.
+
+El catálogo no trae estos datos. El XML los deja vacíos:
 
 - Referencia catastral (`cadastralRef`)
-- Comisión (`commissionPct` y el porcentaje del listing agent)
 - Texto en español (`descriptions/es`)
 - Código postal (`postCode`)
 - Segunda línea de dirección (`address2`)
-- El lado largo de las fotos de las 35 ventas ya mide al menos 800 px. Las que no llegaban se ampliaron en `site/photos/`, con el original en `site/photos-backup/`
+- El lado largo de las fotos ampliadas mide 800 px, que es el mínimo del XML. La pantalla de subida del panel pide 1600 px. No se han vuelto a ampliar
+- `levels` no se rellena con un 1. La planta y las plantas del edificio solo se escriben cuando el catálogo las trae
+- La parcela de `casmut-plot` y la superficie de `restaurant-marina` y `restaurant-varaderey` no están en la ficha
 
-Doce fichas no traen el hecho Bedrooms (`anahata-ibz`, `boutiquehotel`,
-`cafe-bistro`, `casmut-plot`, `patioblanco`, `plazaparque`, `restaurant-marina`,
-`restaurant-varaderey`, `saserra`, `thenr`, `vedella-27`, `vistalegre`). El
-número de Rooms no se copia.
+Doce fichas no traían el hecho Bedrooms. Solo `vedella-27` dice un número único en el texto (2). El resto se deja vacío porque el texto da un rango, habla de habitaciones de hotel, o no da número: `anahata-ibz`, `boutiquehotel`, `cafe-bistro`, `casmut-plot`, `patioblanco`, `plazaparque`, `restaurant-marina`, `restaurant-varaderey`, `saserra`, `thenr`, `vistalegre`.
 
-Cuatro fichas de venta no traen descripción en el catálogo: `boutiquehotel`,
-`cafe-bistro`, `restaurant-marina` y `restaurant-varaderey`. En la web, Vara
-de Rey nombra Passeig de Vara de Rey, pero ese texto no está en `data.json`,
-así que su XML se queda en Ibiza Town.
+Tres fichas no traen baños y el texto tampoco da un número: `casmut-plot`, `restaurant-marina`, `restaurant-varaderey`.
+
+`restaurant-varaderey` nombra Passeig de Vara de Rey en el texto que ahora
+sí entra en el XML. La calle de esa ficha sale de ese texto.
 
 ## Cómo se automatiza
 

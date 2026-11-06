@@ -147,6 +147,10 @@ def parse_facts(html: str) -> dict[str, str]:
 
 
 def parse_gallery(html: str) -> list[str]:
+    # Cards under "More properties" belong to other listings.
+    cut = html.find("More properties")
+    if cut >= 0:
+        html = html[:cut]
     # Prefer the Gallery images array from Next flight data when present.
     m = re.search(r'"images":\[(.*?)\]', html)
     if m:
@@ -189,26 +193,19 @@ def parse_features(html: str) -> list[str]:
 
 
 def parse_description(html: str) -> list[str]:
+    cut = html.find("More properties")
+    page = html if cut < 0 else html[:cut]
     m = re.search(
-        r'flex max-w-\[68ch\] flex-col gap-4[\s\S]*?</header>([\s\S]*?)<section class="flex flex-col gap-5">',
-        html,
+        r'<div class="flex max-w-\[68ch\] flex-col gap-4[^"]*">([\s\S]*?)</div>',
+        page,
     )
-    # Fallback: block with whitespace-pre-line paragraphs after facts
-    block = None
-    m2 = re.search(
-        r'<div class="flex max-w-\[68ch\] flex-col gap-4[^"]*">([\s\S]*?)</div>\s*<section class="flex flex-col gap-5">',
-        html,
-    )
-    if m2:
-        block = m2.group(1)
-    if not block:
+    if not m:
         return []
     paras = []
-    for p in re.findall(r"<p[^>]*>([\s\S]*?)</p>", block):
+    for p in re.findall(r"<p[^>]*>([\s\S]*?)</p>", m.group(1)):
         t = clean_html(p)
         if t:
             paras.append(t)
-    # Drop the repeated h2 title if captured somehow
     return paras
 
 

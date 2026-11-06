@@ -6,11 +6,10 @@ site/resales-import.xml. That file is the feed for the automated import:
 only the client's own sales, never the Balearics search dump. lasboas-top
 stays out: that apartment is already in Resales. Resales collects the file
 from a URL once a day. This script does not call Resales and does not
-invent cadastral, Spanish text, commission, image size, bedroom
-counts, floor counts, or feature labels. saleType is written as
-Freehold on every sale. That value is a provisional default, the
-usual tenure in Ibiza, and must be checked listing by listing with
-the client.
+invent cadastral, Spanish text, commission, image size, floor
+counts, or feature labels. saleType is Freehold and shared is 0 on
+every sale. Both are provisional defaults and must be checked listing
+by listing with the client. Commission stays in the feed setup.
 
 address1 is the catalog zone when that zone names a place other than
 the island. A municipality yields to a finer place named in the title
@@ -64,6 +63,24 @@ AGENCY_REFS = {"lasboas-top": "LasBoas-7.1"}
 # confirm each listing with the client before the feed is handed over.
 DEFAULT_SALE_TYPE = "Freehold"
 
+# Las Boas (R5442232) has Compartido unticked. 0 keeps the 35 off the
+# network until the client confirms each listing. 1 would share them.
+DEFAULT_SHARED = "0"
+
+# Enlarged photos live in this public repository. The agency website
+# does not serve /photos/ (that path returns 404).
+RESIZED_PHOTO_BASE = (
+    "https://raw.githubusercontent.com/sandmomy/Archon/"
+    "cursor/resales-import-xml-eff5/amaranthus-crm/site/"
+)
+
+# These files are the "More properties" cards, not the listing itself.
+RELATED_IMAGE_OWNER = {
+    "1ecd2306": "lasboas-top",
+    "9a1f052f": "bossanova",
+    "341b3b15": "espujols-flats",
+}
+
 # Place names that appear in the English descriptions and titles.
 # Longer names first so "Playa d'en Bossa" wins over a shorter neighbour.
 PLACE_NAMES = (
@@ -109,7 +126,7 @@ NEARBY = re.compile(
 TYPE_MAP = {
     "Apartment": ("Apartment", "Middle Floor"),
     "Penthouse": ("Apartment", "Penthouse"),
-    "Villa": ("Villa", "Detached"),
+    "Villa": ("House", "Villa"),
     "Building land": ("Plot", "Land"),
     "Hotel": ("Commercial", "Hotel"),
     "Restaurant": ("Commercial", "Restaurant"),
@@ -127,6 +144,17 @@ FEATURE_MAP = {
     "Fireplace": ("Features", "Fireplace"),
     "Cellar": ("Features", "Storage Room"),
     "Storeroom": ("Features", "Storage Room"),
+}
+
+# Appendix 2 labels taken from the listing's own wording, and only when
+# the catalog features list is empty.
+TEXT_FEATURES = {
+    "boutiquehotel": [("Setting", "Close To Sea")],
+    "cafe-bistro": [("Features", "Private Terrace"), ("Setting", "Village")],
+    "restaurant-marina": [("Setting", "Marina"), ("Features", "Private Terrace")],
+    "restaurant-varaderey": [("Setting", "Town"), ("Features", "Private Terrace")],
+    "patioblanco": [("Pool", "Communal"), ("Features", "Private Terrace"), ("Setting", "Marina")],
+    "vedella-27": [("Features", "Private Terrace"), ("Setting", "Close To Sea")],
 }
 
 
@@ -175,17 +203,51 @@ def description_text(item: dict) -> str:
 
 
 def image_urls(item: dict) -> list[str]:
+    slug = str(item.get("slug") or "")
     urls: list[str] = []
     for url in [item.get("image"), *(item.get("gallery") or [])]:
         text = str(url or "").strip()
-        if text and text not in urls:
-            urls.append(text)
+        if not text or text in urls:
+            continue
+        if any(
+            token in text and slug != owner
+            for token, owner in RELATED_IMAGE_OWNER.items()
+        ):
+            continue
+        if text.startswith("photos/"):
+            text = RESIZED_PHOTO_BASE + text
+        urls.append(text)
     return urls
+
+
+def _single_count(text: str, word: str) -> str:
+    """One explicit count. A range such as '1 and 2 bedrooms' is not a count."""
+    if re.search(rf"\d+\s*(?:-|\band\b)\s*(?:and\s+)?\d+[-\s]*{word}", text, re.I):
+        return ""
+    if re.search(rf"\b(?:one|two|three)\s*-\s*and\s+(?:one|two|three)-{word}", text, re.I):
+        return ""
+    found = re.findall(rf"\b(\d+)\s+(?:\w+\s+){{0,2}}{word}s?\b", text, re.I)
+    unique = list(dict.fromkeys(found))
+    if len(unique) == 1:
+        return unique[0]
+    return ""
 
 
 def bedrooms(item: dict) -> str:
     """Bedrooms only. Rooms is a different fact and is not copied across."""
-    return whole(fact(item, "Bedrooms"))
+    direct = whole(fact(item, "Bedrooms"))
+    if direct:
+        return direct
+    text = f"{item.get('title') or ''}\n{description_text(item)}"
+    return _single_count(text, "bedroom")
+
+
+def bathrooms(item: dict) -> str:
+    direct = whole(fact(item, "Bathrooms"))
+    if direct:
+        return direct
+    text = f"{item.get('title') or ''}\n{description_text(item)}"
+    return _single_count(text, "bathroom")
 
 
 def reference_id(item: dict) -> str:
@@ -318,6 +380,7 @@ def property_element(item: dict) -> ET.Element:
     sale = ET.SubElement(prop, "saleDetails")
     add(sale, "saleReferenceId", ref)
     add(sale, "saleType", DEFAULT_SALE_TYPE)
+    add(sale, "shared", DEFAULT_SHARED)
     add(sale, "price", whole(str(item.get("price") or "")))
 
     sizes = ET.SubElement(prop, "propertySizes")
@@ -327,7 +390,7 @@ def property_element(item: dict) -> ET.Element:
     add(sizes, "garden", whole(fact(item, "Garden area")))
 
     add(prop, "bedrooms", bedrooms(item))
-    add(prop, "bathrooms", whole(fact(item, "Bathrooms")))
+    add(prop, "bathrooms", bathrooms(item))
     add(prop, "floor", whole(fact(item, "Floor")))
     add(prop, "floorsInBuilding", whole(fact(item, "Number of floors")))
     add(prop, "builtYear", whole(fact(item, "Year built")))
@@ -338,6 +401,11 @@ def property_element(item: dict) -> ET.Element:
         grouped.setdefault(kind, [])
         if value not in grouped[kind]:
             grouped[kind].append(value)
+    if not grouped:
+        for kind, value in TEXT_FEATURES.get(str(item.get("slug") or ""), []):
+            grouped.setdefault(kind, [])
+            if value not in grouped[kind]:
+                grouped[kind].append(value)
     feature_root = ET.SubElement(prop, "propertyFeatures")
     for name, values in grouped.items():
         block = ET.SubElement(feature_root, "featureType")
@@ -382,11 +450,9 @@ def missing_report(sales: list[dict]) -> list[str]:
         ("postCode", lacks(lambda item: True), "no hay código postal"),
         ("cadastralRef", lacks(lambda item: True), "no hay referencia catastral"),
         ("descriptions/es", lacks(lambda item: True), "el texto del catálogo está en inglés"),
-        ("shared", lacks(lambda item: True), "no dice si se comparte con otras agencias"),
-        ("commissionPct", lacks(lambda item: True), "no hay comisión"),
-        ("commissionOwnPct", lacks(lambda item: True), "no hay porcentaje del listing agent"),
-        ("bedrooms", lacks(lambda item: not bedrooms(item)), "el catálogo no trae Bedrooms; Rooms no se copia"),
-        ("bathrooms", lacks(lambda item: not fact(item, "Bathrooms")), "sin Bathrooms"),
+        ("descriptions/en", lacks(lambda item: not description_text(item)), "la ficha no trae texto"),
+        ("bedrooms", lacks(lambda item: not bedrooms(item)), "ni el catálogo ni el texto dan un solo número de dormitorios"),
+        ("bathrooms", lacks(lambda item: not bathrooms(item)), "ni el catálogo ni el texto dan un solo número de baños"),
         ("built or plot", lacks(lambda item: not (
             fact(item, "Net living area") or fact(item, "Usable area") or fact(item, "Plot area")
         )), "sin superficie"),
@@ -397,6 +463,15 @@ def missing_report(sales: list[dict]) -> list[str]:
         (
             f"- saleType: {DEFAULT_SALE_TYPE} en las {len(sales)}. "
             "Valor provisional por defecto. Hay que revisarlo ficha por ficha con el cliente."
+        ),
+        (
+            f"- shared: {DEFAULT_SHARED} en las {len(sales)}. "
+            "Provisional: Las Boas no está marcada como Compartida. "
+            "Hay que confirmarlo ficha por ficha con el cliente."
+        ),
+        (
+            "- commissionPct y commissionOwnPct: no van en el XML. "
+            "Se dejan en el alta del feed. En Las Boas el panel muestra 4,52 % y un reparto del 50 %."
         ),
     ]
     for label, slugs, reason in rows:
