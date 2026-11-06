@@ -25,7 +25,9 @@ solo para saber qué venta ya existe en Resales antes del primer enlace.
 ## Qué campo rellena el XML
 
 La web cubre la ficha pública. El volcado no añade comisión, captador, calle ni
-catastro: la API de búsqueda no los devuelve.
+catastro: la API de búsqueda no los devuelve. La web tampoco trae calle. Mientras
+el cliente no dé direcciones reales, el generador escribe `Marina Botafoc` en
+`address1`.
 
 | Campo Resales 1.5 | Kyero 3 | De dónde sale | Estado |
 | --- | --- | --- | --- |
@@ -39,7 +41,8 @@ catastro: la API de búsqueda no los devuelve.
 | características | `pool`, `new_build` | `features` | Parcial. El vocabulario de Resales es más cerrado que el de la web |
 | `descriptions/en` | `desc/en` | `description` | Listo, en inglés |
 | `propertyImages` | `images` | `image` y `gallery` | Hay URL. No se sabe si el lado largo mide 800 px |
-| `address1`, `address2`, `postCode` | `location_detail` | no está | Falta en las 36 |
+| `address1` | primera línea de `location_detail` | no está en la web | Provisional: `Marina Botafoc` en toda ficha sin calle, hasta que el cliente dé la dirección real |
+| `address2`, `postCode` | resto de `location_detail` | no está | Sigue faltando en las 36 |
 | `cadastralRef` | `catastral` | no está | Falta en las 36. Hace falta para compartir en la red |
 | `descriptions/es` | `desc/es` | no está | Falta en las 36. Hace falta para compartir |
 | `saleType` | `leasehold` | no está | Falta. Valores: Freehold o Leasehold |

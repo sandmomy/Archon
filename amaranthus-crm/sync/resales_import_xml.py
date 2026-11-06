@@ -5,7 +5,10 @@ Reads site/data.json, keeps sales (operation Venta), and writes
 site/resales-import.xml. That file is the feed for the automated import:
 only the client's own sales, never the Balearics search dump. Resales
 collects it from a URL once a day. This script does not call Resales and
-does not invent address, cadastral, Spanish text, commission, or image size.
+does not invent cadastral, Spanish text, commission, or image size.
+
+Listings with no street get address1 "Marina Botafoc". That value is
+provisional until the client supplies a real address.
 
 See sync/RESALES_IMPORT.md for the field map and the setup steps.
 Schema: https://devdocs.resales-online.com/docs/property-import-xml-definition-1-5/
@@ -24,6 +27,10 @@ from xml.etree import ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CATALOG = ROOT / "site" / "data.json"
 DEFAULT_OUT = ROOT / "site" / "resales-import.xml"
+
+# The public website has no street field. Use this until the client
+# provides a real address for each listing.
+DEFAULT_STREET = "Marina Botafoc"
 
 # Website type -> (Resales type, Resales subtype). Subtypes are the closest
 # Appendix 1 labels. The catalog does not store a Resales subtype.
@@ -104,6 +111,18 @@ def bedrooms(item: dict) -> str:
     return whole(fact(item, "Bedrooms") or fact(item, "Rooms"))
 
 
+def real_street(item: dict) -> str:
+    for key in ("address1", "street", "address"):
+        value = str(item.get(key) or "").strip()
+        if value:
+            return value
+    return ""
+
+
+def street_line(item: dict) -> str:
+    return real_street(item) or DEFAULT_STREET
+
+
 def property_element(item: dict) -> ET.Element:
     website_type = str(item.get("type") or "")
     resales_type, subtype = TYPE_MAP.get(website_type, ("Apartment", "Middle Floor"))
@@ -123,6 +142,7 @@ def property_element(item: dict) -> ET.Element:
         add(prop, "newBuild", "1")
 
     address = ET.SubElement(prop, "address")
+    add(address, "address1", street_line(item))
     add(address, "town", zone)
     add(address, "province", "Islas Baleares")
     add(address, "country", "Spain")
@@ -188,7 +208,11 @@ def missing_report(sales: list[dict]) -> list[str]:
         return [str(item.get("slug")) for item in sales if check(item)]
 
     rows = [
-        ("address1 (calle)", lacks(lambda item: True), "el JSON solo tiene zona e isla"),
+        (
+            "address1 real (calle)",
+            lacks(lambda item: not real_street(item)),
+            f"sin calle en el JSON; el XML usa el valor provisional {DEFAULT_STREET}",
+        ),
         ("address2", lacks(lambda item: True), "el nodo es obligatorio en el XML y no hay segunda línea"),
         ("postCode", lacks(lambda item: True), "no hay código postal"),
         ("cadastralRef", lacks(lambda item: True), "no hay referencia catastral"),
