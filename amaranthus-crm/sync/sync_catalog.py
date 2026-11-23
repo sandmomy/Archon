@@ -148,7 +148,10 @@ def parse_facts(html: str) -> dict[str, str]:
 
 def parse_gallery(html: str) -> list[str]:
     # Prefer the Gallery images array from Next flight data when present.
-    m = re.search(r'"images":\[(.*?)\]', html)
+    # Also matches escaped \"images\":[...] in current Next flight payloads.
+    # The old '"images":\[' pattern missed those, fell back to every image on the
+    # page, and inserted the three "More properties" covers into each gallery.
+    m = re.search(r'(?:\\"images\\"|"images"):\[(.*?)\]', html)
     if m:
         urls = re.findall(
             r"https://app\.nestermind\.com/files/attachment/public/[^\\\"\s]+",
@@ -164,9 +167,12 @@ def parse_gallery(html: str) -> list[str]:
                 out.append(u)
         if out:
             return out
+    # Fallback: never include the "More properties" related-listing covers.
+    cut = html.find("More properties")
+    page = html if cut < 0 else html[:cut]
     urls = re.findall(
         r"https://app\.nestermind\.com/files/attachment/public/[0-9a-f\-]+\.(?:JPG|JPEG|PNG|jpg|jpeg|png|webp)\?workspaceId=[0-9a-f\-]+",
-        urllib.parse.unquote(html),
+        urllib.parse.unquote(page),
     )
     out = []
     seen = set()

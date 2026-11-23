@@ -106,19 +106,32 @@ function parseFacts(html) {
 }
 
 function parseGallery(html) {
-  const out = [];
-  const seen = new Set();
-  const decoded = html.replace(/&amp;/g, "&");
-  const re =
-    /https:\/\/app\.nestermind\.com\/files\/attachment\/public\/[0-9a-f\-]+\.(?:JPG|JPEG|PNG|jpg|jpeg|png|webp)\?workspaceId=[0-9a-f\-]+/g;
-  let m;
-  while ((m = re.exec(decoded))) {
-    if (!seen.has(m[0])) {
-      seen.add(m[0]);
-      out.push(m[0]);
+  // Prefer official Gallery images from Next flight data (escaped or raw).
+  // The previous version collected every nestermind URL on the page, including
+  // the three "More properties" related-listing covers.
+  const official = html.match(/(?:\\"images\\"|\"images\"):\[(.*?)\]/);
+  const take = (blob) => {
+    const out = [];
+    const seen = new Set();
+    const re =
+      /https:\/\/app\.nestermind\.com\/files\/attachment\/public\/[0-9a-f\-]+\.(?:JPG|JPEG|PNG|jpg|jpeg|png|webp)\?workspaceId=[0-9a-f\-]+/g;
+    let m;
+    const decoded = blob.replace(/&amp;/g, "&").replace(/\\u0026/g, "&");
+    while ((m = re.exec(decoded))) {
+      const u = m[0].split("\\")[0];
+      if (!seen.has(u)) {
+        seen.add(u);
+        out.push(u);
+      }
     }
+    return out;
+  };
+  if (official) {
+    const fromOfficial = take(official[1]);
+    if (fromOfficial.length) return fromOfficial;
   }
-  return out;
+  const cut = html.indexOf("More properties");
+  return take(cut < 0 ? html : html.slice(0, cut));
 }
 
 function parseFeatures(html) {
